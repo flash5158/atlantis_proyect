@@ -7,16 +7,25 @@ TUNNEL_NAME="nexotunnel"
 CF_DIR="$HOME/.cloudflared"
 
 start() {
-    if ! command -v cloudflared >/dev/null; then
-        echo "Instalando cloudflared..."
+    CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-$HOME/.local/bin/cloudflared}"
+    if [[ ! -x "$CLOUDFLARED_BIN" ]]; then
+        echo "Instalando cloudflared en $CLOUDFLARED_BIN..."
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$(uname -m)" -o /tmp/cloudflared
-            chmod +x /tmp/cloudflared
-            sudo mv /tmp/cloudflared /usr/local/bin/cloudflared
+            # uname -m devuelve aarch64 en ARM64, pero el release se llama arm64
+            case "$(uname -m)" in
+                aarch64|arm64) ARCH="arm64" ;;
+                x86_64|amd64)  ARCH="amd64" ;;
+                *) ARCH="$(uname -m)" ;;
+            esac
+            mkdir -p "$(dirname "$CLOUDFLARED_BIN")"
+            curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$ARCH" -o "$CLOUDFLARED_BIN"
+            chmod +x "$CLOUDFLARED_BIN"
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             brew install cloudflared
+            CLOUDFLARED_BIN="$(command -v cloudflared)"
         fi
     fi
+    CLOUDFLARED_BIN="$(readlink -f "$CLOUDFLARED_BIN" 2>/dev/null || echo "$CLOUDFLARED_BIN")"
 
     if [[ ! -f "$CF_DIR/cert.pem" ]]; then
         echo "Primera vez: autentica con Cloudflare..."
