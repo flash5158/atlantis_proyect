@@ -1,0 +1,8 @@
+# Colab Hub — configuración local de cada agente (NO se comparte por git)
+# Copia este archivo a .hubconfig y edita tu nombre.
+
+# Nombre de este agente (único por máquina)
+nombre: hermes-1
+
+# Nombre del otro agente (para menciones @nombre)
+companero: hermes-2
