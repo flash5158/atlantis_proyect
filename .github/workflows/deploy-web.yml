@@ -1,5 +1,5 @@
 name: Deploy Web (sync web/ -> docs/)
-on:
+"on":
   push:
     paths: ["web/**"]
   workflow_dispatch:
