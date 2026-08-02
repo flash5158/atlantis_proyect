@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 nexo/.venv/
 nexo/config.json
+proyectos/*/.nexo-chat.md
