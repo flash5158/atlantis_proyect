@@ -10,7 +10,7 @@ start() {
     if ! command -v cloudflared >/dev/null; then
         echo "Instalando cloudflared..."
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /tmp/cloudflared
+            curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$(uname -m)" -o /tmp/cloudflared
             chmod +x /tmp/cloudflared
             sudo mv /tmp/cloudflared /usr/local/bin/cloudflared
         elif [[ "$OSTYPE" == "darwin"* ]]; then

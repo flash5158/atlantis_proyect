@@ -32,18 +32,19 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#000;box-shadow:0 0 12px var(--accent-glow)}
 .topbar-spacer{flex:1}
 .topbar-info{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-2)}
-.token-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);cursor:pointer;transition:var(--transition)}
-.token-badge:hover{border-color:var(--accent-dim);color:var(--accent)}
 .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:var(--transition)}
 .conn-dot.connected{background:var(--success);box-shadow:0 0 6px rgba(34,197,94,.4)}
 .conn-dot.disconnected{background:var(--danger)}
+.token-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);cursor:pointer;transition:var(--transition)}
+.token-badge:hover{border-color:var(--accent-dim);color:var(--accent)}
 
 .main{display:flex;height:calc(100vh - var(--topbar-h) - var(--statusbar-h));overflow:hidden}
 
 .sidebar{width:var(--sidebar-w);background:var(--bg-1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sidebar-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-soft)}
 .sidebar-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
-.btn-new{width:24px;height:24px;border-radius:var(--radius-sm);background:var(--bg-3);border:1px solid var(--border);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:var(--transition)}
+.sidebar-actions{display:flex;gap:6px}
+.btn-new{width:24px;height:24px;border-radius:var(--radius-sm);background:var(--bg-3);border:1px solid var(--border);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:var(--transition)}
 .btn-new:hover{background:var(--accent-bg);border-color:var(--accent-dim);color:var(--accent)}
 .project-list{flex:1;overflow-y:auto;padding:8px}
 .project-item{border-radius:var(--radius-sm);margin-bottom:2px;overflow:hidden}
@@ -53,6 +54,9 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 .project-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-3);transition:transform var(--transition)}
 .project-item.expanded .project-icon{transform:rotate(90deg)}
 .project-name{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-del{opacity:0;width:18px;height:18px;border-radius:4px;border:none;background:transparent;color:var(--text-3);cursor:pointer;font-size:12px;transition:var(--transition);flex-shrink:0}
+.project-header:hover .project-del{opacity:.6}
+.project-del:hover{opacity:1;background:rgba(239,68,68,.15);color:var(--danger)}
 .file-list{padding:0 8px 4px 24px;display:none}
 .project-item.expanded .file-list{display:block}
 .file-entry{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:pointer;border-radius:var(--radius-sm);transition:var(--transition);font-size:12px;color:var(--text-2)}
@@ -73,12 +77,15 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 .editor-area{flex:1;display:none;background:var(--bg-0);position:absolute;inset:0;flex-direction:column}
 .editor-area.active{display:flex}
 .editor-textarea{flex:1;background:transparent;color:var(--text-0);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;padding:16px;border:none;outline:none;resize:none;tab-size:4;white-space:pre}
-.editor-actions{display:flex;gap:8px;padding:6px 12px;background:var(--bg-1);border-top:1px solid var(--border-soft);flex-shrink:0;align-items:center}
+.editor-actions{display:flex;gap:8px;padding:6px 12px;background:var(--bg-1);border-top:1px solid var(--border-soft);flex-shrink:0;align-items:center;flex-wrap:wrap}
 .editor-actions-info{font-size:11px;color:var(--text-3);margin-right:auto;font-family:'JetBrains Mono',monospace}
 .btn{padding:5px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-3);color:var(--text-1);font-size:12px;font-weight:500;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:5px}
 .btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
 .btn-primary{background:var(--accent-bg);border-color:var(--accent-dim);color:var(--accent)}
 .btn-primary:hover{background:rgba(100,190,71,.15);border-color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35);color:var(--danger)}
+.btn-danger:hover{background:rgba(239,68,68,.15)}
+.btn-stop{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.4);color:var(--warning)}
 
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text-3)}
 .empty-state-icon{font-size:48px;opacity:.2}
@@ -100,6 +107,7 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 .chat-header{padding:12px 16px;border-bottom:1px solid var(--border-soft);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .chat-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
 .chat-project{font-size:13px;font-weight:600;color:var(--text-0);margin-top:2px}
+.chat-typing{font-size:11px;color:var(--accent);font-style:italic;min-height:14px;margin-top:2px}
 .chat-online{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px}
 .chat-online .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
 .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
@@ -126,12 +134,16 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:var(--transition)}
 .modal-overlay.show{opacity:1;pointer-events:auto}
-.modal{background:var(--bg-1);border:1px solid var(--border-strong);border-radius:12px;padding:28px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal{background:var(--bg-1);border:1px solid var(--border-strong);border-radius:12px;padding:28px;width:380px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal.wide{width:560px}
 .modal-title{font-size:18px;font-weight:700;color:var(--text-0);margin-bottom:6px}
 .modal-desc{font-size:13px;color:var(--text-2);margin-bottom:20px;line-height:1.5}
 .modal-input{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-0);font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;outline:none;transition:var(--transition)}
 .modal-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
-.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap}
+.git-output{height:220px;overflow-y:auto;background:var(--bg-0);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;color:var(--text-1);white-space:pre-wrap;word-break:break-all}
+.git-output .err{color:var(--danger)}
+.git-output .cmd{color:var(--accent)}
 
 .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg-3);border:1px solid var(--border-strong);border-radius:var(--radius);padding:10px 18px;font-size:13px;color:var(--text-0);z-index:300;opacity:0;transition:all 300ms cubic-bezier(.4,0,.2,1);box-shadow:0 8px 24px rgba(0,0,0,.3);pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -147,7 +159,8 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
   <div class="logo"><div class="logo-mark">N</div> NEXO</div>
   <div class="topbar-spacer"></div>
   <div class="topbar-info">
-    <span id="onlineCount">2 agentes</span>
+    <button class="btn" id="btnGit" title="Git / GitHub">⎇ Git</button>
+    <span id="onlineCount">1 agente</span>
     <div class="conn-dot disconnected" id="connDot"></div>
     <div class="token-badge" id="tokenBadge"><span>🔑</span> <span id="tokenShort">token</span></div>
   </div>
@@ -157,7 +170,10 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
   <div class="sidebar">
     <div class="sidebar-header">
       <span class="sidebar-title">Proyectos</span>
-      <button class="btn-new" id="btnNewProject" title="Nuevo proyecto">+</button>
+      <div class="sidebar-actions">
+        <button class="btn-new" id="btnRefresh" title="Actualizar árbol">⟳</button>
+        <button class="btn-new" id="btnNewProject" title="Nuevo proyecto">+</button>
+      </div>
     </div>
     <div class="project-list" id="projectList"></div>
   </div>
@@ -174,9 +190,14 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
         <textarea class="editor-textarea" id="editorTextarea" spellcheck="false"></textarea>
         <div class="editor-actions">
           <span class="editor-actions-info" id="editorInfo">—</span>
-          <button class="btn" id="btnNewFile" title="Nuevo archivo">📄 Nuevo</button>
-          <button class="btn btn-primary" id="btnSave">💾 Guardar</button>
-          <button class="btn btn-primary" id="btnRun">▶ Ejecutar</button>
+          <button class="btn" id="btnNewFile" title="Nuevo archivo (Ctrl+N)">📄 Nuevo</button>
+          <button class="btn" id="btnDownload" title="Descargar archivo">⬇ Descargar</button>
+          <button class="btn" id="btnUpload" title="Subir archivo al proyecto">⬆ Subir</button>
+          <button class="btn" id="btnRename" title="Renombrar">✏ Renombrar</button>
+          <button class="btn btn-danger" id="btnDelete" title="Eliminar archivo">🗑</button>
+          <button class="btn btn-primary" id="btnSave" title="Guardar (Ctrl+S)">💾 Guardar</button>
+          <button class="btn btn-primary" id="btnRun" title="Ejecutar (Ctrl+Enter)">▶ Ejecutar</button>
+          <button class="btn btn-stop hidden" id="btnStop" title="Detener ejecución">■ Detener</button>
         </div>
       </div>
     </div>
@@ -198,6 +219,7 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
       <div>
         <div class="chat-title">Chat del proyecto</div>
         <div class="chat-project" id="chatProjectName">general</div>
+        <div class="chat-typing" id="chatTyping"></div>
       </div>
       <div class="chat-online"><span class="dot"></span> en vivo</div>
     </div>
@@ -222,7 +244,7 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
 <div class="modal-overlay" id="tokenModal">
   <div class="modal">
     <div class="modal-title">🔑 Conectar a NEXO</div>
-    <div class="modal-desc">Introduce el token de acceso del servidor NEXO para colaborar.</div>
+    <div class="modal-desc">Introduce el token de acceso del servidor NEXO (está en config.json).</div>
     <input class="modal-input" id="tokenInput" placeholder="d0313538…" spellcheck="false">
     <div class="modal-actions">
       <button class="btn" id="btnTokenCancel">Cancelar</button>
@@ -243,23 +265,47 @@ html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-se
   </div>
 </div>
 
+<div class="modal-overlay" id="gitModal">
+  <div class="modal wide">
+    <div class="modal-title">⎇ Git — workspace</div>
+    <div class="modal-desc">Ejecuta git en la raíz del workspace (~/colab-hub). La salida aparece aquí.</div>
+    <input class="modal-input" id="gitMsg" placeholder="Mensaje del commit (para commit)…" spellcheck="false" style="margin-bottom:10px">
+    <div class="git-output" id="gitOutput">—</div>
+    <div class="modal-actions">
+      <button class="btn" id="btnGitClose">Cerrar</button>
+      <button class="btn" id="btnGitStatus">Status</button>
+      <button class="btn" id="btnGitLog">Log</button>
+      <button class="btn" id="btnGitCommit">Commit</button>
+      <button class="btn" id="btnGitPush">Push</button>
+      <button class="btn" id="btnGitPull">Pull</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" class="hidden" multiple>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const $ = id => document.getElementById(id);
-const NOMBRE = 'hermes-1';
+let NOMBRE = 'hermes-1';
 let TOKEN = localStorage.getItem('nexo_token') || '';
 let WS = null, currentProject = null, currentFile = null, openTabs = {};
+let runSeq = 0, activeRunId = null, runIds = {}, typingTimer = null;
 const agentColors = { 'hermes-1':'#64be47', 'hermes-2':'#5b9eff', 'sistema':'#8a8a90' };
+const tk = (p,r) => JSON.stringify([p,r]);
+const keyParts = k => JSON.parse(k);
 
-function esc(s){return String(s||'').replace(/[<>&"]/g,c=>{'<':'<','>':'>','&':'&','"':'"'}[c])}
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function esc(s){return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2400)}
 function fmtTime(f){return f?f.split(' ')[1]||f:''}
 function avatarColor(n){return agentColors[n]||'#888'}
 function initials(n){if(!n)return'?';if(n==='sistema')return'⚙';return n.substring(0,2)}
 
-function showTokenModal(){$('tokenInput').value=TOKEN;$('tokenModal').classList.add('show');setTimeout(()=>$('tokenInput').focus(),100)}
-function saveToken(){TOKEN=$('tokenInput').value.trim();localStorage.setItem('nexo_token',TOKEN);$('tokenModal').classList.remove('show');updateTokenBadge();connectWS();fetchArbol();fetchHistorial()}
+function showModal(id){$(id).classList.add('show')}
+function hideModal(id){$(id).classList.remove('show')}
+function showTokenModal(){$('tokenInput').value=TOKEN;showModal('tokenModal');setTimeout(()=>$('tokenInput').focus(),100)}
+function saveToken(){TOKEN=$('tokenInput').value.trim();localStorage.setItem('nexo_token',TOKEN);hideModal('tokenModal');updateTokenBadge();connectWS();fetchArbol();fetchHistorial()}
 function updateTokenBadge(){$('tokenShort').textContent=TOKEN?TOKEN.substring(0,8)+'…':'sin token'}
 
 function connectWS(){
@@ -279,7 +325,7 @@ async function apiGet(path){
   if(r.status===401){showTokenModal();return null}
   return r.json();
 }
-async function fetchArbol(){const d=await apiGet('/api/arbol');if(d&&d.arbol)renderProjectList(d.arbol)}
+async function fetchArbol(){const d=await apiGet('/api/arbol');if(d&&d.arbol){if(d.nombre)NOMBRE=d.nombre;renderProjectList(d.arbol);pruneTabs(d.arbol)}}
 async function fetchHistorial(){if(!currentProject)return;const d=await apiGet(`/api/historial?proyecto=${encodeURIComponent(currentProject)}`);if(d&&d.historial)renderHistorial(d.historial)}
 
 function renderProjectList(arbol){
@@ -290,13 +336,20 @@ function renderProjectList(arbol){
     item.className='project-item'+(currentProject===p.nombre?' expanded':'');
     const header=document.createElement('div');
     header.className='project-header'+(currentProject===p.nombre?' active':'');
-    header.innerHTML=`<span class="project-icon">▶</span><span class="project-name">${esc(p.nombre)}</span>`;
+    header.innerHTML=`<span class="project-icon">▶</span><span class="project-name">${esc(p.nombre)}</span><button class="project-del" title="Eliminar proyecto">✕</button>`;
     header.onclick=()=>selectProject(p.nombre);
+    header.querySelector('.project-del').onclick=e=>{
+      e.stopPropagation();
+      if(confirm(`¿Eliminar el proyecto "${p.nombre}" y TODOS sus archivos? Esta acción no se puede deshacer.`)){
+        wsSend({tipo:'proyecto_borrar',nombre:p.nombre,confirmar:true});
+        toast('Eliminando proyecto…');
+      }
+    };
     const fileList=document.createElement('div');fileList.className='file-list';
     if(p.archivos&&p.archivos.length>0){
       p.archivos.forEach(f=>{
         const entry=document.createElement('div');
-        entry.className='file-entry'+(currentFile===f?' active':'');
+        entry.className='file-entry'+(currentFile===tk(p.nombre,f)?' active':'');
         entry.innerHTML=`<span class="file-icon">📄</span><span>${esc(f)}</span>`;
         entry.onclick=e=>{e.stopPropagation();openFile(p.nombre,f)};
         fileList.appendChild(entry);
@@ -309,39 +362,66 @@ function renderProjectList(arbol){
 function selectProject(n){currentProject=n;$('chatProjectName').textContent=n;$('termProject').textContent=n;$('statusProject').textContent=`proyecto: ${n}`;wsSend({tipo:'join',proyecto:n});fetchHistorial();fetchArbol()}
 
 async function openFile(proyecto,ruta){
-  currentFile=ruta;$('statusFile').textContent=`jarchivo: ${ruta}`;
-  if(!openTabs[ruta]){openTabs[ruta]={proyecto,contenido:'',dirty:false};renderTabs()}
-  showTab(ruta);
-  const r=await fetch(`/api/archivo?proyecto=${encodeURIComponent(proyecto)}&ruta=${encodeURIComponent(ruta)}&token=${encodeURIComponent(TOKEN)}`);
-  if(r.ok){const d=await r.json();if(d.contenido!==undefined){openTabs[ruta].contenido=d.contenido;if(currentFile===ruta)$('editorTextarea').value=d.contenido}}
+  const key=tk(proyecto,ruta);
+  currentFile=key;
+  const rutaMostrar=`${proyecto}/${ruta}`;
+  $('statusFile').textContent=`archivo: ${rutaMostrar}`;
+  if(!openTabs[key]){openTabs[key]={proyecto,ruta,contenido:'',dirty:false};renderTabs()}
+  showTab(key);
+  try{
+    const r=await fetch(`/api/archivo?proyecto=${encodeURIComponent(proyecto)}&ruta=${encodeURIComponent(ruta)}&token=${encodeURIComponent(TOKEN)}`);
+    if(r.ok){const d=await r.json();if(d.contenido!==undefined){openTabs[key].contenido=d.contenido;openTabs[key].dirty=false;if(currentFile===key)$('editorTextarea').value=d.contenido;renderTabs()}}
+    else{const d=await r.json().catch(()=>({}));toast('Error: '+(d.error||'no se pudo abrir'))}
+  }catch(e){toast('Error de red al abrir archivo')}
   fetchArbol();
 }
 
 function renderTabs(){
   const bar=$('tabsBar');bar.innerHTML='';
-  Object.keys(openTabs).forEach(ruta=>{
+  Object.keys(openTabs).forEach(key=>{
     const tab=document.createElement('div');
-    tab.className='tab'+(currentFile===ruta?' active':'');
-    const dirty=openTabs[ruta].dirty?' ●':'';
-    tab.innerHTML=`<span>${esc(ruta)}</span>${dirty}<span class="tab-close">×</span>`;
-    tab.onclick=()=>showTab(ruta);
-    tab.querySelector('.tab-close').onclick=e=>{e.stopPropagation();closeTab(ruta)};
+    tab.className='tab'+(currentFile===key?' active':'');
+    const t=openTabs[key];
+    const dirty=t.dirty?' ●':'';
+    tab.innerHTML=`<span>${esc(t.ruta)}</span>${dirty}<span class="tab-close">×</span>`;
+    tab.onclick=()=>showTab(key);
+    tab.querySelector('.tab-close').onclick=e=>{e.stopPropagation();closeTab(key)};
     bar.appendChild(tab);
   });
 }
 
-function showTab(ruta){
-  currentFile=ruta;
+function showTab(key){
+  if(!openTabs[key])return;
+  currentFile=key;
   $('emptyState').classList.add('hidden');
   $('editorArea').classList.add('active');
-  $('editorTextarea').value=openTabs[ruta]?.contenido||'';
-  $('editorInfo').textContent=ruta;
+  const t=openTabs[key];
+  $('editorTextarea').value=t.contenido||'';
+  $('editorInfo').textContent=`${t.proyecto}/${t.ruta}`;
+  $('statusFile').textContent=`archivo: ${t.proyecto}/${t.ruta}`;
   renderTabs();
 }
 
-function closeTab(ruta){
-  delete openTabs[ruta];
-  if(currentFile===ruta){
+function closeTab(key){
+  delete openTabs[key];
+  if(currentFile===key){
+    const keys=Object.keys(openTabs);
+    if(keys.length>0)showTab(keys[0]);
+    else{currentFile=null;$('emptyState').classList.remove('hidden');$('editorArea').classList.remove('active');$('statusFile').textContent='archivo: —'}
+  }
+  renderTabs();
+}
+
+function pruneTabs(arbol){
+  const existentes={};
+  arbol.forEach(p=>{p.archivos.forEach(f=>{existentes[tk(p.nombre,f)]=true})});
+  Object.keys(openTabs).forEach(key=>{
+    if(!existentes[key]){
+      if(openTabs[key].dirty){toast('⚠ '+(openTabs[key].ruta)+' ya no existe en el servidor (tienes cambios sin guardar)')}
+      else{delete openTabs[key]}
+    }
+  });
+  if(currentFile&&!openTabs[currentFile]){
     const keys=Object.keys(openTabs);
     if(keys.length>0)showTab(keys[0]);
     else{currentFile=null;$('emptyState').classList.remove('hidden');$('editorArea').classList.remove('active')}
@@ -350,15 +430,103 @@ function closeTab(ruta){
 }
 
 $('editorTextarea').addEventListener('input',()=>{if(currentFile&&openTabs[currentFile]){openTabs[currentFile].contenido=$('editorTextarea').value;openTabs[currentFile].dirty=true;renderTabs()}});
-$('btnSave').onclick=()=>{if(!currentFile||!currentProject){toast('Nada que guardar');return}wsSend({tipo:'archivo_escribir',proyecto:currentProject,ruta:currentFile,contenido:$('editorTextarea').value});if(openTabs[currentFile])openTabs[currentFile].dirty=false;renderTabs();toast('Guardado: '+currentFile)};
-$('btnRun').onclick=()=>{if(!currentProject){toast('Selecciona un proyecto');return}const ext=currentFile?currentFile.split('.').pop():'';let cmd;if(ext==='py')cmd=`python3 ${currentFile}`;else if(ext==='js')cmd=`node ${currentFile}`;else if(ext==='sh')cmd=`bash ${currentFile}`;else{toast('No sé cómo ejecutar .'+ext);return}runCommand(cmd)};
-$('btnNewFile').onclick=()=>{if(!currentProject){toast('Selecciona un proyecto primero');return}const nombre=prompt('Nombre del archivo:','nuevo.py');if(!nombre)return;currentFile=nombre;openTabs[nombre]={proyecto:currentProject,contenido:'',dirty:false};wsSend({tipo:'archivo_escribir',proyecto:currentProject,ruta:nombre,contenido:''});showTab(nombre);fetchArbol();toast('Archivo creado: '+nombre)};
 
-function runCommand(cmd){if(!currentProject)return;appendTerminal(`$ ${cmd}\n`,'cmd');wsSend({tipo:'run',proyecto:currentProject,cmd:cmd,id:'gui'})}
-$('terminalInput').addEventListener('keydown',e=>{if(e.key==='Enter'){const cmd=$('terminalInput').value.trim();if(cmd){runCommand(cmd);$('terminalInput').value=''}}});
+function guardarArchivo(){
+  if(!currentFile||!openTabs[currentFile]){toast('Nada que guardar');return}
+  const t=openTabs[currentFile];
+  wsSend({tipo:'archivo_escribir',proyecto:t.proyecto,ruta:t.ruta,contenido:$('editorTextarea').value});
+  t.dirty=false;renderTabs();toast('Guardado: '+t.ruta);
+}
+$('btnSave').onclick=guardarArchivo;
+
+function ejecutarActual(){
+  if(!currentFile||!openTabs[currentFile]){toast('Abre un archivo para ejecutarlo');return}
+  const t=openTabs[currentFile];
+  const ext=t.ruta.split('.').pop();
+  let cmd;
+  if(ext==='py')cmd=`python3 ${t.ruta}`;
+  else if(ext==='js')cmd=`node ${t.ruta}`;
+  else if(ext==='sh')cmd=`bash ${t.ruta}`;
+  else{toast('No sé cómo ejecutar .'+ext);return}
+  runCommand(cmd,t.proyecto);
+}
+$('btnRun').onclick=ejecutarActual;
+
+function runCommand(cmd,proyecto){
+  proyecto=proyecto||currentProject;
+  if(!proyecto){toast('Selecciona un proyecto');return}
+  appendTerminal(`$ ${cmd}\n`,'cmd');
+  const id='run'+(++runSeq);
+  activeRunId=id;$('btnStop').classList.remove('hidden');
+  wsSend({tipo:'run',proyecto:proyecto,cmd:cmd,id:id});
+}
+$('terminalInput').addEventListener('keydown',e=>{if(e.key==='Enter'){const cmd=$('terminalInput').value.trim();if(cmd){runCommand(cmd,currentProject);$('terminalInput').value=''}}});
 $('btnClearTerm').onclick=()=>{$('terminalBody').innerHTML=''};
+$('btnStop').onclick=()=>{if(activeRunId&&runIds[activeRunId]){wsSend({tipo:'stop',id:runIds[activeRunId]});appendTerminal('\n[detenido por el usuario]\n','err')}};
 function appendTerminal(text,cls='out'){const b=$('terminalBody');const s=document.createElement('div');s.className=cls;s.textContent=text;b.appendChild(s);b.scrollTop=b.scrollHeight}
 
+$('btnNewFile').onclick=()=>{
+  if(!currentProject){toast('Selecciona un proyecto primero');return}
+  const nombre=prompt('Nombre del archivo (puede incluir carpetas, ej: src/utils.py):','nuevo.py');
+  if(!nombre)return;
+  const key=tk(currentProject,nombre);
+  openTabs[key]={proyecto:currentProject,ruta:nombre,contenido:'',dirty:false};
+  wsSend({tipo:'archivo_escribir',proyecto:currentProject,ruta:nombre,contenido:''});
+  showTab(key);fetchArbol();toast('Archivo creado: '+nombre);
+};
+
+$('btnDownload').onclick=()=>{
+  if(!currentFile||!openTabs[currentFile]){toast('Abre un archivo para descargar');return}
+  const t=openTabs[currentFile];
+  window.open(`/api/descargar?proyecto=${encodeURIComponent(t.proyecto)}&ruta=${encodeURIComponent(t.ruta)}&token=${encodeURIComponent(TOKEN)}`,'_blank');
+};
+
+$('btnUpload').onclick=()=>$('fileInput').click();
+$('fileInput').addEventListener('change',e=>{
+  const files=[...e.target.files];
+  if(!files.length)return;
+  if(!currentProject){toast('Selecciona un proyecto primero');e.target.value='';return}
+  files.forEach(file=>{
+    if(file.size>20*1024*1024){toast('Demasiado grande (>20 MB): '+file.name);return}
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const datos=String(reader.result).split(',')[1]||'';
+      const destino=prompt(`Destino en "${currentProject}" (Enter = ${file.name}):`,file.name);
+      if(!destino)return;
+      wsSend({tipo:'archivo_subir',proyecto:currentProject,ruta:destino,datos:datos});
+      toast('Subiendo: '+file.name);
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+});
+
+$('btnRename').onclick=()=>{
+  if(!currentFile||!openTabs[currentFile]){toast('Abre un archivo para renombrar');return}
+  const t=openTabs[currentFile];
+  const nuevo=prompt('Nuevo nombre:',t.ruta);
+  if(!nuevo||nuevo===t.ruta)return;
+  wsSend({tipo:'archivo_renombrar',proyecto:t.proyecto,ruta:t.ruta,nuevo:nuevo});
+};
+
+$('btnDelete').onclick=()=>{
+  if(!currentFile||!openTabs[currentFile]){toast('Abre un archivo para eliminar');return}
+  const t=openTabs[currentFile];
+  if(!confirm(`¿Eliminar "${t.proyecto}/${t.ruta}"?`))return;
+  wsSend({tipo:'archivo_borrar',proyecto:t.proyecto,ruta:t.ruta,confirmar:true});
+  closeTab(currentFile);
+};
+
+// ---- atajos de teclado
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['tokenModal','newProjectModal','gitModal'].forEach(m=>hideModal(m));return}
+  const mod=e.ctrlKey||e.metaKey;
+  if(mod&&e.key==='s'){e.preventDefault();guardarArchivo()}
+  if(mod&&e.key==='Enter'){e.preventDefault();ejecutarActual()}
+  if(mod&&e.key==='n'){e.preventDefault();$('btnNewFile').click()}
+});
+
+// ---- chat
 function renderHistorial(msgs){const c=$('chatMessages');c.innerHTML='';msgs.forEach(m=>appendChatMsg(m));c.scrollTop=c.scrollHeight}
 function appendChatMsg(msg){
   const c=$('chatMessages');const div=document.createElement('div');
@@ -368,31 +536,60 @@ function appendChatMsg(msg){
     div.innerHTML='<div class="chat-msg-header"><span class="chat-msg-avatar" style="background:'+color+'">'+initials(msg.de)+'</span><span style="color:'+color+';font-weight:600">'+esc(msg.de)+'</span>'+(time?'<span class="chat-msg-time">'+time+'</span>':'')+'</div><div class="chat-msg-bubble">'+esc(msg.texto)+'</div>'}
   c.appendChild(div);c.scrollTop=c.scrollHeight
 }
-
-function sendChat(){const input=$('chatInput');const texto=input.value.trim();if(!texto||!currentProject){if(!currentProject)toast('Selecciona un proyecto');return}wsSend({tipo:'chat',proyecto:currentProject,texto:texto});input.value='';input.style.height='auto'}
+function sendChat(){const input=$('chatInput');const texto=input.value.trim();if(!texto){toast('Escribe un mensaje');return}if(!currentProject){toast('Selecciona un proyecto');return}wsSend({tipo:'chat',proyecto:currentProject,texto:texto});input.value='';input.style.height='auto'}
 $('chatSend').onclick=sendChat;
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}});
-$('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'});
+$('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';if(currentProject)wsSend({tipo:'escribiendo',proyecto:currentProject})});
+function showTyping(de){if(!de||de===NOMBRE)return;$('chatTyping').textContent=de+' está escribiendo…';clearTimeout(typingTimer);typingTimer=setTimeout(()=>{$('chatTyping').textContent=''},3000)}
 
+// ---- git
+function gitOut(texto,cls='out'){const o=$('gitOutput');if(o.textContent==='—')o.textContent='';const s=document.createElement('div');s.className=cls;s.textContent=texto;o.appendChild(s);o.scrollTop=o.scrollHeight}
+function gitAccion(accion){
+  if(!TOKEN){showTokenModal();return}
+  gitOut(`$ git ${accion}\n`,'cmd');
+  wsSend({tipo:'git',accion:accion,msg:$('gitMsg').value.trim()});
+}
+$('btnGit').onclick=()=>{gitOut('—');$('gitOutput').textContent='—';showModal('gitModal')};
+$('btnGitClose').onclick=()=>hideModal('gitModal');
+$('btnGitStatus').onclick=()=>gitAccion('status');
+$('btnGitLog').onclick=()=>gitAccion('log');
+$('btnGitCommit').onclick=()=>gitAccion('commit');
+$('btnGitPush').onclick=()=>gitAccion('push');
+$('btnGitPull').onclick=()=>gitAccion('pull');
+
+// ---- mensajes del servidor
 function handleMessage(msg){
   switch(msg.tipo){
     case 'chat':appendChatMsg(msg);break;
     case 'sistema':appendChatMsg({de:'sistema',texto:msg.texto});break;
-    case 'output':appendTerminal(msg.texto,msg.stream==='stderr'?'err':'out');break;
-    case 'run_fin':appendTerminal('\n[exit code '+msg.code+']\n\n',msg.code===0?'out':'err');break;
-    case 'arbol':renderProjectList(msg.arbol);break;
-    case 'archivo':if(msg.ruta&&openTabs[msg.ruta]){openTabs[msg.ruta].contenido=msg.contenido;if(currentFile===msg.ruta)$('editorTextarea').value=msg.contenido}break;
+    case 'output':
+      if(msg.id&&msg.id.startsWith('git-')&&$('gitModal').classList.contains('show')){gitOut(msg.texto,msg.stream==='stderr'?'err':'out')}
+      else{appendTerminal(msg.texto,msg.stream==='stderr'?'err':'out')}
+      break;
+    case 'run_fin':
+      appendTerminal('\n[exit code '+msg.code+']\n\n',msg.code===0?'out':'err');
+      if(activeRunId&&runIds[activeRunId]===msg.id){activeRunId=null;runIds={};$('btnStop').classList.add('hidden')}
+      if(msg.id&&msg.id.startsWith('git-')&&$('gitModal').classList.contains('show')){gitOut('\n[exit code '+msg.code+']\n',msg.code===0?'out':'err')}
+      break;
+    case 'run_id':if(activeRunId)runIds[activeRunId]=msg.id;break;
+    case 'arbol':renderProjectList(msg.arbol);pruneTabs(msg.arbol);break;
+    case 'archivo':{const key=tk(msg.proyecto,msg.ruta);if(openTabs[key]){openTabs[key].contenido=msg.contenido;openTabs[key].dirty=false;if(currentFile===key)$('editorTextarea').value=msg.contenido;renderTabs()}break}
+    case 'escribiendo':showTyping(msg.de);break;
+    case 'presencia':$('onlineCount').textContent=(msg.conectados||1)+' agente'+(msg.conectados>1?'s':'');break;
     case 'error':toast('Error: '+msg.texto);break;
   }
 }
 
-$('btnNewProject').onclick=()=>{$('newProjectModal').classList.add('show');setTimeout(()=>$('newProjectInput').focus(),100)};
-$('btnNewProjectCancel').onclick=()=>$('newProjectModal').classList.remove('show');
-$('btnNewProjectOk').onclick=()=>{const nombre=$('newProjectInput').value.trim();if(!nombre)return;wsSend({tipo:'proyecto_nuevo',nombre:nombre});$('newProjectModal').classList.remove('show');$('newProjectInput').value='';setTimeout(()=>{selectProject(nombre);fetchArbol();toast('Proyecto creado: '+nombre)},500)};
+// ---- modales
+$('btnNewProject').onclick=()=>{showModal('newProjectModal');setTimeout(()=>$('newProjectInput').focus(),100)};
+$('btnNewProjectCancel').onclick=()=>hideModal('newProjectModal');
+$('btnNewProjectOk').onclick=()=>{const nombre=$('newProjectInput').value.trim();if(!nombre)return;wsSend({tipo:'proyecto_nuevo',nombre:nombre});hideModal('newProjectModal');$('newProjectInput').value='';setTimeout(()=>{selectProject(nombre);fetchArbol();toast('Proyecto creado: '+nombre)},400)};
+$('btnRefresh').onclick=()=>{fetchArbol();fetchHistorial();toast('Árbol actualizado')};
 $('btnTokenOk').onclick=saveToken;
-$('btnTokenCancel').onclick=()=>$('tokenModal').classList.remove('show');
+$('btnTokenCancel').onclick=()=>hideModal('tokenModal');
 $('tokenBadge').onclick=showTokenModal;
 $('tokenInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveToken()});
+$('gitMsg').addEventListener('keydown',e=>{if(e.key==='Enter')gitAccion('commit')});
 
 updateTokenBadge();
 connectWS();

@@ -1,1 +1,1 @@
-print('NEXO en marcha')
+print('NEXO v2 en marcha')
