@@ -1,5 +1,7 @@
 {
   "token": "cambia-este-token-en-las-dos-maquinas",
   "nombre": "hermes-1",
-  "companero": "hermes-2"
+  "companero": "hermes-2",
+  "sandbox": true,
+  "timeout": 300
 }
