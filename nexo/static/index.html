@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXO — espacio colaborativo</title>
+<style>
+:root{
+  --bg:#1e1e2e; --surface:#313244; --surface2:#45475a; --line:#45475a;
+  --text:#cdd6f4; --muted:#6c7086; --accent:#64BE47; --accent2:#89b4fa;
+  --hermes1:#64BE47; --hermes2:#cba6f7; --sys:#6c7086; --term:#11111b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Inter","Cantarell",system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;letter-spacing:2px;color:var(--accent);font-weight:800}
+header .sub{color:var(--muted);font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;padding:3px 8px;border-radius:10px;background:var(--surface2)}
+.badge.ok{color:var(--accent)} .badge.bad{color:#f38ba8}
+button{background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.acc{background:var(--accent);color:#111;border:none;font-weight:700}
+input,select,textarea{background:var(--term);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+#contenedor{display:flex;flex:1;min-height:0}
+#arbol{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--line);overflow-y:auto;padding:8px}
+#arbol .proy{cursor:pointer;padding:6px 8px;border-radius:6px;font-size:13px;font-weight:700}
+#arbol .proy:hover{background:var(--surface2)}
+#arbol .proy.act{background:var(--surface2);color:var(--accent)}
+#arbol .arch{padding:3px 8px 3px 26px;font-size:12px;color:var(--muted);cursor:pointer;border-radius:4px}
+#arbol .arch:hover{color:var(--text);background:var(--surface2)}
+#arbol .nuevo{margin-top:10px;width:100%}
+#centro{flex:1;display:flex;flex-direction:column;min-width:0}
+#paneles{display:flex;flex:1;min-height:0}
+#editor-panel{flex:1.4;display:flex;flex-direction:column;border-right:1px solid var(--line);min-width:0}
+#editor-panel .barra{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
+#editor-panel .barra span{font-size:12px;color:var(--muted);flex:1}
+#editor-panel textarea{flex:1;resize:none;border:none;border-radius:0;font-family:"JetBrainsMono Nerd Font",monospace;font-size:12.5px;line-height:1.5;padding:10px}
+#salida-panel{flex:1;display:flex;flex-direction:column;min-width:0}
+#salida-panel .barra{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
+#salida-panel .barra span{font-size:12px;color:var(--muted);flex:1}
+#terminal{flex:1;overflow-y:auto;background:var(--term);font-family:"JetBrainsMono Nerd Font",monospace;font-size:12px;padding:8px;white-space:pre-wrap;word-break:break-all}
+#terminal .out{color:#a6e3a1} #terminal .err{color:#f38ba8} #terminal .fin{color:var(--muted)}
+#cmdline{display:flex;gap:6px;padding:6px 8px;background:var(--surface);border-top:1px solid var(--line)}
+#cmdline input{flex:1}
+#chat{width:330px;min-width:330px;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column}
+#chat .cab{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700}
+#chat .cab .punto{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+#chat .cab .punto.vivo{background:var(--accent)}
+#msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.msg{font-size:12.5px;line-height:1.45}
+.msg .quien{font-weight:700;font-size:11px;display:block;margin-bottom:1px}
+.msg .quien.h1{color:var(--hermes1)} .msg .quien.h2{color:var(--hermes2)} .msg .quien.tu{color:var(--accent2)} .msg .quien.sys{color:var(--sys)}
+.msg .cuerpo{background:var(--surface2);padding:6px 9px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+.msg .cuerpo.sys{background:transparent;color:var(--sys);font-style:italic;padding:0}
+#chat input{margin:8px 12px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);padding:8px 16px;border-radius:8px;font-size:12px;display:none;z-index:99}
+.vacio{color:var(--muted);font-size:12px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>NEXO</h1>
+  <span class="sub" id="ws-info">—</span>
+  <span class="badge" id="estado">conectando…</span>
+  <button onclick="nuevoProyecto()">+ proyecto</button>
+  <select id="git-accion">
+    <option value="status">git status</option>
+    <option value="commit">git commit</option>
+    <option value="push">git push</option>
+    <option value="pull">git pull</option>
+  </select>
+  <button onclick="gitAccion()">git</button>
+</header>
+<div id="contenedor">
+  <nav id="arbol"><div class="vacio">cargando…</div></nav>
+  <div id="centro">
+    <div id="paneles">
+      <div id="editor-panel">
+        <div class="barra"><span id="archivo-actual">ningún archivo abierto</span><button id="btn-guardar" onclick="guardar()">guardar</button></div>
+        <textarea id="editor" placeholder="Selecciona un archivo del árbol para editarlo…" spellcheck="false"></textarea>
+      </div>
+      <div id="salida-panel">
+        <div class="barra"><span>terminal del proyecto</span></div>
+        <div id="terminal"></div>
+        <div id="cmdline">
+          <input id="cmd" placeholder="comando (p.ej. python3 main.py)" onkeydown="if(event.key==='Enter')runCmd()">
+          <button onclick="runCmd()">ejecutar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside id="chat">
+    <div class="cab"><span class="punto" id="punto-chat"></span><span id="chat-titulo">chat — selecciona un proyecto</span></div>
+    <div id="msgs"><div class="vacio">El chat vive en cada proyecto. Los dos Hermes lo ven y debaten aquí.</div></div>
+    <input id="msg-input" placeholder="mensaje… (Enter para enviar)" onkeydown="if(event.key==='Enter')enviarChat()">
+  </aside>
+</div>
+<div id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+let TOKEN = localStorage.getItem('nexo_token') || '';
+let NOMBRE = localStorage.getItem('nexo_nombre') || 'hermes-1';
+let ws = null;
+let proyectoAct = null, archivoAct = null, arbolData = [];
+const histCache = {};
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',2500); }
+
+function setup(){
+  if(!TOKEN){ TOKEN = prompt('Token de NEXO (está en ~/nexo/config.json):'); if(TOKEN) localStorage.setItem('nexo_token',TOKEN); }
+  if(!localStorage.getItem('nexo_nombre')){ const n=prompt('Tu nombre de agente:', NOMBRE); if(n){NOMBRE=n; localStorage.setItem('nexo_nombre',n);} }
+  conectar();
+}
+
+function conectar(){
+  const proto = location.protocol==='https:'?'wss':'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`);
+  ws.onopen = ()=>{ $('estado').textContent='conectado'; $('estado').className='badge ok'; $('ws-info').textContent=`agente: ${NOMBRE} · ws://${location.host}`; pedirArbol(); };
+  ws.onclose = ()=>{ $('estado').textContent='desconectado'; $('estado').className='badge bad'; setTimeout(conectar,3000); };
+  ws.onmessage = ev => { try{ manejar(JSON.parse(ev.data)); }catch(e){} };
+}
+
+function manejar(m){
+  switch(m.tipo){
+    case 'arbol': renderArbol(m.arbol); break;
+    case 'chat': if(m.proyecto===proyectoAct) addMsg(m.de,m.texto,m.fecha); else marcar(m.proyecto); break;
+    case 'sistema': if(m.proyecto===proyectoAct) addSys(m.texto); break;
+    case 'output': if(m.proyecto===proyectoAct) term(m.stream==='stderr'?'err':'out',m.texto); break;
+    case 'run_fin': if(m.proyecto===proyectoAct) term('fin',`\n[fin] ${m.cmd} → código ${m.code}\n`); break;
+    case 'archivo': if(m.proyecto===proyectoAct){ $('editor').value=m.contenido; $('archivo-actual').textContent=m.ruta; } break;
+    case 'error': toast('error: '+m.texto); break;
+  }
+}
+
+function pedirArbol(){ if(ws && ws.readyState===1) ws.send(JSON.stringify({tipo:'arbol'})); }
+
+function renderArbol(arbol){
+  arbolData = arbol;
+  const nav=$('arbol'); nav.innerHTML='';
+  const b=document.createElement('button'); b.className='nuevo'; b.textContent='+ nuevo proyecto'; b.onclick=nuevoProyecto; nav.appendChild(b);
+  for(const p of arbol){
+    const div=document.createElement('div'); div.className='proy'+(p.nombre===proyectoAct?' act':'');
+    div.textContent=p.nombre; div.onclick=()=>abrirProyecto(p.nombre); nav.appendChild(div);
+    if(p.nombre===proyectoAct){
+      for(const f of p.archivos){
+        const a=document.createElement('div'); a.className='arch'; a.textContent=f;
+        a.onclick=()=>abrirArchivo(p.nombre,f); nav.appendChild(a);
+      }
+    }
+  }
+}
+
+function abrirProyecto(nombre){
+  proyectoAct=nombre; archivoAct=null;
+  $('archivo-actual').textContent='ningún archivo abierto'; $('editor').value='';
+  $('chat-titulo').textContent='chat — '+nombre; $('terminal').textContent='';
+  $('punto-chat').className='punto vivo';
+  renderArbol(arbolData);
+  cargarHistorial(nombre);
+  ws.send(JSON.stringify({tipo:'join',proyecto:nombre}));
+}
+
+async function cargarHistorial(nombre){
+  if(histCache[nombre]){ renderHist(histCache[nombre]); return; }
+  try{
+    const r = await fetch(`/api/historial?proyecto=${encodeURIComponent(nombre)}&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    histCache[nombre]=d.historial||[]; renderHist(histCache[nombre]);
+  }catch(e){}
+}
+
+function renderHist(h){
+  const msgs=$('msgs'); msgs.innerHTML='';
+  for(const m of h) m.de==='sistema' ? addSys(m.texto) : addMsg(m.de,m.texto,m.fecha);
+}
+
+function abrirArchivo(proyecto,ruta){
+  proyectoAct=proyecto; archivoAct=ruta;
+  ws.send(JSON.stringify({tipo:'archivo_leer',proyecto,ruta}));
+}
+
+function guardar(){
+  if(!proyectoAct||!archivoAct) return toast('abre un archivo primero');
+  ws.send(JSON.stringify({tipo:'archivo_escribir',proyecto:proyectoAct,ruta:archivoAct,contenido:$('editor').value}));
+  toast('guardado '+archivoAct);
+}
+
+function runCmd(){
+  const cmd=$('cmd').value.trim(); if(!cmd||!proyectoAct) return;
+  term('out',`$ ${cmd}\n`); $('cmd').value='';
+  ws.send(JSON.stringify({tipo:'run',proyecto:proyectoAct,cmd}));
+}
+
+function term(clase,texto){ const t=$('terminal'); const s=document.createElement('span'); s.className=clase; s.textContent=texto; t.appendChild(s); t.scrollTop=t.scrollHeight; }
+
+function addMsg(de,texto,fecha){
+  const div=document.createElement('div'); div.className='msg';
+  const q=document.createElement('span'); q.className='quien '+(de===NOMBRE?'tu':de==='hermes-1'?'h1':de==='hermes-2'?'h2':'sys');
+  q.textContent=de+' · '+(fecha||'');
+  const c=document.createElement('div'); c.className='cuerpo'; c.textContent=texto;
+  div.appendChild(q); div.appendChild(c); $('msgs').appendChild(div); $('msgs').scrollTop=$('msgs').scrollHeight;
+}
+function addSys(texto){ addMsg('sistema',texto,''); const c=$('msgs').lastChild.querySelector('.cuerpo'); if(c)c.className='cuerpo sys'; }
+function marcar(proyecto){ if(proyecto!==proyectoAct){ const p=[...document.querySelectorAll('.proy')].find(x=>x.textContent===proyecto); if(p) p.textContent=proyecto+' ●'; } }
+
+function enviarChat(){
+  const t=$('msg-input').value.trim(); if(!t||!proyectoAct) return;
+  ws.send(JSON.stringify({tipo:'chat',proyecto:proyectoAct,texto:t})); $('msg-input').value='';
+}
+
+function nuevoProyecto(){
+  const n=prompt('Nombre del nuevo proyecto:'); if(!n) return;
+  ws.send(JSON.stringify({tipo:'proyecto_nuevo',nombre:n}));
+  setTimeout(()=>abrirProyecto(n),400);
+}
+
+function gitAccion(){
+  const a=$('git-accion').value; if(!proyectoAct) return toast('selecciona un proyecto');
+  let msg=null; if(a==='commit'){ msg=prompt('Mensaje del commit:'); if(!msg) return; }
+  ws.send(JSON.stringify({tipo:'git',proyecto:proyectoAct,accion:a,msg}));
+  toast('git '+a+'…');
+}
+
+setup();
+</script>
+</body>
+</html>

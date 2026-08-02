@@ -2,3 +2,5 @@
 .hub/
 __pycache__/
 *.pyc
+nexo/.venv/
+nexo/config.json
