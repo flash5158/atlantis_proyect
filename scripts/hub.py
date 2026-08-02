@@ -123,6 +123,8 @@ def cmd_idea_list(args):
         return
     ideas = []
     for ruta in sorted(IDEAS.glob("*.md")):
+        if ruta.name == "README.md":
+            continue
         fm, _ = leer_fm(ruta)
         if args.estado and fm.get("estado") != args.estado:
             continue
@@ -257,6 +259,8 @@ def cmd_status(args):
     if IDEAS.exists():
         por_estado = {}
         for ruta in IDEAS.glob("*.md"):
+            if ruta.name == "README.md":
+                continue
             fm, _ = leer_fm(ruta)
             e = fm.get("estado", "?")
             por_estado[e] = por_estado.get(e, 0) + 1
