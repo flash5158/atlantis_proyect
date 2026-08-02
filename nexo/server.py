@@ -265,6 +265,7 @@ def cmd_sandbox(cmd: str, proyecto: Path, red: bool = False) -> str:
         "--ro-bind", "/etc/hosts", "/etc/hosts",
         "--ro-bind", "/etc/nsswitch.conf", "/etc/nsswitch.conf",
         "--ro-bind", "/etc/ssl", "/etc/ssl",
+        "--ro-bind", "/etc/pki/ca-trust", "/etc/pki/ca-trust",
         "--ro-bind", "/etc/localtime", "/etc/localtime",
         "--dev", "/dev",
         "--proc", "/proc",
