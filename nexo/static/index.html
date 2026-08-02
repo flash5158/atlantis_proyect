@@ -3,226 +3,401 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXO — espacio colaborativo</title>
+<title>NEXO — Colaborative Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#1e1e2e; --surface:#313244; --surface2:#45475a; --line:#45475a;
-  --text:#cdd6f4; --muted:#6c7086; --accent:#64BE47; --accent2:#89b4fa;
-  --hermes1:#64BE47; --hermes2:#cba6f7; --sys:#6c7086; --term:#11111b;
+  --bg-0:#0a0a0b; --bg-1:#111113; --bg-2:#161618; --bg-3:#1c1c1f;
+  --bg-hover:#232327; --bg-active:#2a2a2e;
+  --border:#262629; --border-soft:#1e1e21; --border-strong:#333338;
+  --text-0:#f0f0f2; --text-1:#c8c8cc; --text-2:#8a8a90; --text-3:#5a5a60;
+  --accent:#64be47; --accent-dim:#4a8c35; --accent-glow:rgba(100,190,71,.15);
+  --accent-bg:rgba(100,190,71,.08);
+  --agent-1:#64be47; --agent-2:#5b9eff; --system:#8a8a90;
+  --danger:#ef4444; --warning:#f59e0b; --success:#22c55e;
+  --sidebar-w:260px; --chat-w:360px; --topbar-h:48px; --statusbar-h:28px;
+  --radius:8px; --radius-sm:5px; --transition:160ms cubic-bezier(.4,0,.2,1);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:"Inter","Cantarell",system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-header{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
-header h1{font-size:16px;letter-spacing:2px;color:var(--accent);font-weight:800}
-header .sub{color:var(--muted);font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{font-size:11px;padding:3px 8px;border-radius:10px;background:var(--surface2)}
-.badge.ok{color:var(--accent)} .badge.bad{color:#f38ba8}
-button{background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
-button:hover{border-color:var(--accent)}
-button.acc{background:var(--accent);color:#111;border:none;font-weight:700}
-input,select,textarea{background:var(--term);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-#contenedor{display:flex;flex:1;min-height:0}
-#arbol{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--line);overflow-y:auto;padding:8px}
-#arbol .proy{cursor:pointer;padding:6px 8px;border-radius:6px;font-size:13px;font-weight:700}
-#arbol .proy:hover{background:var(--surface2)}
-#arbol .proy.act{background:var(--surface2);color:var(--accent)}
-#arbol .arch{padding:3px 8px 3px 26px;font-size:12px;color:var(--muted);cursor:pointer;border-radius:4px}
-#arbol .arch:hover{color:var(--text);background:var(--surface2)}
-#arbol .nuevo{margin-top:10px;width:100%}
-#centro{flex:1;display:flex;flex-direction:column;min-width:0}
-#paneles{display:flex;flex:1;min-height:0}
-#editor-panel{flex:1.4;display:flex;flex-direction:column;border-right:1px solid var(--line);min-width:0}
-#editor-panel .barra{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
-#editor-panel .barra span{font-size:12px;color:var(--muted);flex:1}
-#editor-panel textarea{flex:1;resize:none;border:none;border-radius:0;font-family:"JetBrainsMono Nerd Font",monospace;font-size:12.5px;line-height:1.5;padding:10px}
-#salida-panel{flex:1;display:flex;flex-direction:column;min-width:0}
-#salida-panel .barra{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
-#salida-panel .barra span{font-size:12px;color:var(--muted);flex:1}
-#terminal{flex:1;overflow-y:auto;background:var(--term);font-family:"JetBrainsMono Nerd Font",monospace;font-size:12px;padding:8px;white-space:pre-wrap;word-break:break-all}
-#terminal .out{color:#a6e3a1} #terminal .err{color:#f38ba8} #terminal .fin{color:var(--muted)}
-#cmdline{display:flex;gap:6px;padding:6px 8px;background:var(--surface);border-top:1px solid var(--line)}
-#cmdline input{flex:1}
-#chat{width:330px;min-width:330px;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column}
-#chat .cab{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700}
-#chat .cab .punto{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-#chat .cab .punto.vivo{background:var(--accent)}
-#msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-.msg{font-size:12.5px;line-height:1.45}
-.msg .quien{font-weight:700;font-size:11px;display:block;margin-bottom:1px}
-.msg .quien.h1{color:var(--hermes1)} .msg .quien.h2{color:var(--hermes2)} .msg .quien.tu{color:var(--accent2)} .msg .quien.sys{color:var(--sys)}
-.msg .cuerpo{background:var(--surface2);padding:6px 9px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
-.msg .cuerpo.sys{background:transparent;color:var(--sys);font-style:italic;padding:0}
-#chat input{margin:8px 12px}
-#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);padding:8px 16px;border-radius:8px;font-size:12px;display:none;z-index:99}
-.vacio{color:var(--muted);font-size:12px;padding:20px;text-align:center}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100vh;overflow:hidden;font-family:'Inter',-apple-system,sans-serif;background:var(--bg-0);color:var(--text-1);font-size:14px;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-3)}
+
+.topbar{height:var(--topbar-h);background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--text-0);letter-spacing:-.02em}
+.logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#000;box-shadow:0 0 12px var(--accent-glow)}
+.topbar-spacer{flex:1}
+.topbar-info{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-2)}
+.token-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);cursor:pointer;transition:var(--transition)}
+.token-badge:hover{border-color:var(--accent-dim);color:var(--accent)}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:var(--transition)}
+.conn-dot.connected{background:var(--success);box-shadow:0 0 6px rgba(34,197,94,.4)}
+.conn-dot.disconnected{background:var(--danger)}
+
+.main{display:flex;height:calc(100vh - var(--topbar-h) - var(--statusbar-h));overflow:hidden}
+
+.sidebar{width:var(--sidebar-w);background:var(--bg-1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sidebar-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-soft)}
+.sidebar-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
+.btn-new{width:24px;height:24px;border-radius:var(--radius-sm);background:var(--bg-3);border:1px solid var(--border);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:var(--transition)}
+.btn-new:hover{background:var(--accent-bg);border-color:var(--accent-dim);color:var(--accent)}
+.project-list{flex:1;overflow-y:auto;padding:8px}
+.project-item{border-radius:var(--radius-sm);margin-bottom:2px;overflow:hidden}
+.project-header{display:flex;align-items:center;gap:6px;padding:6px 8px;cursor:pointer;border-radius:var(--radius-sm);transition:var(--transition);user-select:none}
+.project-header:hover{background:var(--bg-hover)}
+.project-header.active{background:var(--accent-bg);color:var(--text-0)}
+.project-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-3);transition:transform var(--transition)}
+.project-item.expanded .project-icon{transform:rotate(90deg)}
+.project-name{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-list{padding:0 8px 4px 24px;display:none}
+.project-item.expanded .file-list{display:block}
+.file-entry{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:pointer;border-radius:var(--radius-sm);transition:var(--transition);font-size:12px;color:var(--text-2)}
+.file-entry:hover{background:var(--bg-hover);color:var(--text-1)}
+.file-entry.active{background:var(--bg-active);color:var(--accent)}
+.file-icon{font-size:10px;opacity:.6}
+
+.center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.tabs-bar{height:36px;background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;align-items:center;overflow-x:auto;flex-shrink:0}
+.tab{display:flex;align-items:center;gap:6px;padding:0 14px;height:100%;border-right:1px solid var(--border-soft);cursor:pointer;font-size:12px;color:var(--text-2);transition:var(--transition);white-space:nowrap}
+.tab:hover{background:var(--bg-hover);color:var(--text-1)}
+.tab.active{background:var(--bg-2);color:var(--text-0);border-bottom:2px solid var(--accent)}
+.tab-close{opacity:0;width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--transition)}
+.tab:hover .tab-close{opacity:.5}
+.tab-close:hover{opacity:1;background:var(--bg-active)}
+
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.editor-area{flex:1;display:none;background:var(--bg-0);position:absolute;inset:0;flex-direction:column}
+.editor-area.active{display:flex}
+.editor-textarea{flex:1;background:transparent;color:var(--text-0);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;padding:16px;border:none;outline:none;resize:none;tab-size:4;white-space:pre}
+.editor-actions{display:flex;gap:8px;padding:6px 12px;background:var(--bg-1);border-top:1px solid var(--border-soft);flex-shrink:0;align-items:center}
+.editor-actions-info{font-size:11px;color:var(--text-3);margin-right:auto;font-family:'JetBrains Mono',monospace}
+.btn{padding:5px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-3);color:var(--text-1);font-size:12px;font-weight:500;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:5px}
+.btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
+.btn-primary{background:var(--accent-bg);border-color:var(--accent-dim);color:var(--accent)}
+.btn-primary:hover{background:rgba(100,190,71,.15);border-color:var(--accent)}
+
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text-3)}
+.empty-state-icon{font-size:48px;opacity:.2}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--text-2)}
+.empty-state-desc{font-size:13px;color:var(--text-3);max-width:320px;text-align:center;line-height:1.5}
+
+.terminal-panel{height:200px;min-height:80px;background:var(--bg-1);border-top:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.terminal-header{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--border-soft);flex-shrink:0}
+.terminal-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:flex;align-items:center;gap:6px}
+.terminal-body{flex:1;overflow-y:auto;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5}
+.terminal-body .out{color:var(--text-1);white-space:pre-wrap;word-break:break-all}
+.terminal-body .err{color:var(--danger)}
+.terminal-body .cmd{color:var(--accent)}
+.terminal-input-row{display:flex;align-items:center;padding:4px 12px;border-top:1px solid var(--border-soft);flex-shrink:0}
+.terminal-prompt{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:6px;user-select:none}
+.terminal-input{flex:1;background:transparent;border:none;outline:none;color:var(--text-0);font-family:'JetBrains Mono',monospace;font-size:12px}
+
+.chat-panel{width:var(--chat-w);background:var(--bg-1);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--border-soft);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.chat-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
+.chat-project{font-size:13px;font-weight:600;color:var(--text-0);margin-top:2px}
+.chat-online{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px}
+.chat-online .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:88%;display:flex;flex-direction:column;gap:3px}
+.chat-msg.me{align-self:flex-end;align-items:flex-end}
+.chat-msg-header{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-3)}
+.chat-msg-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000}
+.chat-msg-bubble{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;word-break:break-word}
+.chat-msg.me .chat-msg-bubble{background:var(--accent-bg);border:1px solid rgba(100,190,71,.2);color:var(--text-0)}
+.chat-msg.other .chat-msg-bubble{background:var(--bg-3);border:1px solid var(--border);color:var(--text-1)}
+.chat-msg.system{align-self:center;align-items:center}
+.chat-msg.system .chat-msg-bubble{background:transparent;border:none;font-size:11px;color:var(--text-3);font-style:italic;text-align:center}
+.chat-msg-time{font-size:10px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.chat-input-row{padding:10px 12px;border-top:1px solid var(--border-soft);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.chat-input{flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-0);font-family:'Inter',sans-serif;font-size:13px;padding:8px 12px;outline:none;resize:none;max-height:100px;min-height:38px;transition:var(--transition)}
+.chat-input:focus{border-color:var(--accent-dim);box-shadow:0 0 0 2px var(--accent-glow)}
+.chat-send{width:38px;height:38px;border-radius:var(--radius);background:var(--accent);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:var(--transition);flex-shrink:0}
+.chat-send:hover{filter:brightness(1.1);box-shadow:0 0 8px var(--accent-glow)}
+
+.statusbar{height:var(--statusbar-h);background:var(--bg-1);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:12px;font-size:11px;color:var(--text-3);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.statusbar-item{display:flex;align-items:center;gap:5px}
+.statusbar-spacer{flex:1}
+.statusbar .accent{color:var(--accent)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:var(--transition)}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{background:var(--bg-1);border:1px solid var(--border-strong);border-radius:12px;padding:28px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-title{font-size:18px;font-weight:700;color:var(--text-0);margin-bottom:6px}
+.modal-desc{font-size:13px;color:var(--text-2);margin-bottom:20px;line-height:1.5}
+.modal-input{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-0);font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;outline:none;transition:var(--transition)}
+.modal-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg-3);border:1px solid var(--border-strong);border-radius:var(--radius);padding:10px 18px;font-size:13px;color:var(--text-0);z-index:300;opacity:0;transition:all 300ms cubic-bezier(.4,0,.2,1);box-shadow:0 8px 24px rgba(0,0,0,.3);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+
+@media(max-width:900px){:root{--sidebar-w:200px;--chat-w:280px}}
+@media(max-width:700px){.sidebar{display:none}.chat-panel{width:280px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>NEXO</h1>
-  <span class="sub" id="ws-info">—</span>
-  <span class="badge" id="estado">conectando…</span>
-  <button onclick="nuevoProyecto()">+ proyecto</button>
-  <select id="git-accion">
-    <option value="status">git status</option>
-    <option value="commit">git commit</option>
-    <option value="push">git push</option>
-    <option value="pull">git pull</option>
-  </select>
-  <button onclick="gitAccion()">git</button>
-</header>
-<div id="contenedor">
-  <nav id="arbol"><div class="vacio">cargando…</div></nav>
-  <div id="centro">
-    <div id="paneles">
-      <div id="editor-panel">
-        <div class="barra"><span id="archivo-actual">ningún archivo abierto</span><button id="btn-guardar" onclick="guardar()">guardar</button></div>
-        <textarea id="editor" placeholder="Selecciona un archivo del árbol para editarlo…" spellcheck="false"></textarea>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-mark">N</div> NEXO</div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-info">
+    <span id="onlineCount">2 agentes</span>
+    <div class="conn-dot disconnected" id="connDot"></div>
+    <div class="token-badge" id="tokenBadge"><span>🔑</span> <span id="tokenShort">token</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Proyectos</span>
+      <button class="btn-new" id="btnNewProject" title="Nuevo proyecto">+</button>
+    </div>
+    <div class="project-list" id="projectList"></div>
+  </div>
+
+  <div class="center">
+    <div class="tabs-bar" id="tabsBar"></div>
+    <div class="editor-wrap">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">◇</div>
+        <div class="empty-state-title">Sin archivo abierto</div>
+        <div class="empty-state-desc">Selecciona un archivo del árbol de proyecto o crea uno nuevo.</div>
       </div>
-      <div id="salida-panel">
-        <div class="barra"><span>terminal del proyecto</span></div>
-        <div id="terminal"></div>
-        <div id="cmdline">
-          <input id="cmd" placeholder="comando (p.ej. python3 main.py)" onkeydown="if(event.key==='Enter')runCmd()">
-          <button onclick="runCmd()">ejecutar</button>
+      <div class="editor-area" id="editorArea">
+        <textarea class="editor-textarea" id="editorTextarea" spellcheck="false"></textarea>
+        <div class="editor-actions">
+          <span class="editor-actions-info" id="editorInfo">—</span>
+          <button class="btn" id="btnNewFile" title="Nuevo archivo">📄 Nuevo</button>
+          <button class="btn btn-primary" id="btnSave">💾 Guardar</button>
+          <button class="btn btn-primary" id="btnRun">▶ Ejecutar</button>
         </div>
       </div>
     </div>
+    <div class="terminal-panel" id="terminalPanel">
+      <div class="terminal-header">
+        <span class="terminal-title">▶ Terminal — <span id="termProject">general</span></span>
+        <button class="btn" id="btnClearTerm" style="font-size:10px;padding:3px 8px">Limpiar</button>
+      </div>
+      <div class="terminal-body" id="terminalBody"></div>
+      <div class="terminal-input-row">
+        <span class="terminal-prompt">$</span>
+        <input class="terminal-input" id="terminalInput" placeholder="Escribir comando…" spellcheck="false" autocomplete="off">
+      </div>
+    </div>
   </div>
-  <aside id="chat">
-    <div class="cab"><span class="punto" id="punto-chat"></span><span id="chat-titulo">chat — selecciona un proyecto</span></div>
-    <div id="msgs"><div class="vacio">El chat vive en cada proyecto. Los dos Hermes lo ven y debaten aquí.</div></div>
-    <input id="msg-input" placeholder="mensaje… (Enter para enviar)" onkeydown="if(event.key==='Enter')enviarChat()">
-  </aside>
+
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div>
+        <div class="chat-title">Chat del proyecto</div>
+        <div class="chat-project" id="chatProjectName">general</div>
+      </div>
+      <div class="chat-online"><span class="dot"></span> en vivo</div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="Escribe un mensaje…" rows="1" spellcheck="false"></textarea>
+      <button class="chat-send" id="chatSend">➤</button>
+    </div>
+  </div>
 </div>
-<div id="toast"></div>
+
+<div class="statusbar">
+  <div class="statusbar-item"><span class="accent">●</span> NEXO</div>
+  <div class="statusbar-item" id="statusProject">proyecto: —</div>
+  <div class="statusbar-item" id="statusFile">archivo: —</div>
+  <div class="statusbar-spacer"></div>
+  <div class="statusbar-item" id="statusWs">ws: desconectado</div>
+  <div class="statusbar-item">UTF-8</div>
+  <div class="statusbar-item">Python</div>
+</div>
+
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal">
+    <div class="modal-title">🔑 Conectar a NEXO</div>
+    <div class="modal-desc">Introduce el token de acceso del servidor NEXO para colaborar.</div>
+    <input class="modal-input" id="tokenInput" placeholder="d0313538…" spellcheck="false">
+    <div class="modal-actions">
+      <button class="btn" id="btnTokenCancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnTokenOk">Conectar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal">
+    <div class="modal-title">📁 Nuevo proyecto</div>
+    <div class="modal-desc">Crea un nuevo proyecto colaborativo. Ambos agentes tendrán acceso completo.</div>
+    <input class="modal-input" id="newProjectInput" placeholder="mi-proyecto" spellcheck="false">
+    <div class="modal-actions">
+      <button class="btn" id="btnNewProjectCancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnNewProjectOk">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
 const $ = id => document.getElementById(id);
+const NOMBRE = 'hermes-1';
 let TOKEN = localStorage.getItem('nexo_token') || '';
-let NOMBRE = localStorage.getItem('nexo_nombre') || 'hermes-1';
-let ws = null;
-let proyectoAct = null, archivoAct = null, arbolData = [];
-const histCache = {};
+let WS = null, currentProject = null, currentFile = null, openTabs = {};
+const agentColors = { 'hermes-1':'#64be47', 'hermes-2':'#5b9eff', 'sistema':'#8a8a90' };
 
-function toast(t){ const el=$('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',2500); }
+function esc(s){return String(s||'').replace(/[<>&"]/g,c=>{'<':'<','>':'>','&':'&','"':'"'}[c])}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function fmtTime(f){return f?f.split(' ')[1]||f:''}
+function avatarColor(n){return agentColors[n]||'#888'}
+function initials(n){if(!n)return'?';if(n==='sistema')return'⚙';return n.substring(0,2)}
 
-function setup(){
-  if(!TOKEN){ TOKEN = prompt('Token de NEXO (está en ~/nexo/config.json):'); if(TOKEN) localStorage.setItem('nexo_token',TOKEN); }
-  if(!localStorage.getItem('nexo_nombre')){ const n=prompt('Tu nombre de agente:', NOMBRE); if(n){NOMBRE=n; localStorage.setItem('nexo_nombre',n);} }
-  conectar();
+function showTokenModal(){$('tokenInput').value=TOKEN;$('tokenModal').classList.add('show');setTimeout(()=>$('tokenInput').focus(),100)}
+function saveToken(){TOKEN=$('tokenInput').value.trim();localStorage.setItem('nexo_token',TOKEN);$('tokenModal').classList.remove('show');updateTokenBadge();connectWS();fetchArbol();fetchHistorial()}
+function updateTokenBadge(){$('tokenShort').textContent=TOKEN?TOKEN.substring(0,8)+'…':'sin token'}
+
+function connectWS(){
+  if(!TOKEN){showTokenModal();return}
+  if(WS){WS.close();WS=null}
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  WS=new WebSocket(`${proto}//${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`);
+  WS.onopen=()=>{$('connDot').className='conn-dot connected';$('statusWs').textContent='ws: conectado'};
+  WS.onclose=()=>{$('connDot').className='conn-dot disconnected';$('statusWs').textContent='ws: desconectado';setTimeout(()=>{if(TOKEN&&!WS)connectWS()},3000)};
+  WS.onmessage=ev=>handleMessage(JSON.parse(ev.data));
+}
+function wsSend(m){if(WS&&WS.readyState===1)WS.send(JSON.stringify(m))}
+
+async function apiGet(path){
+  const sep=path.includes('?')?'&':'?';
+  const r=await fetch(`${path}${sep}token=${encodeURIComponent(TOKEN)}`);
+  if(r.status===401){showTokenModal();return null}
+  return r.json();
+}
+async function fetchArbol(){const d=await apiGet('/api/arbol');if(d&&d.arbol)renderProjectList(d.arbol)}
+async function fetchHistorial(){if(!currentProject)return;const d=await apiGet(`/api/historial?proyecto=${encodeURIComponent(currentProject)}`);if(d&&d.historial)renderHistorial(d.historial)}
+
+function renderProjectList(arbol){
+  const list=$('projectList');list.innerHTML='';
+  if(!arbol||arbol.length===0){list.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-3);font-size:12px">Sin proyectos.<br>Crea uno con +.</div>';return}
+  arbol.forEach(p=>{
+    const item=document.createElement('div');
+    item.className='project-item'+(currentProject===p.nombre?' expanded':'');
+    const header=document.createElement('div');
+    header.className='project-header'+(currentProject===p.nombre?' active':'');
+    header.innerHTML=`<span class="project-icon">▶</span><span class="project-name">${esc(p.nombre)}</span>`;
+    header.onclick=()=>selectProject(p.nombre);
+    const fileList=document.createElement('div');fileList.className='file-list';
+    if(p.archivos&&p.archivos.length>0){
+      p.archivos.forEach(f=>{
+        const entry=document.createElement('div');
+        entry.className='file-entry'+(currentFile===f?' active':'');
+        entry.innerHTML=`<span class="file-icon">📄</span><span>${esc(f)}</span>`;
+        entry.onclick=e=>{e.stopPropagation();openFile(p.nombre,f)};
+        fileList.appendChild(entry);
+      });
+    }else{fileList.innerHTML='<div style="padding:4px 8px;font-size:11px;color:var(--text-3)">Sin archivos</div>'}
+    item.appendChild(header);item.appendChild(fileList);list.appendChild(item);
+  });
 }
 
-function conectar(){
-  const proto = location.protocol==='https:'?'wss':'ws';
-  ws = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`);
-  ws.onopen = ()=>{ $('estado').textContent='conectado'; $('estado').className='badge ok'; $('ws-info').textContent=`agente: ${NOMBRE} · ws://${location.host}`; pedirArbol(); };
-  ws.onclose = ()=>{ $('estado').textContent='desconectado'; $('estado').className='badge bad'; setTimeout(conectar,3000); };
-  ws.onmessage = ev => { try{ manejar(JSON.parse(ev.data)); }catch(e){} };
+function selectProject(n){currentProject=n;$('chatProjectName').textContent=n;$('termProject').textContent=n;$('statusProject').textContent=`proyecto: ${n}`;wsSend({tipo:'join',proyecto:n});fetchHistorial();fetchArbol()}
+
+async function openFile(proyecto,ruta){
+  currentFile=ruta;$('statusFile').textContent=`jarchivo: ${ruta}`;
+  if(!openTabs[ruta]){openTabs[ruta]={proyecto,contenido:'',dirty:false};renderTabs()}
+  showTab(ruta);
+  const r=await fetch(`/api/archivo?proyecto=${encodeURIComponent(proyecto)}&ruta=${encodeURIComponent(ruta)}&token=${encodeURIComponent(TOKEN)}`);
+  if(r.ok){const d=await r.json();if(d.contenido!==undefined){openTabs[ruta].contenido=d.contenido;if(currentFile===ruta)$('editorTextarea').value=d.contenido}}
+  fetchArbol();
 }
 
-function manejar(m){
-  switch(m.tipo){
-    case 'arbol': renderArbol(m.arbol); break;
-    case 'chat': if(m.proyecto===proyectoAct) addMsg(m.de,m.texto,m.fecha); else marcar(m.proyecto); break;
-    case 'sistema': if(m.proyecto===proyectoAct) addSys(m.texto); break;
-    case 'output': if(m.proyecto===proyectoAct) term(m.stream==='stderr'?'err':'out',m.texto); break;
-    case 'run_fin': if(m.proyecto===proyectoAct) term('fin',`\n[fin] ${m.cmd} → código ${m.code}\n`); break;
-    case 'archivo': if(m.proyecto===proyectoAct){ $('editor').value=m.contenido; $('archivo-actual').textContent=m.ruta; } break;
-    case 'error': toast('error: '+m.texto); break;
+function renderTabs(){
+  const bar=$('tabsBar');bar.innerHTML='';
+  Object.keys(openTabs).forEach(ruta=>{
+    const tab=document.createElement('div');
+    tab.className='tab'+(currentFile===ruta?' active':'');
+    const dirty=openTabs[ruta].dirty?' ●':'';
+    tab.innerHTML=`<span>${esc(ruta)}</span>${dirty}<span class="tab-close">×</span>`;
+    tab.onclick=()=>showTab(ruta);
+    tab.querySelector('.tab-close').onclick=e=>{e.stopPropagation();closeTab(ruta)};
+    bar.appendChild(tab);
+  });
+}
+
+function showTab(ruta){
+  currentFile=ruta;
+  $('emptyState').classList.add('hidden');
+  $('editorArea').classList.add('active');
+  $('editorTextarea').value=openTabs[ruta]?.contenido||'';
+  $('editorInfo').textContent=ruta;
+  renderTabs();
+}
+
+function closeTab(ruta){
+  delete openTabs[ruta];
+  if(currentFile===ruta){
+    const keys=Object.keys(openTabs);
+    if(keys.length>0)showTab(keys[0]);
+    else{currentFile=null;$('emptyState').classList.remove('hidden');$('editorArea').classList.remove('active')}
+  }
+  renderTabs();
+}
+
+$('editorTextarea').addEventListener('input',()=>{if(currentFile&&openTabs[currentFile]){openTabs[currentFile].contenido=$('editorTextarea').value;openTabs[currentFile].dirty=true;renderTabs()}});
+$('btnSave').onclick=()=>{if(!currentFile||!currentProject){toast('Nada que guardar');return}wsSend({tipo:'archivo_escribir',proyecto:currentProject,ruta:currentFile,contenido:$('editorTextarea').value});if(openTabs[currentFile])openTabs[currentFile].dirty=false;renderTabs();toast('Guardado: '+currentFile)};
+$('btnRun').onclick=()=>{if(!currentProject){toast('Selecciona un proyecto');return}const ext=currentFile?currentFile.split('.').pop():'';let cmd;if(ext==='py')cmd=`python3 ${currentFile}`;else if(ext==='js')cmd=`node ${currentFile}`;else if(ext==='sh')cmd=`bash ${currentFile}`;else{toast('No sé cómo ejecutar .'+ext);return}runCommand(cmd)};
+$('btnNewFile').onclick=()=>{if(!currentProject){toast('Selecciona un proyecto primero');return}const nombre=prompt('Nombre del archivo:','nuevo.py');if(!nombre)return;currentFile=nombre;openTabs[nombre]={proyecto:currentProject,contenido:'',dirty:false};wsSend({tipo:'archivo_escribir',proyecto:currentProject,ruta:nombre,contenido:''});showTab(nombre);fetchArbol();toast('Archivo creado: '+nombre)};
+
+function runCommand(cmd){if(!currentProject)return;appendTerminal(`$ ${cmd}\n`,'cmd');wsSend({tipo:'run',proyecto:currentProject,cmd:cmd,id:'gui'})}
+$('terminalInput').addEventListener('keydown',e=>{if(e.key==='Enter'){const cmd=$('terminalInput').value.trim();if(cmd){runCommand(cmd);$('terminalInput').value=''}}});
+$('btnClearTerm').onclick=()=>{$('terminalBody').innerHTML=''};
+function appendTerminal(text,cls='out'){const b=$('terminalBody');const s=document.createElement('div');s.className=cls;s.textContent=text;b.appendChild(s);b.scrollTop=b.scrollHeight}
+
+function renderHistorial(msgs){const c=$('chatMessages');c.innerHTML='';msgs.forEach(m=>appendChatMsg(m));c.scrollTop=c.scrollHeight}
+function appendChatMsg(msg){
+  const c=$('chatMessages');const div=document.createElement('div');
+  const isSystem=msg.de==='sistema'||!msg.de;const isMe=msg.de===NOMBRE;
+  if(isSystem){div.className='chat-msg system';div.innerHTML='<div class="chat-msg-bubble">'+esc(msg.texto)+'</div>'}
+  else{div.className='chat-msg '+(isMe?'me':'other');const color=avatarColor(msg.de);const time=fmtTime(msg.fecha);
+    div.innerHTML='<div class="chat-msg-header"><span class="chat-msg-avatar" style="background:'+color+'">'+initials(msg.de)+'</span><span style="color:'+color+';font-weight:600">'+esc(msg.de)+'</span>'+(time?'<span class="chat-msg-time">'+time+'</span>':'')+'</div><div class="chat-msg-bubble">'+esc(msg.texto)+'</div>'}
+  c.appendChild(div);c.scrollTop=c.scrollHeight
+}
+
+function sendChat(){const input=$('chatInput');const texto=input.value.trim();if(!texto||!currentProject){if(!currentProject)toast('Selecciona un proyecto');return}wsSend({tipo:'chat',proyecto:currentProject,texto:texto});input.value='';input.style.height='auto'}
+$('chatSend').onclick=sendChat;
+$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}});
+$('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'});
+
+function handleMessage(msg){
+  switch(msg.tipo){
+    case 'chat':appendChatMsg(msg);break;
+    case 'sistema':appendChatMsg({de:'sistema',texto:msg.texto});break;
+    case 'output':appendTerminal(msg.texto,msg.stream==='stderr'?'err':'out');break;
+    case 'run_fin':appendTerminal('\n[exit code '+msg.code+']\n\n',msg.code===0?'out':'err');break;
+    case 'arbol':renderProjectList(msg.arbol);break;
+    case 'archivo':if(msg.ruta&&openTabs[msg.ruta]){openTabs[msg.ruta].contenido=msg.contenido;if(currentFile===msg.ruta)$('editorTextarea').value=msg.contenido}break;
+    case 'error':toast('Error: '+msg.texto);break;
   }
 }
 
-function pedirArbol(){ if(ws && ws.readyState===1) ws.send(JSON.stringify({tipo:'arbol'})); }
+$('btnNewProject').onclick=()=>{$('newProjectModal').classList.add('show');setTimeout(()=>$('newProjectInput').focus(),100)};
+$('btnNewProjectCancel').onclick=()=>$('newProjectModal').classList.remove('show');
+$('btnNewProjectOk').onclick=()=>{const nombre=$('newProjectInput').value.trim();if(!nombre)return;wsSend({tipo:'proyecto_nuevo',nombre:nombre});$('newProjectModal').classList.remove('show');$('newProjectInput').value='';setTimeout(()=>{selectProject(nombre);fetchArbol();toast('Proyecto creado: '+nombre)},500)};
+$('btnTokenOk').onclick=saveToken;
+$('btnTokenCancel').onclick=()=>$('tokenModal').classList.remove('show');
+$('tokenBadge').onclick=showTokenModal;
+$('tokenInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveToken()});
 
-function renderArbol(arbol){
-  arbolData = arbol;
-  const nav=$('arbol'); nav.innerHTML='';
-  const b=document.createElement('button'); b.className='nuevo'; b.textContent='+ nuevo proyecto'; b.onclick=nuevoProyecto; nav.appendChild(b);
-  for(const p of arbol){
-    const div=document.createElement('div'); div.className='proy'+(p.nombre===proyectoAct?' act':'');
-    div.textContent=p.nombre; div.onclick=()=>abrirProyecto(p.nombre); nav.appendChild(div);
-    if(p.nombre===proyectoAct){
-      for(const f of p.archivos){
-        const a=document.createElement('div'); a.className='arch'; a.textContent=f;
-        a.onclick=()=>abrirArchivo(p.nombre,f); nav.appendChild(a);
-      }
-    }
-  }
-}
-
-function abrirProyecto(nombre){
-  proyectoAct=nombre; archivoAct=null;
-  $('archivo-actual').textContent='ningún archivo abierto'; $('editor').value='';
-  $('chat-titulo').textContent='chat — '+nombre; $('terminal').textContent='';
-  $('punto-chat').className='punto vivo';
-  renderArbol(arbolData);
-  cargarHistorial(nombre);
-  ws.send(JSON.stringify({tipo:'join',proyecto:nombre}));
-}
-
-async function cargarHistorial(nombre){
-  if(histCache[nombre]){ renderHist(histCache[nombre]); return; }
-  try{
-    const r = await fetch(`/api/historial?proyecto=${encodeURIComponent(nombre)}&token=${encodeURIComponent(TOKEN)}`);
-    const d = await r.json();
-    histCache[nombre]=d.historial||[]; renderHist(histCache[nombre]);
-  }catch(e){}
-}
-
-function renderHist(h){
-  const msgs=$('msgs'); msgs.innerHTML='';
-  for(const m of h) m.de==='sistema' ? addSys(m.texto) : addMsg(m.de,m.texto,m.fecha);
-}
-
-function abrirArchivo(proyecto,ruta){
-  proyectoAct=proyecto; archivoAct=ruta;
-  ws.send(JSON.stringify({tipo:'archivo_leer',proyecto,ruta}));
-}
-
-function guardar(){
-  if(!proyectoAct||!archivoAct) return toast('abre un archivo primero');
-  ws.send(JSON.stringify({tipo:'archivo_escribir',proyecto:proyectoAct,ruta:archivoAct,contenido:$('editor').value}));
-  toast('guardado '+archivoAct);
-}
-
-function runCmd(){
-  const cmd=$('cmd').value.trim(); if(!cmd||!proyectoAct) return;
-  term('out',`$ ${cmd}\n`); $('cmd').value='';
-  ws.send(JSON.stringify({tipo:'run',proyecto:proyectoAct,cmd}));
-}
-
-function term(clase,texto){ const t=$('terminal'); const s=document.createElement('span'); s.className=clase; s.textContent=texto; t.appendChild(s); t.scrollTop=t.scrollHeight; }
-
-function addMsg(de,texto,fecha){
-  const div=document.createElement('div'); div.className='msg';
-  const q=document.createElement('span'); q.className='quien '+(de===NOMBRE?'tu':de==='hermes-1'?'h1':de==='hermes-2'?'h2':'sys');
-  q.textContent=de+' · '+(fecha||'');
-  const c=document.createElement('div'); c.className='cuerpo'; c.textContent=texto;
-  div.appendChild(q); div.appendChild(c); $('msgs').appendChild(div); $('msgs').scrollTop=$('msgs').scrollHeight;
-}
-function addSys(texto){ addMsg('sistema',texto,''); const c=$('msgs').lastChild.querySelector('.cuerpo'); if(c)c.className='cuerpo sys'; }
-function marcar(proyecto){ if(proyecto!==proyectoAct){ const p=[...document.querySelectorAll('.proy')].find(x=>x.textContent===proyecto); if(p) p.textContent=proyecto+' ●'; } }
-
-function enviarChat(){
-  const t=$('msg-input').value.trim(); if(!t||!proyectoAct) return;
-  ws.send(JSON.stringify({tipo:'chat',proyecto:proyectoAct,texto:t})); $('msg-input').value='';
-}
-
-function nuevoProyecto(){
-  const n=prompt('Nombre del nuevo proyecto:'); if(!n) return;
-  ws.send(JSON.stringify({tipo:'proyecto_nuevo',nombre:n}));
-  setTimeout(()=>abrirProyecto(n),400);
-}
-
-function gitAccion(){
-  const a=$('git-accion').value; if(!proyectoAct) return toast('selecciona un proyecto');
-  let msg=null; if(a==='commit'){ msg=prompt('Mensaje del commit:'); if(!msg) return; }
-  ws.send(JSON.stringify({tipo:'git',proyecto:proyectoAct,accion:a,msg}));
-  toast('git '+a+'…');
-}
-
-setup();
+updateTokenBadge();
+connectWS();
+fetchArbol();
+setTimeout(()=>{if(!currentProject)selectProject('general')},1000);
 </script>
 </body>
 </html>
