@@ -25,6 +25,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import websockets
+
 CONFIG = Path.home() / "nexo" / "config.json"
 
 
@@ -73,7 +75,7 @@ async def escuchar(ws, nombre, proyecto=None, echo=True, hasta_fin=False):
                     print(f"\n[arbol] {p['nombre']}/ ({len(p['archivos'])} archivos)")
             elif tipo == "error":
                 print(f"\n[nexo error] {msg.get('texto','')}", flush=True)
-    except Exception:
+    except (websockets.exceptions.WebSocketException, OSError):
         pass
 
 

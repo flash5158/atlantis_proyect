@@ -15,10 +15,11 @@ import asyncio
 import json
 import re
 import secrets
-import shutil
+from datetime import datetime, timezone
 from pathlib import Path
+from shlex import quote as shlex_quote
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -112,7 +113,7 @@ async def enviar_sala(sala: Sala, msg: dict, excepto: WebSocket | None = None):
             continue
         try:
             await enviar(ws, msg)
-        except Exception:
+        except OSError:
             sala.conectados.discard(ws)
 
 
@@ -188,8 +189,7 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
             raw = await ws.receive_text()
             msg = json.loads(raw)
             tipo = msg.get("tipo")
-            from datetime import datetime
-            fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+            fecha = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
             if tipo == "join":
                 sala = sala_de(msg.get("proyecto", "general"))
@@ -237,7 +237,7 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
                         contenido = p.read_text(errors="replace")
                         await enviar(ws, {"tipo": "archivo", "proyecto": sala.nombre,
                                           "ruta": msg["ruta"], "contenido": contenido})
-                    except Exception as e:
+                    except OSError as e:
                         await enviar(ws, {"tipo": "error", "proyecto": sala.nombre, "texto": str(e)})
 
                 elif tipo == "archivo_escribir":
@@ -248,7 +248,7 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
                         sala.guardar_sistema(f"{nombre} guardó {msg['ruta']}", fecha)
                         await enviar_sala(sala, {"tipo": "sistema", "proyecto": sala.nombre,
                                                  "texto": f"{nombre} guardó {msg['ruta']}", "fecha": fecha})
-                    except Exception as e:
+                    except OSError as e:
                         await enviar(ws, {"tipo": "error", "proyecto": sala.nombre, "texto": str(e)})
 
                 elif tipo == "git":
@@ -278,10 +278,6 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
     finally:
         for sala in mis_salas:
             sala.conectados.discard(ws)
-
-
-def shlex_quote(s: str) -> str:
-    return "'" + s.replace("'", "'\\''") + "'"
 
 
 # ---------------------------------------------------------------- main
