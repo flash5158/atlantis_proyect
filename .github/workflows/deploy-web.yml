@@ -1,0 +1,42 @@
+name: Deploy Web (sync web/ -> docs/)
+on:
+  push:
+    paths: ["web/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync web/ to docs/
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -r web/* docs/ 2>/dev/null || true
+          # If web/ is empty, create a placeholder so Pages doesn't 404
+          if [ -z "$(ls -A docs 2>/dev/null)" ]; then
+            echo "<!doctype html><title>NEXO</title><style>body{font-family:sans-serif;max-width:600px;margin:3rem auto;padding:1rem;color:#333}</style><h1>NEXO</h1><p>Web del proyecto. Edita <code>web/</code> y haz push para actualizar.</p>" > docs/index.html
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

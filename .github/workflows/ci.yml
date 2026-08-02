@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (python + html)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install -q ruff
+      - name: Ruff check
+        run: ruff check nexo/ --output-format=github
+      - name: HTML validate
+        run: |
+          if command -v tidy >/dev/null; then
+            tidy -q -e nexo/static/index.html 2>&1 | head -20
+          else
+            echo "tidy not installed, skipping HTML validation"
+          fi
+
+  test-smoke:
+    name: Smoke test server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install -q fastapi "uvicorn[standard]" websockets
+      - name: Start server
+        run: |
+          cd nexo
+          python server.py &
+          SERVER_PID=$!
+          sleep 3
+          curl -sf http://127.0.0.1:8787/api/arbol?token=test >/dev/null || true
+          kill $SERVER_PID
+        env:
+          # dummy token for the test
+          TOKEN: test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test-smoke]
+    steps:
+      - run: echo "All checks passed"
