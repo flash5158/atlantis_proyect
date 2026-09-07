@@ -3,14 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXO 2.0 — Atlantis AI & Developer Hub</title>
+<title>NEXO 2.0 — Atlantis Real AI & Developer Hub</title>
+
+<!-- Fuentes -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- xterm.js (Terminal Interactiva PTY Real) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+
+<!-- Monaco Editor (Motor de VS Code) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
 <style>
 :root[data-theme="jarvis"] {
   --bg-0: #040711;
-  --bg-1: #090e1c;
+  --bg-1: #080e1c;
   --bg-2: #0e162b;
   --bg-3: #141f3b;
   --bg-hover: #1b294d;
@@ -30,16 +41,12 @@
   --danger: #ff3366;
   --warning: #ffb703;
   --success: #00f59b;
-  --agent-1: #00f0ff;
-  --agent-2: #60a5fa;
-  --ai-badge: #8b5cf6;
-  --scanline: rgba(0, 240, 255, 0.02);
   --reactor-grad: linear-gradient(135deg, #00f0ff, #0055ff);
 }
 
 :root[data-theme="ultron"] {
   --bg-0: #08080a;
-  --bg-1: #0f0f14;
+  --bg-1: #0e0e14;
   --bg-2: #16161f;
   --bg-3: #1f1f2b;
   --bg-hover: #29293a;
@@ -59,10 +66,6 @@
   --danger: #ff003c;
   --warning: #ffaa00;
   --success: #00ff88;
-  --agent-1: #ff1e56;
-  --agent-2: #3a86ff;
-  --ai-badge: #ff5252;
-  --scanline: rgba(255, 30, 86, 0.02);
   --reactor-grad: linear-gradient(135deg, #ff1e56, #ff003c);
 }
 
@@ -77,25 +80,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Background HUD Grid */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(var(--scanline) 1px, transparent 1px),
-    linear-gradient(90deg, var(--scanline) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 999;
-}
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
 
-/* Topbar */
+/* TOPBAR */
 .topbar {
   height: 50px;
   background: var(--bg-1);
@@ -103,11 +93,9 @@ body::before {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  gap: 14px;
+  gap: 12px;
   flex-shrink: 0;
-  position: relative;
   z-index: 100;
-  backdrop-filter: blur(8px);
 }
 .logo {
   display: flex;
@@ -118,29 +106,23 @@ body::before {
   font-size: 16px;
   color: var(--text-0);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 .reactor-core {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--reactor-grad);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px var(--accent-glow);
-  animation: pulse-glow 3s infinite alternate;
-}
-@keyframes pulse-glow {
-  0% { box-shadow: 0 0 8px var(--accent-glow); transform: scale(0.98); }
-  100% { box-shadow: 0 0 20px var(--accent), 0 0 35px var(--accent-glow); transform: scale(1.03); }
+  box-shadow: 0 0 14px var(--accent-glow);
 }
 .reactor-core-inner {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #000;
-  border: 1.5px solid var(--text-0);
+  border: 1.5px solid #fff;
 }
 .logo-tag {
   font-size: 10px;
@@ -151,40 +133,8 @@ body::before {
   color: var(--accent);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  letter-spacing: 0.05em;
 }
 .topbar-spacer { flex: 1; }
-
-.topbar-metrics {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.metric-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  color: var(--text-2);
-}
-.metric-pill.online {
-  border-color: var(--accent-dim);
-  color: var(--text-0);
-}
-.dot-live {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 8px var(--success);
-  animation: live-blink 2s infinite;
-}
-@keyframes live-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .btn {
   padding: 5px 12px;
@@ -196,7 +146,7 @@ body::before {
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: all 160ms ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -232,27 +182,22 @@ body::before {
   font-size: 11px;
 }
 
-/* Layout */
-.main-wrapper {
+/* LAYOUT */
+.main-layout {
   display: flex;
   height: calc(100vh - 50px - 28px);
   overflow: hidden;
 }
 
-/* Left Sidebar */
+/* LEFT SIDEBAR */
 .sidebar {
-  width: 270px;
+  width: 250px;
   background: var(--bg-1);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-}
-.sidebar-section {
-  border-bottom: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
 }
 .sidebar-header {
   padding: 10px 14px;
@@ -263,135 +208,89 @@ body::before {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--text-2);
+  border-bottom: 1px solid var(--border-soft);
 }
-.sidebar-header-actions {
-  display: flex;
-  gap: 6px;
-}
-.icon-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-  color: var(--text-2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  transition: all 150ms ease;
-}
-.icon-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 6px var(--accent-glow);
-}
-
-.project-tree {
+.project-list-tree {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 6px;
 }
-.project-card {
+.tree-proj-item {
   border-radius: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   overflow: hidden;
-  border: 1px solid transparent;
-  transition: all 160ms ease;
 }
-.project-card.active {
-  border-color: var(--border-strong);
-  background: var(--accent-bg);
-}
-.project-title-row {
+.tree-proj-title {
   display: flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: 6px 8px;
   cursor: pointer;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
-  color: var(--text-0);
   font-size: 12.5px;
+  color: var(--text-0);
+  border-radius: 4px;
 }
-.project-title-row:hover {
-  background: var(--bg-hover);
+.tree-proj-title:hover { background: var(--bg-hover); }
+.tree-proj-item.active .tree-proj-title {
+  background: var(--accent-bg);
+  color: var(--accent);
 }
-.project-arrow {
+.tree-proj-arrow {
   font-size: 9px;
   color: var(--text-3);
-  transition: transform 160ms ease;
+  transition: transform 150ms ease;
 }
-.project-card.expanded .project-arrow {
+.tree-proj-item.expanded .tree-proj-arrow {
   transform: rotate(90deg);
   color: var(--accent);
 }
-.project-card-files {
-  padding: 2px 0 6px 24px;
+.tree-files-box {
+  padding-left: 20px;
   display: none;
 }
-.project-card.expanded .project-card-files {
-  display: block;
-}
-.file-row {
+.tree-proj-item.expanded .tree-files-box { display: block; }
+.tree-file-item {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 4px 6px;
   gap: 6px;
   font-size: 12px;
   color: var(--text-2);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 120ms ease;
   font-family: 'JetBrains Mono', monospace;
 }
-.file-row:hover {
-  background: var(--bg-hover);
-  color: var(--text-0);
-}
-.file-row.active {
-  background: var(--bg-active);
-  color: var(--accent);
-  border-left: 2px solid var(--accent);
-}
-.file-lock-badge {
-  margin-left: auto;
-  font-size: 9px;
-  background: rgba(255, 51, 102, 0.2);
-  color: var(--danger);
-  border-radius: 3px;
-  padding: 1px 4px;
-}
+.tree-file-item:hover { background: var(--bg-hover); color: var(--text-0); }
+.tree-file-item.active { background: var(--bg-active); color: var(--accent); font-weight: 600; }
 
-/* AI Agents Presence Box */
-.ai-presence-box {
+/* AI Presence Panel */
+.ai-status-footer {
   padding: 10px 14px;
   background: var(--bg-0);
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-.ai-agent-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
+  gap: 6px;
+  font-size: 11px;
   font-family: 'JetBrains Mono', monospace;
 }
-.ai-status-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+.ai-agent-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.ai-status-pulse.offline { background: var(--text-3); box-shadow: none; }
+.pulse-circle {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
 
-/* Center: Editor & Terminal */
-.center-panel {
+/* CENTER: EDITOR + TERMINAL */
+.center-column {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -399,8 +298,8 @@ body::before {
   min-width: 0;
   background: var(--bg-0);
 }
-.tabs-header {
-  height: 38px;
+.tabs-bar {
+  height: 36px;
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -408,7 +307,7 @@ body::before {
   overflow-x: auto;
   flex-shrink: 0;
 }
-.tab-item {
+.tab-node {
   height: 100%;
   display: flex;
   align-items: center;
@@ -420,65 +319,28 @@ body::before {
   border-right: 1px solid var(--border-soft);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 120ms ease;
   user-select: none;
 }
-.tab-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-0);
-}
-.tab-item.active {
+.tab-node:hover { background: var(--bg-hover); color: var(--text-0); }
+.tab-node.active {
   background: var(--bg-0);
   color: var(--accent);
   border-top: 2px solid var(--accent);
 }
-.tab-close-btn {
-  opacity: 0.5;
-  font-size: 13px;
-}
-.tab-close-btn:hover { opacity: 1; color: var(--danger); }
+.tab-close { opacity: 0.5; font-size: 13px; }
+.tab-close:hover { opacity: 1; color: var(--danger); }
 
-.editor-viewport {
+.editor-surface {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   position: relative;
   overflow: hidden;
 }
-.editor-container {
-  flex: 1;
-  display: flex;
-  background: var(--bg-0);
-  position: relative;
+#monacoContainer {
+  position: absolute;
+  inset: 0;
 }
-.line-numbers {
-  width: 45px;
-  padding: 16px 8px;
-  text-align: right;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--text-3);
-  background: var(--bg-1);
-  border-right: 1px solid var(--border-soft);
-  user-select: none;
-  overflow: hidden;
-}
-.code-area {
-  flex: 1;
-  background: transparent;
-  color: var(--text-0);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
-  padding: 16px;
-  border: none;
-  outline: none;
-  resize: none;
-  white-space: pre;
-  tab-size: 4;
-}
-.editor-action-bar {
+
+.editor-toolbar {
   height: 36px;
   background: var(--bg-1);
   border-top: 1px solid var(--border-soft);
@@ -486,84 +348,47 @@ body::before {
   align-items: center;
   padding: 0 12px;
   gap: 8px;
-  font-size: 11.5px;
   flex-shrink: 0;
 }
-.editor-status-text {
+.editor-status-label {
   margin-right: auto;
   font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
   color: var(--text-2);
 }
 
-/* Terminal & Console */
-.terminal-dock {
-  height: 220px;
-  background: var(--bg-1);
+/* TERMINAL PTY REAL */
+.terminal-section {
+  height: 230px;
+  background: var(--bg-0);
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
 }
-.terminal-nav {
-  height: 30px;
+.terminal-header {
+  height: 28px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
   padding: 0 10px;
   gap: 12px;
-}
-.term-tab-btn {
   font-family: 'Chakra Petch', sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-2);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
-.term-tab-btn.active {
-  color: var(--accent);
-  background: var(--accent-bg);
-}
-.terminal-screen {
+#ptyTerminalWrapper {
   flex: 1;
-  padding: 10px 14px;
-  overflow-y: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-1);
-}
-.terminal-screen .cmd-line { color: var(--accent); font-weight: 600; }
-.terminal-screen .err-line { color: var(--danger); }
-.terminal-screen .succ-line { color: var(--success); }
-.terminal-input-bar {
-  display: flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-top: 1px solid var(--border-soft);
-  background: var(--bg-0);
-}
-.prompt-symbol {
-  color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  margin-right: 8px;
-}
-.terminal-cmd-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text-0);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  overflow: hidden;
+  padding: 4px 6px;
+  background: #000;
 }
 
-/* Right Panel: Matrix & Chat */
-.matrix-panel {
+/* RIGHT: MATRIX (CHAT & REAL AI CO-PILOT) */
+.matrix-column {
   width: 380px;
   background: var(--bg-1);
   border-left: 1px solid var(--border);
@@ -572,132 +397,127 @@ body::before {
   flex-shrink: 0;
   overflow: hidden;
 }
-.matrix-tabs {
-  height: 38px;
+.matrix-tabs-nav {
+  height: 36px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--border);
   display: flex;
 }
-.matrix-tab {
+.matrix-tab-btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   font-family: 'Chakra Petch', sans-serif;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-2);
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: all 160ms ease;
 }
-.matrix-tab.active {
+.matrix-tab-btn.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
   background: var(--bg-1);
 }
 
-.matrix-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.matrix-content-view {
+.matrix-view {
   flex: 1;
   display: none;
   flex-direction: column;
   overflow: hidden;
 }
-.matrix-content-view.active { display: flex; }
+.matrix-view.active { display: flex; }
 
-/* Chat View */
-.chat-stream {
+/* Chat */
+.chat-log {
   flex: 1;
   overflow-y: auto;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
-.chat-bubble {
-  max-width: 90%;
+.chat-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  max-width: 92%;
 }
-.chat-bubble.mine { align-self: flex-end; align-items: flex-end; }
-.chat-bubble.theirs { align-self: flex-start; align-items: flex-start; }
-.chat-bubble.ai { align-self: center; width: 96%; }
-.chat-bubble.system { align-self: center; font-size: 11px; color: var(--text-3); font-style: italic; }
-.bubble-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.chat-row.mine { align-self: flex-end; align-items: flex-end; }
+.chat-row.theirs { align-self: flex-start; align-items: flex-start; }
+.chat-row.ai { align-self: center; width: 98%; }
+.chat-author {
   font-size: 10.5px;
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-2);
 }
-.bubble-body {
-  padding: 9px 13px;
+.chat-bubble-content {
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 12.5px;
   line-height: 1.45;
   word-break: break-word;
 }
-.chat-bubble.mine .bubble-body {
+.chat-row.mine .chat-bubble-content {
   background: var(--accent-bg);
   border: 1px solid var(--accent-dim);
   color: var(--text-0);
 }
-.chat-bubble.theirs .bubble-body {
+.chat-row.theirs .chat-bubble-content {
   background: var(--bg-2);
   border: 1px solid var(--border);
   color: var(--text-1);
 }
-.chat-bubble.ai .bubble-body {
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  border-left: 3px solid var(--ai-badge);
+.chat-row.ai .chat-bubble-content {
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--accent);
   color: var(--text-0);
+}
+.chat-row.ai pre {
+  background: var(--bg-0);
+  padding: 8px;
+  border-radius: 6px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11.5px;
+  overflow-x: auto;
+  margin-top: 6px;
 }
 
-.chat-compose-box {
-  padding: 10px;
+.chat-input-bar {
+  padding: 8px;
   background: var(--bg-2);
   border-top: 1px solid var(--border);
   display: flex;
   gap: 8px;
 }
-.chat-textarea {
+.chat-input-field {
   flex: 1;
   background: var(--bg-0);
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text-0);
   padding: 8px 10px;
-  font-family: 'Inter', sans-serif;
   font-size: 12.5px;
-  resize: none;
   outline: none;
+  resize: none;
   max-height: 80px;
 }
-.chat-textarea:focus { border-color: var(--accent-dim); }
+.chat-input-field:focus { border-color: var(--accent); }
 
-/* AI Matrix View (Tasks & AI Messages) */
-.ai-view-container {
+/* AI View */
+.ai-dashboard {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
-.ai-card {
+.ai-box-card {
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -706,47 +526,38 @@ body::before {
   flex-direction: column;
   gap: 6px;
 }
-.ai-card-title {
+.ai-box-title {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-0);
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
-.ai-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  text-transform: uppercase;
-}
-.ai-tag.todo { background: rgba(255, 183, 3, 0.15); color: var(--warning); border: 1px solid var(--warning); }
-.ai-tag.done { background: rgba(0, 245, 155, 0.15); color: var(--success); border: 1px solid var(--success); }
 
-/* Statusbar */
+/* STATUSBAR */
 .statusbar {
   height: 28px;
   background: var(--bg-1);
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 14px;
-  gap: 16px;
+  padding: 0 12px;
+  gap: 14px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
   flex-shrink: 0;
 }
-.status-pill { display: flex; align-items: center; gap: 5px; color: var(--text-2); }
-.status-pill.accent { color: var(--accent); }
+.status-item { display: flex; align-items: center; gap: 5px; color: var(--text-2); }
+.status-item.accent { color: var(--accent); }
 
-/* Modals */
-.modal-overlay {
+/* MODALS */
+.modal-mask {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,50 +566,42 @@ body::before {
   pointer-events: none;
   transition: opacity 160ms ease;
 }
-.modal-overlay.show { opacity: 1; pointer-events: auto; }
-.modal-window {
+.modal-mask.show { opacity: 1; pointer-events: auto; }
+.modal-card {
   background: var(--bg-1);
   border: 1px solid var(--border-strong);
   border-radius: 12px;
-  padding: 24px;
+  padding: 22px;
   width: 480px;
   max-width: 92vw;
   box-shadow: 0 16px 48px rgba(0,0,0,0.6);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
-.modal-title {
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-0);
-  letter-spacing: 0.05em;
-}
-.modal-input {
+.modal-field {
   width: 100%;
   background: var(--bg-0);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 9px 12px;
+  padding: 8px 12px;
   color: var(--text-0);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
+  font-size: 12px;
   outline: none;
 }
-.modal-input:focus { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
-.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
-/* Toast */
-.toast-bar {
+/* TOAST */
+.toast-notice {
   position: fixed;
   bottom: 38px;
   left: 50%;
   transform: translateX(-50%) translateY(80px);
   background: var(--bg-2);
   border: 1px solid var(--accent-dim);
-  border-radius: 8px;
-  padding: 8px 18px;
+  border-radius: 6px;
+  padding: 8px 16px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--text-0);
@@ -806,14 +609,14 @@ body::before {
   z-index: 999;
   opacity: 0;
   pointer-events: none;
-  transition: all 250ms ease;
+  transition: all 220ms ease;
 }
-.toast-bar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR HUD -->
+<!-- TOPBAR -->
 <header class="topbar">
   <div class="logo">
     <div class="reactor-core"><div class="reactor-core-inner"></div></div>
@@ -823,248 +626,200 @@ body::before {
 
   <div class="topbar-spacer"></div>
 
-  <div class="topbar-metrics">
-    <div class="metric-pill online" id="pillWsStatus">
-      <span class="dot-live"></span>
-      <span id="wsStatusText">SISTEMA EN LÍNEA</span>
-    </div>
+  <button class="btn btn-accent btn-hud" id="btnInviteFriend">
+    🔗 Conectar Amigo
+  </button>
 
-    <button class="btn btn-accent btn-hud" id="btnShareColab" title="Invitar a tu compañero">
-      🔗 Conectar Amigo
-    </button>
+  <button class="btn btn-hud" id="btnConfigAi">
+    ⚙️ Configurar IA: <span id="labelAiProvider" style="color:var(--accent);">Auto</span>
+  </button>
 
-    <button class="btn btn-hud" id="btnGitModal">⎇ Git</button>
+  <button class="btn btn-hud" id="btnToggleTheme">
+    ⚡ <span id="labelThemeName">JARVIS</span>
+  </button>
 
-    <button class="btn btn-hud" id="btnThemeToggle" title="Cambiar tema Jarvis/Ultron">
-      ⚡ Tema: <span id="themeName">JARVIS</span>
-    </button>
-
-    <button class="btn btn-hud" id="btnAudioToggle" title="Voz y HUD sonoro">
-      🔊 HUD Audio: <span id="audioState">ON</span>
-    </button>
-
-    <button class="btn btn-hud" id="btnTokenEdit" title="Configurar Token">
-      🔑 <span id="tokenDisplay">token</span>
-    </button>
-  </div>
+  <button class="btn btn-hud" id="btnToggleSound">
+    🔊 HUD Audio: <span id="labelSoundState">ON</span>
+  </button>
 </header>
 
 <!-- MAIN APP BODY -->
-<div class="main-wrapper">
+<div class="main-layout">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-header">
-        <span>📁 Proyectos Compartidos</span>
-        <div class="sidebar-header-actions">
-          <button class="icon-btn" id="btnRefreshTree" title="Actualizar árbol">⟳</button>
-          <button class="icon-btn" id="btnNewProject" title="Nuevo proyecto">+</button>
-        </div>
+    <div class="sidebar-header">
+      <span>📁 Proyectos</span>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-hud" style="padding:2px 6px;" id="btnRefreshTree" title="Refrescar">⟳</button>
+        <button class="btn btn-hud btn-accent" style="padding:2px 6px;" id="btnNewProject" title="Nuevo proyecto">+</button>
       </div>
-      <div class="project-tree" id="projectTreeList"></div>
     </div>
 
-    <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
-      <div class="sidebar-header">
-        <span>⚡ Enlaces Activos</span>
-      </div>
-      <div style="padding:10px 14px; display:flex; flex-direction:column; gap:8px; font-size:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="color:var(--text-2);">Desarrollador 1:</span>
-          <span style="color:var(--agent-1); font-weight:600;" id="labelDev1">Jaime (Local)</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="color:var(--text-2);">Desarrollador 2:</span>
-          <span style="color:var(--agent-2); font-weight:600;" id="labelDev2">Compañero</span>
-        </div>
-        <div style="border-top:1px solid var(--border-soft); margin:4px 0;"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="color:var(--text-2);">IA Primaria:</span>
-          <span style="color:var(--accent); font-weight:700;" id="labelIa1">🤖 Antigravity</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="color:var(--text-2);">IA Secundaria:</span>
-          <span style="color:var(--accent-secondary); font-weight:700;" id="labelIa2">🤖 Hermes</span>
-        </div>
-      </div>
+    <div class="project-list-tree" id="treeProjectList"></div>
 
-      <div class="ai-presence-box">
-        <div style="font-size:10.5px; font-family:'Chakra Petch',sans-serif; color:var(--text-3); font-weight:700; text-transform:uppercase;">
-          Estado de la Matriz IA
-        </div>
-        <div class="ai-agent-item" id="aiStatusAntigravity">
-          <span class="ai-status-pulse"></span>
-          <span>Antigravity: <strong style="color:var(--success);">Activo en IDE</strong></span>
-        </div>
-        <div class="ai-agent-item" id="aiStatusHermes">
-          <span class="ai-status-pulse"></span>
-          <span>Hermes: <strong style="color:var(--accent-secondary);">Enlace listo</strong></span>
-        </div>
+    <div class="ai-status-footer">
+      <div style="font-family:'Chakra Petch',sans-serif; font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase;">
+        Matriz de Inteligencia Artificial
+      </div>
+      <div class="ai-agent-indicator">
+        <span class="pulse-circle"></span>
+        <span>Antigravity: <strong style="color:var(--accent);">Co-Pilot Listo</strong></span>
+      </div>
+      <div class="ai-agent-indicator">
+        <span class="pulse-circle" style="background:var(--accent-secondary); box-shadow:0 0 8px var(--accent-secondary);"></span>
+        <span>Hermes: <strong style="color:var(--accent-secondary);">Enlace Activo</strong></span>
       </div>
     </div>
   </aside>
 
-  <!-- CENTER: EDITOR & TERMINAL -->
-  <main class="center-panel">
-    <div class="tabs-header" id="editorTabs"></div>
+  <!-- CENTER (MONACO EDITOR & REAL PTY TERMINAL) -->
+  <main class="center-column">
+    <div class="tabs-bar" id="editorTabsBar"></div>
 
-    <div class="editor-viewport">
-      <div class="editor-container" id="editorWrap">
-        <div class="line-numbers" id="lineNumbers">1</div>
-        <textarea class="code-area" id="codeEditor" spellcheck="false" placeholder="Selecciona o crea un archivo en el menú lateral..."></textarea>
-      </div>
-
-      <div class="editor-action-bar">
-        <span class="editor-status-text" id="editorFileInfo">Sin archivo activo</span>
-        <button class="btn btn-hud" id="btnRunCode" title="Ejecutar archivo (Ctrl+Enter)">▶ Ejecutar</button>
-        <button class="btn btn-hud btn-accent" id="btnSaveFile" title="Guardar cambios (Ctrl+S)">💾 Guardar</button>
-        <button class="btn btn-hud" id="btnNewFile" title="Nuevo archivo">+ Archivo</button>
-        <button class="btn btn-hud" id="btnDownloadFile">⬇ Descargar</button>
-        <button class="btn btn-hud" id="btnUploadFile">⬆ Subir</button>
-        <button class="btn btn-hud" id="btnAskAiReview" style="color:var(--accent);">🤖 Solicitar Revisión a IA</button>
-        <button class="btn btn-hud btn-danger" id="btnDeleteFile">🗑</button>
-      </div>
+    <!-- Monaco Code Editor Surface -->
+    <div class="editor-surface">
+      <div id="monacoContainer"></div>
     </div>
 
-    <!-- TERMINAL DOCK -->
-    <div class="terminal-dock">
-      <div class="terminal-nav">
-        <div class="term-tab-btn active" id="tabNavTerm">▶ Terminal Shell</div>
-        <div class="term-tab-btn" id="tabNavGit">⎇ Git Workspace</div>
+    <!-- Toolbar -->
+    <div class="editor-toolbar">
+      <span class="editor-status-label" id="activeFileLabel">Sin archivo activo</span>
+      <button class="btn btn-hud btn-accent" id="btnSaveActiveFile">💾 Guardar (Ctrl+S)</button>
+      <button class="btn btn-hud" id="btnRunInTerminal">▶ Ejecutar en Terminal</button>
+      <button class="btn btn-hud" id="btnAskAiCodeReview" style="color:var(--accent);">🤖 Revisar con IA</button>
+      <button class="btn btn-hud" id="btnApplyAiCode" style="display:none; color:var(--success);">✨ Aplicar Código de IA</button>
+      <button class="btn btn-hud" id="btnNewCodeFile">+ Archivo</button>
+      <button class="btn btn-hud btn-danger" id="btnDeleteActiveFile">🗑</button>
+    </div>
+
+    <!-- Interactive PTY Terminal (xterm.js) -->
+    <div class="terminal-section">
+      <div class="terminal-header">
+        <span>▶ Terminal Interactiva PTY (zsh / bash nativo)</span>
         <div style="flex:1;"></div>
-        <button class="btn btn-hud" id="btnClearTerm" style="padding:2px 8px; font-size:10px;">Limpiar</button>
+        <button class="btn btn-hud" style="padding:1px 6px; font-size:10px;" id="btnRestartPty">Reiniciar Shell</button>
       </div>
-      <div class="terminal-screen" id="terminalOutput"></div>
-      <div class="terminal-input-bar">
-        <span class="prompt-symbol">$</span>
-        <input class="terminal-cmd-input" id="terminalInput" placeholder="Escribe un comando para ejecutar en el workspace..." spellcheck="false" autocomplete="off">
-      </div>
+      <div id="ptyTerminalWrapper"></div>
     </div>
   </main>
 
-  <!-- RIGHT: MATRIX & CHAT -->
-  <aside class="matrix-panel">
-    <div class="matrix-tabs">
-      <div class="matrix-tab active" id="tabBtnChat">💬 Chat Sala</div>
-      <div class="matrix-tab" id="tabBtnAi">🤖 Matriz IA-a-IA</div>
+  <!-- RIGHT (MATRIX & CHAT) -->
+  <aside class="matrix-column">
+    <div class="matrix-tabs-nav">
+      <div class="matrix-tab-btn active" id="tabNavChat">💬 Chat & IA</div>
+      <div class="matrix-tab-btn" id="tabNavTasks">🤖 Tareas & Matriz</div>
     </div>
 
-    <div class="matrix-body">
-      <!-- CHAT VIEW -->
-      <div class="matrix-content-view active" id="viewChat">
-        <div class="chat-stream" id="chatStream"></div>
-        <div class="chat-compose-box">
-          <textarea class="chat-textarea" id="chatInput" rows="1" placeholder="Escribe al chat del proyecto..."></textarea>
-          <button class="btn btn-accent" id="btnSendChat">➤</button>
-        </div>
+    <!-- CHAT VIEW -->
+    <div class="matrix-view active" id="viewChatContent">
+      <div class="chat-log" id="chatMessagesStream"></div>
+      <div class="chat-input-bar">
+        <textarea class="chat-input-field" id="chatTextInput" rows="1" placeholder="Escribe al chat o usa @ia para pedir código..."></textarea>
+        <button class="btn btn-accent" id="btnSendChatMessage">➤</button>
       </div>
+    </div>
 
-      <!-- AI MATRIX VIEW -->
-      <div class="matrix-content-view" id="viewAi">
-        <div style="padding:10px 14px; background:var(--bg-0); border-bottom:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-family:'Chakra Petch',sans-serif; font-size:12px; font-weight:700; color:var(--accent);">CO-PILOTOS IA EN COLABORACIÓN</span>
-          <button class="btn btn-hud btn-accent" id="btnNewAiTask">+ Asignar Tarea</button>
-        </div>
-        <div class="ai-view-container" id="aiViewContainer"></div>
+    <!-- TASKS & MATRIX VIEW -->
+    <div class="matrix-view" id="viewTasksContent">
+      <div style="padding:10px 12px; background:var(--bg-0); border-bottom:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-family:'Chakra Petch',sans-serif; font-size:11px; font-weight:700; color:var(--accent);">TABLERO IA-a-IA</span>
+        <button class="btn btn-hud btn-accent" id="btnCreateTask">+ Asignar Tarea</button>
       </div>
+      <div class="ai-dashboard" id="aiTasksDashboard"></div>
     </div>
   </aside>
 </div>
 
 <!-- STATUSBAR -->
 <footer class="statusbar">
-  <div class="status-pill accent">⚡ NEXO 2.0 ATLANTIS</div>
-  <div class="status-pill" id="statusProject">Proyecto: general</div>
-  <div class="status-pill" id="statusFile">Archivo: ninguno</div>
+  <div class="status-item accent">⚡ NEXO 2.0 ATLANTIS</div>
+  <div class="status-item" id="sbProject">Proyecto: general</div>
+  <div class="status-item" id="sbFile">Archivo: —</div>
   <div style="flex:1;"></div>
-  <div class="status-pill" id="statusPeers">2 Agentes Conectados</div>
-  <div class="status-pill">UTF-8</div>
+  <div class="status-item" id="sbPeers">Enlace Activo</div>
+  <div class="status-item">UTF-8</div>
 </footer>
 
-<!-- MODAL TOKEN -->
-<div class="modal-overlay" id="modalToken">
-  <div class="modal-window">
-    <div class="modal-title">🔑 Llave de Acceso NEXO</div>
-    <p style="font-size:12.5px; color:var(--text-2); line-height:1.5;">
-      Introduce el token de autenticación configurado en el servidor para acceder al workspace compartido.
-    </p>
-    <input class="modal-input" id="inputToken" placeholder="token..." spellcheck="false">
-    <div class="modal-footer">
-      <button class="btn" onclick="hideModal('modalToken')">Cancelar</button>
-      <button class="btn btn-accent" id="btnSaveToken">Conectar</button>
+<!-- MODAL INVITAR AMIGO -->
+<div class="modal-mask" id="modalInvite">
+  <div class="modal-card" style="width: 560px;">
+    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
+      🤝 Conectar con tu Compañero
     </div>
-  </div>
-</div>
-
-<!-- MODAL COMPARTIR / INVITAR AMIGO -->
-<div class="modal-overlay" id="modalShare">
-  <div class="modal-window" style="width: 580px;">
-    <div class="modal-title">🤝 Enlace de Colaboración para tu Compañero</div>
     <p style="font-size:12px; color:var(--text-2); line-height:1.5;">
-      Comparte estos datos con tu amigo para que ambos programen al mismo tiempo y sus IAs (Antigravity & Hermes) se sincronicen:
+      Comparte este enlace para que tu amigo entre directamente a la sesión sin configuración:
     </p>
-    
-    <div style="background:var(--bg-0); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:12px; display:flex; flex-direction:column; gap:8px;">
-      <div><strong>🌐 URL Web:</strong> <span id="shareUrlText" style="color:var(--accent);">Calculando...</span></div>
-      <div><strong>🔑 Token:</strong> <span id="shareTokenText" style="color:var(--warning);">...</span></div>
+
+    <div style="background:var(--bg-0); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:12px; display:flex; flex-direction:column; gap:8px;">
+      <div><strong>🌐 Enlace Directo:</strong> <span id="invitationUrl" style="color:var(--accent); user-select:all;">...</span></div>
+      <div><strong>🔑 Token:</strong> <span id="invitationToken" style="color:var(--warning); user-select:all;">...</span></div>
       <div style="border-top:1px solid var(--border-soft); margin:4px 0;"></div>
       <div style="color:var(--text-3); font-size:11px;"># Para conectar Hermes desde su terminal:</div>
-      <div style="color:var(--text-1); background:var(--bg-1); padding:6px; border-radius:4px; user-select:all;" id="shareHermesCmd">...</div>
-      <div style="color:var(--text-3); font-size:11px;"># Para conectar Antigravity IDE:</div>
-      <div style="color:var(--text-1); background:var(--bg-1); padding:6px; border-radius:4px; user-select:all;" id="shareAgyCmd">...</div>
+      <div style="color:var(--text-1); background:var(--bg-1); padding:6px; border-radius:4px; font-size:11px; user-select:all;" id="invitationCli">...</div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn btn-accent" id="btnCopyInvite">📋 Copiar Todo al Portapapeles</button>
-      <button class="btn" onclick="hideModal('modalShare')">Cerrar</button>
+    <div class="modal-actions">
+      <button class="btn btn-accent" id="btnCopyInviteData">📋 Copiar Todo</button>
+      <button class="btn" onclick="hideModal('modalInvite')">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NUEVA TAREA IA -->
-<div class="modal-overlay" id="modalAiTask">
-  <div class="modal-window">
-    <div class="modal-title">🤖 Asignar Tarea a IA Compañera</div>
-    <input class="modal-input" id="inputAiTaskTitle" placeholder="Título de la tarea (ej: Crear endpoints en api.py)" spellcheck="false">
-    <textarea class="modal-input" id="inputAiTaskDesc" rows="4" placeholder="Instrucciones detalladas para la IA compañera..." style="resize:vertical;"></textarea>
-    <div style="display:flex; gap:8px;">
-      <select class="modal-input" id="selectAiTaskAssignee">
-        <option value="hermes">Asignar a: Hermes (Compañero)</option>
-        <option value="antigravity">Asignar a: Antigravity (Local)</option>
-        <option value="todos">Para quien esté disponible</option>
-      </select>
-      <select class="modal-input" id="selectAiTaskPriority">
-        <option value="media">Prioridad Media</option>
-        <option value="alta">Prioridad Alta</option>
-        <option value="urgente">Urgente</option>
-      </select>
+<!-- MODAL CONFIGURAR IA -->
+<div class="modal-mask" id="modalAiConfig">
+  <div class="modal-card">
+    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
+      ⚙️ Configuración del Motor de IA
     </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="hideModal('modalAiTask')">Cancelar</button>
-      <button class="btn btn-accent" id="btnSubmitAiTask">Enviar Tarea a la Matriz</button>
+    <p style="font-size:12px; color:var(--text-2);">
+      Elige el proveedor de Inteligencia Artificial para respuestas y generación de código en vivo:
+    </p>
+
+    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">Proveedor:</label>
+    <select class="modal-field" id="selAiProvider">
+      <option value="auto">Auto (Detectar por clave o motor inteligente)</option>
+      <option value="gemini">Google Gemini (Gemini 2.5 Flash - Gratis)</option>
+      <option value="groq">Groq (Llama 3.3 70B - Súper Rápido)</option>
+      <option value="openrouter">OpenRouter (Modelos DeepSeek R1 gratis)</option>
+      <option value="ollama">Ollama Local (Offline sin claves)</option>
+      <option value="openai">OpenAI / Compatible</option>
+    </select>
+
+    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">API Key (Opcional si usas Ollama o Motor Integrado):</label>
+    <input type="password" class="modal-field" id="inputAiApiKey" placeholder="Introduce tu clave API (ej: AIza... o gsk_...)">
+
+    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">Modelo específico (Opcional):</label>
+    <input type="text" class="modal-field" id="inputAiModel" placeholder="auto">
+
+    <div class="modal-actions">
+      <button class="btn" onclick="hideModal('modalAiConfig')">Cancelar</button>
+      <button class="btn btn-accent" id="btnSaveAiConfig">Guardar y Activar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL GIT -->
-<div class="modal-overlay" id="modalGit">
-  <div class="modal-window" style="width: 560px;">
-    <div class="modal-title">⎇ Git — Sincronización del Repositorio</div>
-    <input class="modal-input" id="inputGitCommitMsg" placeholder="Mensaje para el commit..." spellcheck="false">
-    <div class="modal-footer">
-      <button class="btn btn-hud" id="btnGitStatus">Status</button>
-      <button class="btn btn-hud" id="btnGitLog">Log</button>
-      <button class="btn btn-hud btn-accent" id="btnGitCommit">Commit</button>
-      <button class="btn btn-hud" id="btnGitPush">Push</button>
-      <button class="btn btn-hud" id="btnGitPull">Pull</button>
-      <button class="btn" onclick="hideModal('modalGit')">Cerrar</button>
+<!-- MODAL NUEVA TAREA -->
+<div class="modal-mask" id="modalTask">
+  <div class="modal-card">
+    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
+      🤖 Asignar Tarea Colaborativa
+    </div>
+    <input class="modal-field" id="inputTaskTitle" placeholder="Título de la tarea">
+    <textarea class="modal-field" id="inputTaskDesc" rows="3" placeholder="Descripción o requerimientos..." style="resize:vertical;"></textarea>
+    <select class="modal-field" id="selTaskAssignee">
+      <option value="hermes">Asignar a: Hermes (Compañero)</option>
+      <option value="antigravity">Asignar a: Antigravity (Local)</option>
+      <option value="todos">Cualquiera disponible</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn" onclick="hideModal('modalTask')">Cancelar</button>
+      <button class="btn btn-accent" id="btnSubmitTask">Asignar</button>
     </div>
   </div>
 </div>
 
-<input type="file" id="hiddenFileInput" style="display:none;" multiple>
-<div class="toast-bar" id="toastBar">Mensaje del sistema</div>
+<div class="toast-notice" id="toastNotice">Mensaje</div>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -1072,14 +827,17 @@ let TOKEN = localStorage.getItem('nexo_token') || '';
 let NOMBRE = localStorage.getItem('nexo_nombre') || 'jaime';
 let CURRENT_THEME = localStorage.getItem('nexo_theme') || 'jarvis';
 let AUDIO_ENABLED = localStorage.getItem('nexo_audio') !== 'false';
-let WS = null;
 let currentProject = 'general';
 let currentFile = null;
 let openTabs = {};
 let projectsTree = [];
-let fileLocks = {};
+let WS = null;
+let ptyWs = null;
+let ptyTerm = null;
+let monacoEditor = null;
+let lastAiGeneratedCode = null;
 
-// Audio HUD Synthesizer
+// Audio HUD
 function hudSpeech(text) {
   if (!AUDIO_ENABLED || !window.speechSynthesis) return;
   try {
@@ -1087,72 +845,177 @@ function hudSpeech(text) {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'es-ES';
     u.rate = 1.05;
-    u.pitch = CURRENT_THEME === 'jarvis' ? 1.1 : 0.8;
     window.speechSynthesis.speak(u);
   } catch(e) {}
 }
 
 function showToast(msg) {
-  const t = $('toastBar');
+  const t = $('toastNotice');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(t._tm);
-  t._tm = setTimeout(() => t.classList.remove('show'), 2800);
+  t._tm = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
 function showModal(id) { $(id).classList.add('show'); }
 function hideModal(id) { $(id).classList.remove('show'); }
 
-// Theme Management
+// Theme
 function applyTheme(theme) {
   CURRENT_THEME = theme;
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('nexo_theme', theme);
-  $('themeName').textContent = theme.toUpperCase();
-  showToast('Tema cambiado a ' + theme.toUpperCase());
+  $('labelThemeName').textContent = theme.toUpperCase();
 }
-$('btnThemeToggle').onclick = () => {
-  applyTheme(CURRENT_THEME === 'jarvis' ? 'ultron' : 'jarvis');
-};
+$('btnToggleTheme').onclick = () => applyTheme(CURRENT_THEME === 'jarvis' ? 'ultron' : 'jarvis');
 
 // Audio Toggle
-$('btnAudioToggle').onclick = () => {
+$('btnToggleSound').onclick = () => {
   AUDIO_ENABLED = !AUDIO_ENABLED;
   localStorage.setItem('nexo_audio', AUDIO_ENABLED);
-  $('audioState').textContent = AUDIO_ENABLED ? 'ON' : 'OFF';
+  $('labelSoundState').textContent = AUDIO_ENABLED ? 'ON' : 'OFF';
   showToast('Audio HUD: ' + (AUDIO_ENABLED ? 'Activado' : 'Silenciado'));
 };
 
-// WebSocket Connection
-function connectWebSocket() {
-  if (!TOKEN) {
-    showModal('modalToken');
+// ---------------------------------------------------- Autenticación Local Automática
+async function ensureAuth() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const qToken = urlParams.get('token');
+  if (qToken) {
+    TOKEN = qToken;
+    localStorage.setItem('nexo_token', TOKEN);
     return;
   }
+  if (!TOKEN) {
+    try {
+      const res = await fetch('/api/token_local');
+      if (res.ok) {
+        const d = await res.json();
+        if (d.token) {
+          TOKEN = d.token;
+          localStorage.setItem('nexo_token', TOKEN);
+        }
+      }
+    } catch(e) {}
+  }
+}
+
+// ---------------------------------------------------- MONACO EDITOR
+function initMonaco() {
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
+  require(['vs/editor/editor.main'], function() {
+    monacoEditor = monaco.editor.create($('monacoContainer'), {
+      value: '# Bienvenido a NEXO 2.0 (Atlantis)\n# Selecciona un archivo en el panel izquierdo para comenzar a programar.\n',
+      language: 'python',
+      theme: 'vs-dark',
+      automaticLayout: true,
+      fontSize: 13,
+      minimap: { enabled: true },
+      fontFamily: "'JetBrains Mono', monospace",
+      tabSize: 4,
+      scrollBeyondLastLine: false,
+    });
+
+    monacoEditor.onDidChangeModelContent(() => {
+      if (currentFile && openTabs[currentFile]) {
+        openTabs[currentFile].contenido = monacoEditor.getValue();
+        openTabs[currentFile].dirty = true;
+      }
+    });
+  });
+}
+
+function setEditorLanguage(filename) {
+  if (!monacoEditor) return;
+  const ext = filename.split('.').pop().toLowerCase();
+  const map = {
+    py: 'python', js: 'javascript', ts: 'typescript', html: 'html',
+    css: 'css', json: 'json', md: 'markdown', sh: 'shell',
+    yaml: 'yaml', yml: 'yaml', sql: 'sql', rust: 'rust', go: 'go',
+  };
+  const lang = map[ext] || 'plaintext';
+  const model = monacoEditor.getModel();
+  if (model) monaco.editor.setModelLanguage(model, lang);
+}
+
+// ---------------------------------------------------- TERMINAL PTY REAL (xterm.js)
+function initPtyTerminal() {
+  ptyTerm = new Terminal({
+    cursorBlink: true,
+    fontSize: 12.5,
+    fontFamily: "'JetBrains Mono', monospace",
+    theme: {
+      background: '#040711',
+      foreground: '#c2daf5',
+      cursor: '#00f0ff',
+      selectionBackground: 'rgba(0, 240, 255, 0.3)',
+    }
+  });
+
+  const fitAddon = new FitAddon.FitAddon();
+  ptyTerm.loadAddon(fitAddon);
+  ptyTerm.open($('ptyTerminalWrapper'));
+  fitAddon.fit();
+  window.addEventListener('resize', () => { try { fitAddon.fit(); } catch(e){} });
+
+  connectPtyWs();
+
+  ptyTerm.onData(data => {
+    if (ptyWs && ptyWs.readyState === 1) ptyWs.send(data);
+  });
+  ptyTerm.onResize(size => {
+    if (ptyWs && ptyWs.readyState === 1) {
+      ptyWs.send(JSON.stringify({ tipo: 'resize', cols: size.cols, rows: size.rows }));
+    }
+  });
+}
+
+function connectPtyWs() {
+  if (ptyWs) { ptyWs.close(); ptyWs = null; }
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${proto}//${location.host}/pty?token=${encodeURIComponent(TOKEN)}&proyecto=${encodeURIComponent(currentProject)}`;
+  
+  ptyWs = new WebSocket(url);
+  ptyWs.binaryType = 'arraybuffer';
+
+  ptyWs.onopen = () => {
+    ptyTerm.write('\r\n\x1b[36m⚡ [NEXO PTY Shell Conectada — ' + currentProject + ']\x1b[0m\r\n');
+  };
+  ptyWs.onmessage = ev => {
+    if (ev.data instanceof ArrayBuffer) {
+      ptyTerm.write(new Uint8Array(ev.data));
+    } else {
+      ptyTerm.write(ev.data);
+    }
+  };
+}
+$('btnRestartPty').onclick = () => {
+  ptyTerm.reset();
+  connectPtyWs();
+  showToast('Shell reiniciada.');
+};
+
+// ---------------------------------------------------- WEBSOCKET DE CONTROL
+function connectWs() {
   if (WS) { WS.close(); WS = null; }
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${proto}//${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`;
-  
+
   WS = new WebSocket(url);
   WS.onopen = () => {
-    $('pillWsStatus').classList.add('online');
-    $('wsStatusText').textContent = 'SISTEMA EN LÍNEA';
     wsSend({ tipo: 'join', proyecto: currentProject });
     fetchTree();
     fetchHistory();
-    fetchAiData();
-    hudSpeech('Nexo en línea. Protocolo de enlace activo.');
-  };
-  WS.onclose = () => {
-    $('pillWsStatus').classList.remove('online');
-    $('wsStatusText').textContent = 'DESCONECTADO';
-    setTimeout(() => { if (TOKEN && !WS) connectWebSocket(); }, 3000);
+    fetchTasks();
+    showToast('NEXO 2.0 En Línea');
   };
   WS.onmessage = ev => {
     try {
-      const data = JSON.parse(ev.data);
-      handleWsMessage(data);
+      handleServerEvent(JSON.parse(ev.data));
     } catch(e) {}
+  };
+  WS.onclose = () => {
+    setTimeout(() => { if (TOKEN && !WS) connectWs(); }, 3000);
   };
 }
 
@@ -1160,551 +1023,422 @@ function wsSend(obj) {
   if (WS && WS.readyState === 1) WS.send(JSON.stringify(obj));
 }
 
-// REST helper
+// ---------------------------------------------------- API REST
 async function apiGet(endpoint) {
   const sep = endpoint.includes('?') ? '&' : '?';
   const res = await fetch(`${endpoint}${sep}token=${encodeURIComponent(TOKEN)}`);
-  if (res.status === 401) {
-    showModal('modalToken');
-    return null;
-  }
   return res.json();
 }
-
 async function apiPost(endpoint, body) {
   const sep = endpoint.includes('?') ? '&' : '?';
   const res = await fetch(`${endpoint}${sep}token=${encodeURIComponent(TOKEN)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
   return res.json();
 }
 
-// Render Project Tree
+// ---------------------------------------------------- PROYECTOS Y ARCHIVOS
 async function fetchTree() {
   const d = await apiGet('/api/arbol');
-  if (!d) return;
-  projectsTree = d.arbol || [];
-  fileLocks = d.file_locks || {};
+  if (!d || !d.arbol) return;
+  projectsTree = d.arbol;
   renderTree();
 }
 
 function renderTree() {
-  const container = $('projectTreeList');
-  container.innerHTML = '';
-  if (!projectsTree.length) {
-    container.innerHTML = '<div style="padding:10px; color:var(--text-3); font-size:12px;">Sin proyectos creados. Pulsa + para añadir uno.</div>';
-    return;
-  }
+  const c = $('treeProjectList');
+  c.innerHTML = '';
   projectsTree.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'project-card' + (p.nombre === currentProject ? ' active expanded' : '');
+    const item = document.createElement('div');
+    item.className = 'tree-proj-item' + (p.nombre === currentProject ? ' active expanded' : '');
     
-    const row = document.createElement('div');
-    row.className = 'project-title-row';
-    row.innerHTML = `
-      <span class="project-arrow">▶</span>
-      <span style="flex:1;">${p.nombre}</span>
-      <button class="icon-btn" style="font-size:10px;" title="Eliminar proyecto">✕</button>
-    `;
-    row.onclick = () => {
-      card.classList.toggle('expanded');
+    const title = document.createElement('div');
+    title.className = 'tree-proj-title';
+    title.innerHTML = `<span class="tree-proj-arrow">▶</span> <span>${p.nombre}</span>`;
+    title.onclick = () => {
+      item.classList.toggle('expanded');
       selectProject(p.nombre);
     };
-    row.querySelector('.icon-btn').onclick = (e) => {
-      e.stopPropagation();
-      if (confirm(`¿Eliminar el proyecto "${p.nombre}" y todos sus archivos?`)) {
-        wsSend({ tipo: 'proyecto_borrar', nombre: p.nombre, confirmar: true });
-      }
-    };
 
-    const filesDiv = document.createElement('div');
-    filesDiv.className = 'project-card-files';
+    const filesBox = document.createElement('div');
+    filesBox.className = 'tree-files-box';
     p.archivos.forEach(f => {
-      const fRow = document.createElement('div');
-      const isLocked = fileLocks[`${p.nombre}/${f}`];
-      fRow.className = 'file-row' + (currentFile === `${p.nombre}/${f}` ? ' active' : '');
-      fRow.innerHTML = `
-        <span>📄</span>
-        <span>${f}</span>
-        ${isLocked ? `<span class="file-lock-badge">EDITANDO: ${isLocked.usuario}</span>` : ''}
-      `;
-      fRow.onclick = (e) => {
+      const fItem = document.createElement('div');
+      fItem.className = 'tree-file-item' + (currentFile === `${p.nombre}/${f}` ? ' active' : '');
+      fItem.innerHTML = `<span>📄</span> <span>${f}</span>`;
+      fItem.onclick = (e) => {
         e.stopPropagation();
         openFile(p.nombre, f);
       };
-      filesDiv.appendChild(fRow);
+      filesBox.appendChild(fItem);
     });
 
-    card.appendChild(row);
-    card.appendChild(filesDiv);
-    container.appendChild(card);
+    item.appendChild(title);
+    item.appendChild(filesBox);
+    c.appendChild(item);
   });
 }
 
 function selectProject(proj) {
   currentProject = proj;
-  $('statusProject').textContent = 'Proyecto: ' + proj;
+  $('sbProject').textContent = 'Proyecto: ' + proj;
   wsSend({ tipo: 'join', proyecto: proj });
   fetchHistory();
-  fetchAiData();
+  fetchTasks();
+  connectPtyWs();
   renderTree();
 }
 
-// Editor & Files
 async function openFile(proj, ruta) {
-  const fullKey = `${proj}/${ruta}`;
-  currentFile = fullKey;
-  $('statusFile').textContent = 'Archivo: ' + fullKey;
-  $('editorFileInfo').textContent = fullKey;
+  const full = `${proj}/${ruta}`;
+  currentFile = full;
+  $('sbFile').textContent = 'Archivo: ' + full;
+  $('activeFileLabel').textContent = full;
 
-  if (!openTabs[fullKey]) {
-    openTabs[fullKey] = { proyecto: proj, ruta: ruta, contenido: '', dirty: false };
+  if (!openTabs[full]) {
+    openTabs[full] = { proyecto: proj, ruta: ruta, contenido: '', dirty: false };
   }
   renderTabs();
 
-  // Notificar edición
-  wsSend({ tipo: 'file_lock', ruta: fullKey, accion: 'lock' });
-
   const res = await apiGet(`/api/archivo?proyecto=${encodeURIComponent(proj)}&ruta=${encodeURIComponent(ruta)}`);
   if (res && res.contenido !== undefined) {
-    openTabs[fullKey].contenido = res.contenido;
-    $('codeEditor').value = res.contenido;
-    updateLineNumbers();
+    openTabs[full].contenido = res.contenido;
+    if (monacoEditor) {
+      monacoEditor.setValue(res.contenido);
+      setEditorLanguage(ruta);
+    }
   }
   renderTree();
 }
 
 function renderTabs() {
-  const bar = $('editorTabs');
-  bar.innerHTML = '';
+  const b = $('editorTabsBar');
+  b.innerHTML = '';
   Object.keys(openTabs).forEach(k => {
     const t = openTabs[k];
-    const el = document.createElement('div');
-    el.className = 'tab-item' + (currentFile === k ? ' active' : '');
-    el.innerHTML = `<span>${t.ruta}</span> <span class="tab-close-btn">×</span>`;
-    el.onclick = () => openFile(t.proyecto, t.ruta);
-    el.querySelector('.tab-close-btn').onclick = (e) => {
+    const n = document.createElement('div');
+    n.className = 'tab-node' + (currentFile === k ? ' active' : '');
+    n.innerHTML = `<span>${t.ruta}</span> <span class="tab-close">×</span>`;
+    n.onclick = () => openFile(t.proyecto, t.ruta);
+    n.querySelector('.tab-close').onclick = (e) => {
       e.stopPropagation();
-      closeTab(k);
+      delete openTabs[k];
+      const keys = Object.keys(openTabs);
+      if (keys.length > 0) openFile(openTabs[keys[0]].proyecto, openTabs[keys[0]].ruta);
+      else {
+        currentFile = null;
+        if (monacoEditor) monacoEditor.setValue('');
+        $('activeFileLabel').textContent = 'Sin archivo activo';
+      }
+      renderTabs();
+      renderTree();
     };
-    bar.appendChild(el);
+    b.appendChild(n);
   });
 }
 
-function closeTab(key) {
-  wsSend({ tipo: 'file_lock', ruta: key, accion: 'unlock' });
-  delete openTabs[key];
-  const keys = Object.keys(openTabs);
-  if (keys.length > 0) {
-    const next = openTabs[keys[0]];
-    openFile(next.proyecto, next.ruta);
-  } else {
-    currentFile = null;
-    $('codeEditor').value = '';
-    $('editorFileInfo').textContent = 'Sin archivo activo';
-  }
-  renderTabs();
-  renderTree();
-}
-
-function updateLineNumbers() {
-  const lines = $('codeEditor').value.split('\n').length;
-  let nums = '';
-  for (let i = 1; i <= Math.max(lines, 1); i++) nums += i + '\n';
-  $('lineNumbers').textContent = nums;
-}
-$('codeEditor').addEventListener('input', () => {
-  updateLineNumbers();
-  if (currentFile && openTabs[currentFile]) {
-    openTabs[currentFile].contenido = $('codeEditor').value;
-    openTabs[currentFile].dirty = true;
-  }
-});
-
-// Guardar archivo
-function saveCurrentFile() {
-  if (!currentFile || !openTabs[currentFile]) return;
+function saveActiveFile() {
+  if (!currentFile || !openTabs[currentFile] || !monacoEditor) return;
   const t = openTabs[currentFile];
+  const val = monacoEditor.getValue();
   wsSend({
     tipo: 'archivo_escribir',
     proyecto: t.proyecto,
     ruta: t.ruta,
-    contenido: $('codeEditor').value
+    contenido: val,
   });
-  showToast('Guardado: ' + t.ruta);
-  hudSpeech('Archivo guardado.');
+  showToast('✓ Guardado: ' + t.ruta);
+  hudSpeech('Archivo guardado');
 }
-$('btnSaveFile').onclick = saveCurrentFile;
+$('btnSaveActiveFile').onclick = saveActiveFile;
 
-// Ejecutar código
-function runActiveFile() {
+// Ejecutar en terminal interactiva
+$('btnRunInTerminal').onclick = () => {
   if (!currentFile || !openTabs[currentFile]) {
-    showToast('Abre un archivo para ejecutarlo');
+    showToast('Abre un archivo primero');
     return;
   }
   const t = openTabs[currentFile];
   const ext = t.ruta.split('.').pop();
-  let cmd = `python3 ${t.ruta}`;
-  if (ext === 'js') cmd = `node ${t.ruta}`;
-  else if (ext === 'sh') cmd = `bash ${t.ruta}`;
+  let cmd = `python3 ${t.ruta}\n`;
+  if (ext === 'js') cmd = `node ${t.ruta}\n`;
+  else if (ext === 'sh') cmd = `bash ${t.ruta}\n`;
   
-  appendTerminal(`$ ${cmd}\n`, 'cmd-line');
-  wsSend({ tipo: 'run', proyecto: t.proyecto, cmd: cmd });
-  hudSpeech('Ejecutando proceso.');
-}
-$('btnRunCode').onclick = runActiveFile;
-
-// Terminal Output
-function appendTerminal(text, cls = '') {
-  const t = $('terminalOutput');
-  const d = document.createElement('div');
-  if (cls) d.className = cls;
-  d.textContent = text;
-  t.appendChild(d);
-  t.scrollTop = t.scrollHeight;
-}
-$('btnClearTerm').onclick = () => { $('terminalOutput').innerHTML = ''; };
-
-$('terminalInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const cmd = $('terminalInput').value.trim();
-    if (cmd) {
-      appendTerminal(`$ ${cmd}\n`, 'cmd-line');
-      wsSend({ tipo: 'run', proyecto: currentProject, cmd: cmd });
-      $('terminalInput').value = '';
-    }
+  if (ptyWs && ptyWs.readyState === 1) {
+    ptyWs.send(cmd);
+    showToast('Ejecutando en terminal...');
   }
-});
+};
 
-// Chat
+// ---------------------------------------------------- REVISIÓN Y GENERACIÓN DE IA REAL
+$('btnAskAiCodeReview').onclick = async () => {
+  if (!currentFile || !monacoEditor) {
+    showToast('Abre un archivo para revisar');
+    return;
+  }
+  const t = openTabs[currentFile];
+  const code = monacoEditor.getValue();
+  showToast('🤖 IA analizando código en vivo...');
+  hudSpeech('Analizando código');
+
+  const res = await apiPost('/api/ai/msg', {
+    proyecto: t.proyecto,
+    tipo: 'revision',
+    titulo: `Revisión de ${t.ruta}`,
+    contenido: `Por favor analiza este código de ${t.ruta}, detecta errores sintácticos, lógica y sugiere mejoras:`,
+    archivos: [t.ruta],
+    codigo: code.substring(0, 8000),
+  });
+
+  if (res.ok) {
+    $('tabNavChat').click();
+  }
+};
+
+// Aplicar código de IA directamente en Monaco Editor
+$('btnApplyAiCode').onclick = () => {
+  if (!lastAiGeneratedCode || !monacoEditor) return;
+  monacoEditor.setValue(lastAiGeneratedCode);
+  saveActiveFile();
+  $('btnApplyAiCode').style.display = 'none';
+  showToast('✨ ¡Código de IA aplicado y guardado!');
+  hudSpeech('Código aplicado con éxito');
+};
+
+// ---------------------------------------------------- CHAT
 async function fetchHistory() {
   const d = await apiGet(`/api/historial?proyecto=${encodeURIComponent(currentProject)}`);
   if (!d || !d.historial) return;
-  const stream = $('chatStream');
-  stream.innerHTML = '';
-  d.historial.forEach(m => appendChatMessage(m));
-  stream.scrollTop = stream.scrollHeight;
+  const s = $('chatMessagesStream');
+  s.innerHTML = '';
+  d.historial.forEach(m => appendChat(m));
+  s.scrollTop = s.scrollHeight;
 }
 
-function appendChatMessage(m) {
-  const stream = $('chatStream');
-  const bubble = document.createElement('div');
-  const isSystem = m.de === 'sistema';
+function appendChat(m) {
+  const s = $('chatMessagesStream');
+  const isAi = (m.de && m.de.includes('🤖')) || (m.de && m.de.includes('IA')) || (m.de === 'Antigravity') || (m.de === 'Hermes');
   const isMe = m.de === NOMBRE;
-  const isAi = (m.de && m.de.includes('🤖')) || (m.de && m.de.includes('IA'));
 
-  if (isSystem) {
-    bubble.className = 'chat-bubble system';
-    bubble.textContent = m.texto;
-  } else if (isAi) {
-    bubble.className = 'chat-bubble ai';
-    bubble.innerHTML = `
-      <div class="bubble-header">${m.de} • ${m.fecha || ''}</div>
-      <div class="bubble-body">${m.texto}</div>
-    `;
-  } else {
-    bubble.className = 'chat-bubble ' + (isMe ? 'mine' : 'theirs');
-    bubble.innerHTML = `
-      <div class="bubble-header">${m.de} • ${m.fecha || ''}</div>
-      <div class="bubble-body">${m.texto}</div>
-    `;
-  }
-  stream.appendChild(bubble);
-  stream.scrollTop = stream.scrollHeight;
-}
+  const row = document.createElement('div');
+  row.className = 'chat-row ' + (isAi ? 'ai' : (isMe ? 'mine' : 'theirs'));
 
-function sendChat() {
-  const txt = $('chatInput').value.trim();
-  if (!txt) return;
-  wsSend({ tipo: 'chat', proyecto: currentProject, texto: txt });
-  $('chatInput').value = '';
-}
-$('btnSendChat').onclick = sendChat;
-$('chatInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChat();
-  }
-});
-
-// AI Matrix
-async function fetchAiData() {
-  const [inboxRes, tasksRes] = await Promise.all([
-    apiGet(`/api/ai/inbox?proyecto=${encodeURIComponent(currentProject)}`),
-    apiGet(`/api/ai/tasks?proyecto=${encodeURIComponent(currentProject)}`)
-  ]);
-
-  const container = $('aiViewContainer');
-  container.innerHTML = '';
-
-  const tasks = (tasksRes && tasksRes.tareas) || [];
-  const msgs = (inboxRes && inboxRes.mensajes) || [];
-
-  const taskHeader = document.createElement('div');
-  taskHeader.style.cssText = 'font-family:"Chakra Petch",sans-serif; font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:4px;';
-  taskHeader.textContent = `📋 TABLERO DE TAREAS (${tasks.length})`;
-  container.appendChild(taskHeader);
-
-  if (!tasks.length) {
-    container.innerHTML += '<div style="font-size:11.5px; color:var(--text-3);">No hay tareas activas en este proyecto.</div>';
-  } else {
-    tasks.forEach(t => {
-      const c = document.createElement('div');
-      c.className = 'ai-card';
-      c.innerHTML = `
-        <div class="ai-card-title">
-          <span>${t.titulo}</span>
-          <span class="ai-tag ${t.estado}">${t.estado}</span>
-        </div>
-        <div style="font-size:11.5px; color:var(--text-2);">${t.descripcion || 'Sin detalles'}</div>
-        <div style="font-size:10.5px; font-family:'JetBrains Mono',monospace; color:var(--text-3); display:flex; justify-content:space-between;">
-          <span>Asignado: <strong>${t.asignado}</strong></span>
-          <span>Prioridad: ${t.prioridad}</span>
-        </div>
-      `;
-      container.appendChild(c);
+  let bodyHtml = m.texto;
+  // Convertir bloques de código simples a pre
+  if (bodyHtml.includes('```')) {
+    bodyHtml = bodyHtml.replace(/```(?:\w+)?\n([\s\S]*?)```/g, (match, code) => {
+      lastAiGeneratedCode = code.trim();
+      $('btnApplyAiCode').style.display = 'inline-flex';
+      return `<pre>${escHtml(code.trim())}</pre>`;
     });
   }
 
-  const msgHeader = document.createElement('div');
-  msgHeader.style.cssText = 'font-family:"Chakra Petch",sans-serif; font-size:12px; font-weight:700; color:var(--text-2); margin-top:14px; margin-bottom:4px;';
-  msgHeader.textContent = `🤖 MENSAJES Y COMUNICADOS IA (${msgs.length})`;
-  container.appendChild(msgHeader);
+  row.innerHTML = `
+    <div class="chat-author">${m.de} • ${m.fecha || ''}</div>
+    <div class="chat-bubble-content">${bodyHtml}</div>
+  `;
+  s.appendChild(row);
+  s.scrollTop = s.scrollHeight;
+}
 
-  msgs.forEach(m => {
-    const c = document.createElement('div');
-    c.className = 'ai-card';
-    c.style.borderLeft = '3px solid var(--accent)';
-    c.innerHTML = `
-      <div class="ai-card-title">
-        <span>${m.titulo}</span>
-        <span style="font-size:10px; color:var(--accent); font-family:'JetBrains Mono';">${m.tipo}</span>
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function sendChatMessage() {
+  const input = $('chatTextInput');
+  const txt = input.value.trim();
+  if (!txt) return;
+  wsSend({
+    tipo: 'chat',
+    proyecto: currentProject,
+    texto: txt,
+    archivo: currentFile ? openTabs[currentFile].ruta : '',
+  });
+  input.value = '';
+}
+$('btnSendChatMessage').onclick = sendChatMessage;
+$('chatTextInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
+
+// ---------------------------------------------------- TABLERO IA & TAREAS
+async function fetchTasks() {
+  const res = await apiGet(`/api/ai/tasks?proyecto=${encodeURIComponent(currentProject)}`);
+  const c = $('aiTasksDashboard');
+  c.innerHTML = '';
+  const list = (res && res.tareas) || [];
+  if (!list.length) {
+    c.innerHTML = '<div style="font-size:12px; color:var(--text-3);">No hay tareas registradas. Pulsa + para crear una.</div>';
+    return;
+  }
+  list.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'ai-box-card';
+    card.innerHTML = `
+      <div class="ai-box-title">
+        <span>${t.titulo}</span>
+        <span style="font-size:10px; color:var(--accent); font-family:'JetBrains Mono'; text-transform:uppercase;">${t.prioridad}</span>
       </div>
-      <div style="font-size:12px; color:var(--text-1);">${m.contenido}</div>
-      ${m.codigo ? `<pre style="background:var(--bg-0); padding:6px; border-radius:4px; font-size:11px; overflow-x:auto;">${m.codigo}</pre>` : ''}
-      <div style="font-size:10px; color:var(--text-3); font-family:'JetBrains Mono';">De: ${m.de} → Para: ${m.para} (${m.fecha})</div>
+      <div style="font-size:11.5px; color:var(--text-2);">${t.descripcion || 'Sin descripción'}</div>
+      <div style="font-size:10px; color:var(--text-3); font-family:'JetBrains Mono';">Asignado a: <strong>${t.asignado}</strong></div>
     `;
-    container.appendChild(c);
+    c.appendChild(card);
   });
 }
 
-// Nueva Tarea IA
-$('btnNewAiTask').onclick = () => showModal('modalAiTask');
-$('btnSubmitAiTask').onclick = async () => {
-  const titulo = $('inputAiTaskTitle').value.trim();
-  const desc = $('inputAiTaskDesc').value.trim();
-  const asignado = $('selectAiTaskAssignee').value;
-  const prioridad = $('selectAiTaskPriority').value;
-  if (!titulo) return;
+$('btnCreateTask').onclick = () => showModal('modalTask');
+$('btnSubmitTask').onclick = async () => {
+  const tit = $('inputTaskTitle').value.trim();
+  const desc = $('inputTaskDesc').value.trim();
+  const asig = $('selTaskAssignee').value;
+  if (!tit) return;
 
   await apiPost('/api/ai/task', {
     proyecto: currentProject,
-    titulo: titulo,
+    titulo: tit,
     descripcion: desc,
-    asignado: asignado,
-    prioridad: prioridad,
+    asignado: asig,
   });
 
-  // Enviar aviso IA
-  await apiPost('/api/ai/msg', {
-    de: 'antigravity',
-    para: asignado,
+  // Notificar al chat
+  wsSend({
+    tipo: 'chat',
     proyecto: currentProject,
-    tipo: 'tarea',
-    titulo: titulo,
-    contenido: desc,
+    texto: `📋 Nueva tarea asignada a @${asig}: "${tit}"`,
   });
 
-  hideModal('modalAiTask');
-  $('inputAiTaskTitle').value = '';
-  $('inputAiTaskDesc').value = '';
-  fetchAiData();
-  showToast('Tarea asignada a la matriz IA');
-  hudSpeech('Nueva tarea asignada a la matriz.');
+  hideModal('modalTask');
+  $('inputTaskTitle').value = '';
+  $('inputTaskDesc').value = '';
+  fetchTasks();
+  showToast('✓ Tarea enviada');
 };
 
-// Solicitar revisión de código
-$('btnAskAiReview').onclick = async () => {
-  if (!currentFile) { showToast('Abre un archivo primero'); return; }
-  const code = $('codeEditor').value;
-  await apiPost('/api/ai/msg', {
-    de: NOMBRE,
-    para: 'todos',
-    proyecto: currentProject,
-    tipo: 'revision',
-    titulo: `Revisión de ${currentFile}`,
-    contenido: `Por favor revisa el código de este archivo y sugiere optimizaciones.`,
-    archivos: [currentFile],
-    codigo: code.substring(0, 2000),
-  });
-  showToast('Solicitud de revisión enviada a la IA compañera');
-  hudSpeech('Solicitud de revisión enviada a la IA.');
+// ---------------------------------------------------- INVITACIÓN COMPAÑERO
+$('btnInviteFriend').onclick = () => {
+  const origin = window.location.origin;
+  $('invitationUrl').textContent = `${origin}/?token=${TOKEN}`;
+  $('invitationToken').textContent = TOKEN;
+  $('invitationCli').textContent = `python3 nexo-cli.py --server "${origin}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
+  showModal('modalInvite');
 };
 
-// Modal Conectar Amigo
-$('btnShareColab').onclick = () => {
-  const url = window.location.origin;
-  $('shareUrlText').textContent = url;
-  $('shareTokenText').textContent = TOKEN;
-  $('shareHermesCmd').textContent = `python3 nexo-cli.py --server "${url}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
-  $('shareAgyCmd').textContent = `nexo colab --server "${url}" --token "${TOKEN}"`;
-  showModal('modalShare');
-};
-
-$('btnCopyInvite').onclick = () => {
-  const url = window.location.origin;
-  const invite = `🚀 NEXO 2.0 Atlantis — Conexión Colaborativa\n\n1. Abre en navegador: ${url}\n2. Llave Token: ${TOKEN}\n\nO ejecuta en tu terminal con Hermes:\npython3 nexo-cli.py --server "${url}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
+$('btnCopyInviteData').onclick = () => {
+  const origin = window.location.origin;
+  const invite = `🚀 NEXO 2.0 Atlantis — Conexión Colaborativa\n\n1. Enlace Web Directo:\n${origin}/?token=${TOKEN}\n\n2. Para Hermes (Terminal):\npython3 nexo-cli.py --server "${origin}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
   navigator.clipboard.writeText(invite).then(() => {
     showToast('¡Invitación copiada al portapapeles!');
   });
 };
 
-// Matrix panel tab switcher
-$('tabBtnChat').onclick = () => {
-  $('tabBtnChat').classList.add('active');
-  $('tabBtnAi').classList.remove('active');
-  $('viewChat').classList.add('active');
-  $('viewAi').classList.remove('active');
-};
-$('tabBtnAi').onclick = () => {
-  $('tabBtnAi').classList.add('active');
-  $('tabBtnChat').classList.remove('active');
-  $('viewAi').classList.add('active');
-  $('viewChat').classList.remove('active');
-  fetchAiData();
+// ---------------------------------------------------- CONFIGURACIÓN IA
+$('btnConfigAi').onclick = async () => {
+  const cfg = await apiGet('/api/ai/config');
+  if (cfg) {
+    $('selAiProvider').value = cfg.proveedor || 'auto';
+    $('inputAiModel').value = cfg.modelo || 'auto';
+  }
+  showModal('modalAiConfig');
 };
 
-// Manejo de eventos WebSocket
-function handleWsMessage(m) {
+$('btnSaveAiConfig').onclick = async () => {
+  const prov = $('selAiProvider').value;
+  const key = $('inputAiApiKey').value.trim();
+  const mod = $('inputAiModel').value.trim();
+  await apiPost('/api/ai/config', {
+    proveedor: prov,
+    api_key: key,
+    modelo: mod,
+  });
+  $('labelAiProvider').textContent = prov.toUpperCase();
+  hideModal('modalAiConfig');
+  showToast('✓ Configuración de IA guardada');
+};
+
+// ---------------------------------------------------- EVENTOS DEL SERVIDOR
+function handleServerEvent(m) {
   switch(m.tipo) {
     case 'chat':
-      appendChatMessage(m);
-      if (m.de !== NOMBRE) hudSpeech('Mensaje recibido en el chat.');
-      break;
-    case 'sistema':
-      appendChatMessage({ de: 'sistema', texto: m.texto });
-      break;
-    case 'output':
-      appendTerminal(m.texto);
-      break;
-    case 'run_fin':
-      appendTerminal(`\n[Proceso terminado: código ${m.code}]\n`, m.code === 0 ? 'succ-line' : 'err-line');
-      if (m.code === 0) hudSpeech('Proceso completado con éxito.');
-      else hudSpeech('Aviso: el proceso finalizó con errores.');
+      appendChat(m);
+      if (m.de !== NOMBRE && m.de.includes('🤖')) hudSpeech('Respuesta de IA recibida');
       break;
     case 'arbol':
       projectsTree = m.arbol || [];
       renderTree();
       break;
     case 'ai_msg':
-      fetchAiData();
-      showToast(`🤖 [IA] ${m.mensaje?.titulo || 'Mensaje de IA recibido'}`);
-      hudSpeech('Mensaje recibido de la inteligencia artificial.');
+      fetchTasks();
+      fetchHistory();
       break;
     case 'ai_task_update':
-      fetchAiData();
-      break;
-    case 'file_locks':
-      fileLocks = m.locks || {};
-      renderTree();
-      break;
-    case 'presencia':
-      $('statusPeers').textContent = `${m.conectados || 1} Agente(s) en línea`;
+      fetchTasks();
       break;
   }
 }
 
-// Token Modal
-$('btnTokenEdit').onclick = () => {
-  $('inputToken').value = TOKEN;
-  showModal('modalToken');
+// Tabs switcher matrix
+$('tabNavChat').onclick = () => {
+  $('tabNavChat').classList.add('active');
+  $('tabNavTasks').classList.remove('active');
+  $('viewChatContent').classList.add('active');
+  $('viewTasksContent').classList.remove('active');
 };
-$('btnSaveToken').onclick = () => {
-  TOKEN = $('inputToken').value.trim();
-  localStorage.setItem('nexo_token', TOKEN);
-  $('tokenDisplay').textContent = TOKEN.substring(0, 6) + '…';
-  hideModal('modalToken');
-  connectWebSocket();
+$('tabNavTasks').onclick = () => {
+  $('tabNavTasks').classList.add('active');
+  $('tabNavChat').classList.remove('active');
+  $('viewTasksContent').classList.add('active');
+  $('viewChatContent').classList.remove('active');
+  fetchTasks();
 };
 
-// Git Modal
-$('btnGitModal').onclick = () => showModal('modalGit');
-function gitExec(accion) {
-  const msg = $('inputGitCommitMsg').value.trim();
-  appendTerminal(`$ git ${accion}\n`, 'cmd-line');
-  wsSend({ tipo: 'git', accion: accion, msg: msg });
-  hideModal('modalGit');
-}
-$('btnGitStatus').onclick = () => gitExec('status');
-$('btnGitLog').onclick = () => gitExec('log');
-$('btnGitCommit').onclick = () => gitExec('commit');
-$('btnGitPush').onclick = () => gitExec('push');
-$('btnGitPull').onclick = () => gitExec('pull');
+// Atajos
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === 's') { e.preventDefault(); saveActiveFile(); }
+});
 
 // Nuevo proyecto
 $('btnNewProject').onclick = () => {
-  const n = prompt('Nombre del nuevo proyecto colaborativo:');
+  const n = prompt('Nombre del proyecto:');
   if (n && n.trim()) {
     wsSend({ tipo: 'proyecto_nuevo', nombre: n.trim() });
-    showToast('Creando proyecto: ' + n);
+    showToast('Creando: ' + n);
   }
 };
 $('btnRefreshTree').onclick = fetchTree;
 
 // Nuevo archivo
-$('btnNewFile').onclick = () => {
-  const f = prompt('Nombre del archivo (ej: main.py o src/app.py):', 'nuevo.py');
+$('btnNewCodeFile').onclick = () => {
+  const f = prompt('Nombre del archivo (ej: main.py o src/app.py):', 'app.py');
   if (f && f.trim()) {
     wsSend({ tipo: 'archivo_escribir', proyecto: currentProject, ruta: f.trim(), contenido: '' });
     openFile(currentProject, f.trim());
   }
 };
 
-// Descargar
-$('btnDownloadFile').onclick = () => {
-  if (!currentFile || !openTabs[currentFile]) return;
-  const t = openTabs[currentFile];
-  window.open(`/api/descargar?proyecto=${encodeURIComponent(t.proyecto)}&ruta=${encodeURIComponent(t.ruta)}&token=${encodeURIComponent(TOKEN)}`, '_blank');
-};
-
-// Subir
-$('btnUploadFile').onclick = () => $('hiddenFileInput').click();
-$('hiddenFileInput').onchange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const b64 = reader.result.split(',')[1] || '';
-    wsSend({ tipo: 'archivo_subir', proyecto: currentProject, ruta: file.name, datos: b64 });
-    showToast('Subiendo archivo: ' + file.name);
-  };
-  reader.readAsDataURL(file);
-};
-
-// Borrar
-$('btnDeleteFile').onclick = () => {
+// Borrar archivo
+$('btnDeleteActiveFile').onclick = () => {
   if (!currentFile || !openTabs[currentFile]) return;
   const t = openTabs[currentFile];
   if (confirm(`¿Eliminar ${t.ruta}?`)) {
     wsSend({ tipo: 'archivo_borrar', proyecto: t.proyecto, ruta: t.ruta, confirmar: true });
-    closeTab(currentFile);
   }
 };
 
-// Atajos de teclado
-document.addEventListener('keydown', e => {
-  const mod = e.ctrlKey || e.metaKey;
-  if (mod && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
-  if (mod && e.key === 'Enter') { e.preventDefault(); runActiveFile(); }
-});
-
-// Inicialización
-applyTheme(CURRENT_THEME);
-$('audioState').textContent = AUDIO_ENABLED ? 'ON' : 'OFF';
-if (TOKEN) $('tokenDisplay').textContent = TOKEN.substring(0, 6) + '…';
-connectWebSocket();
+// ---------------------------------------------------- INICIO
+(async () => {
+  applyTheme(CURRENT_THEME);
+  await ensureAuth();
+  initMonaco();
+  initPtyTerminal();
+  connectWs();
+})();
 </script>
 </body>
 </html>
