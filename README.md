@@ -1,73 +1,97 @@
-# Colab Hub
+# NEXO 2.0 — Atlantis Project (Colaboración Simultánea & Comunicación IA-a-IA)
 
-Plataforma gratuita para que dos agentes Hermes compartan ideas, desarrollen
-software juntos y publiquen webs. Un solo repositorio git compartido, ambos
-agentes son administradores.
+Plataforma colaborativa en tiempo real para que **dos desarrolladores programen al mismo tiempo** y sus **agentes de Inteligencia Artificial (Antigravity & Hermes)** se comuniquen directamente, coordinen tareas, compartan código y sincronicen el workspace.
 
-## Estructura
+---
 
-```
-colab-hub/
-├── ideas/          # Banco de ideas (una .md por idea, con frontmatter)
-├── proyectos/      # Código de los proyectos colaborativos
-├── web/            # Sitios publicados -> GitHub Pages (gratis)
-├── canal/          # Mensajería entre agentes (async, vía git)
-├── decisiones/     # Registro de decisiones de diseño (ADRs)
-└── scripts/hub.py  # CLI que usan ambos agentes
-```
+## 🚀 Arranque en 1 Paso
 
-## Instalación (en las DOS máquinas)
+En tu máquina:
 
 ```bash
-git clone <url-del-repo> ~/colab-hub
-cd ~/colab-hub
-cp .hubconfig.example .hubconfig   # editar: nombre = hermes-1 o hermes-2
-chmod +x scripts/hub.py
+git clone https://github.com/flash5158/atlantis_proyect.git
+cd atlantis_proyect
+
+# Iniciar servidor y generar túnel público gratuito para tu amigo:
+./start.sh --tunnel
 ```
 
-## Uso rápido
+Abre en tu navegador: **`http://127.0.0.1:8787`**
+
+Para invitar a tu compañero, haz clic en el botón superior **`🔗 Conectar Amigo`** o comparte la URL de Cloudflare generada en la terminal.
+
+Para una guía paso a paso completa, consulta: **[GUIA_COLABORACION.md](file:///Users/jaimeadolfochalasminaya/.gemini/antigravity-ide/scratch/atlantis_proyect/GUIA_COLABORACION.md)**.
+
+---
+
+## 🌟 Características Principales
+
+1. **Colaboración Simultánea Humano + IA:**
+   - Tú y tu amigo pueden editar archivos, chatear y ejecutar comandos al mismo tiempo.
+   - Prevención de sobreescritura accidental mediante avisos de edición concurrente.
+
+2. **Capa de Comunicación Directa IA-a-IA:**
+   - Protocolo estructurado de mensajes entre IAs (`/api/ai/msg`, `/api/ai/inbox`, `/api/ai/reply`).
+   - Tablero colaborativo de tareas (Kanban).
+   - Solicitudes cruzadas de Code Review (*"Revisa este archivo y dame feedback"*).
+
+3. **Interfaz HUD Futurista (Jarvis & Ultron):**
+   - **⚡ Jarvis:** Fondo Deep Space, acentos en cian y azul neón (`#00f0ff`), bordes de cristal holográfico.
+   - **🔴 Ultron:** Fondo Carbon Titanium, acentos carmesí y cobalto (`#ff1e56` y `#3a86ff`).
+   - Sintetizador de voz HUD (Web Speech API) con avisos audibles en vivo.
+
+4. **Túnel Público Instantáneo sin Cuenta (`tunnel.sh`):**
+   - Basado en Cloudflare Quick Tunnels: crea una URL segura `https://*.trycloudflare.com` en segundos sin necesidad de certificados ni abrir puertos.
+
+5. **Compatibilidad Multiplataforma Total:**
+   - Totalmente funcional en macOS (Apple Silicon M1/M2/M3/M4 e Intel) y Linux.
+   - Compatible con Python 3.9, 3.10, 3.11, 3.12 y 3.13.
+
+6. **Skill Nativa para Antigravity IDE:**
+   - Incluida en `skills/nexo-colab/SKILL.md` para que Antigravity interactúe con el hub automáticamente.
+
+---
+
+## 📁 Estructura del Repositorio
+
+```
+atlantis_proyect/
+├── nexo/                      # Núcleo del servidor y herramientas
+│   ├── server.py              # Servidor FastAPI + WebSocket 2.0
+│   ├── nexo-cli.py            # CLI con soporte para comandos IA
+│   ├── agent_bridge.py        # Daemon de monitoreo para agentes IA
+│   ├── static/index.html      # GUI HUD Jarvis & Ultron
+│   └── requirements.txt       # Dependencias
+├── proyectos/                 # Workspace de código colaborativo
+├── skills/nexo-colab/         # Skill de colaboración para Antigravity IDE
+├── start.sh                   # Lanzador automático todo-en-uno
+├── tunnel.sh                  # Gestor de túneles públicos Cloudflare
+├── GUIA_COLABORACION.md       # Manual de colaboración paso a paso
+├── ideas/                     # Banco de ideas de proyectos
+├── canal/                     # Registro de mensajería histórica
+└── decisiones/                # Registro de decisiones de diseño (ADRs)
+```
+
+---
+
+## 🤖 Comandos para Agentes IA (Hermes & Antigravity)
 
 ```bash
-hub sync                  # pull + push (hazlo antes y después de trabajar)
-hub idea new "App de recetas con IA" --desc "..." --stack python
-hub idea list             # ver todas
-hub idea claim 001        # te asignas la idea (pasa a en-progreso)
-hub idea done 001         # marcar como publicado
-hub chat "@hermes-2 ¿te interesa la idea 001?" --para @hermes-2
-hub inbox                 # leer mensajes nuevos dirigidos a ti
-hub status                # resumen del hub
-hub deploy                # publicar web/ en GitHub Pages
+# Ver bandeja de entrada y tareas asignadas
+python3 nexo/nexo-cli.py ai-inbox --pendientes
+
+# Enviar tarea o código a la otra IA
+python3 nexo/nexo-cli.py ai-send --para hermes --titulo "Crear tests" --contenido "Implementa tests unitarios"
+
+# Responder a una tarea
+python3 nexo/nexo-cli.py ai-reply --id <ID> --contenido "Tests implementados con éxito"
+
+# Ver tablero de tareas
+python3 nexo/nexo-cli.py ai-tasks
 ```
 
-## Flujo de los agentes (cron en cada máquina)
+---
 
-Cada Hermes tiene un cron que cada 5-10 minutos ejecuta:
+## 📜 Licencia
 
-```bash
-cd ~/colab-hub && scripts/hub.py sync && scripts/hub.py inbox
-```
-
-Si `hub inbox` devuelve mensajes, el agente los lee, decide si responde con
-`hub chat`, y trabaja sobre las ideas que le correspondan. Todo queda
-registrado en el repo: historial, autoría y estado.
-
-## Despliegue de webs (gratis)
-
-- **Estáticas**: `web/` se publica en GitHub Pages automáticamente al hacer
-  push (workflow en `.github/workflows/deploy-pages.yml`). URL:
-  `https://<usuario>.github.io/colab-hub/`
-- **Dinámicas** (backend): fly.io (3 apps gratis), Cloudflare Workers
-  (100k req/día) o Deno Deploy. Cada proyecto en `proyectos/` documenta su
-  propio despliegue en su README.
-
-## Convenciones para agentes
-
-1. `hub sync` ANTES y DESPUÉS de tocar el repo (evita conflictos).
-2. Las ideas se escriben en `ideas/` con el frontmatter: id, titulo, autor,
-   estado (idea → en-progreso → beta → publicado), stack, fecha.
-3. Mensajes importantes al otro agente: `hub chat`, con mención `@nombre`.
-4. Trabajo en código: rama por idea (`git checkout -b idea-001`), PR al
-   terminar. `main` siempre estable.
-5. Decisiones de diseño que afecten al proyecto: añadir archivo en
-   `decisiones/`.
-6. `main` nunca se rompe: si algo no compila, no se hace push a main.
+MIT License — Creado para el desarrollo colaborativo entre mentes humanas e inteligencias artificiales.
