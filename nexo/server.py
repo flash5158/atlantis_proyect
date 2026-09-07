@@ -575,6 +575,101 @@ async def api_ai_task(req: Request, token: str = Query("")):
     return {"ok": True, "tarea": tarea}
 
 
+# ---------------------------------------------------------------- Endpoints Reales Hermes & Gemini
+@app.get("/api/ai/status")
+async def api_ai_status(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    status = await ai_engine.verificar_estado_ia()
+    return status
+
+
+@app.post("/api/ai/hermes/run")
+async def api_ai_hermes_run(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    prompt = body.get("prompt", "").strip()
+    if not prompt:
+        return JSONResponse({"error": "prompt requerido"}, status_code=400)
+
+    proyecto = body.get("proyecto", "")
+    sala = sala_de(proyecto) if proyecto else None
+    cwd_dir = Path(sala.directorio) if (sala and Path(sala.directorio).is_dir()) else WORKSPACE
+    yolo = body.get("yolo", True)
+
+    await enviar_todos({
+        "tipo": "hermes_stream_start",
+        "prompt": prompt,
+        "proyecto": proyecto or "general",
+    })
+
+    def on_chunk(chunk: str):
+        asyncio.create_task(enviar_todos({
+            "tipo": "hermes_stream_chunk",
+            "chunk": chunk,
+            "proyecto": proyecto or "general",
+        }))
+
+    ret, salida = await ai_engine.ejecutar_hermes(prompt, cwd=cwd_dir, yolo=yolo, on_chunk=on_chunk)
+
+    await enviar_todos({
+        "tipo": "hermes_stream_end",
+        "retcode": ret,
+        "salida": salida,
+        "proyecto": proyecto or "general",
+    })
+
+    await difundir_arbol()
+    return {"ok": ret == 0, "retcode": ret, "salida": salida}
+
+
+@app.post("/api/ai/gemini/run")
+async def api_ai_gemini_run(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    prompt = body.get("prompt", "").strip()
+    if not prompt:
+        return JSONResponse({"error": "prompt requerido"}, status_code=400)
+
+    contexto = body.get("contexto", "")
+    nombre_archivo = body.get("nombre_archivo", "")
+    modelo = body.get("modelo", "gemini-3.6-flash")
+    historial = body.get("historial", [])
+
+    texto, codigo = await ai_engine.consultar_gemini(
+        prompt,
+        contexto_archivo=contexto,
+        nombre_archivo=nombre_archivo,
+        modelo=modelo,
+        historial=historial,
+    )
+    return {"ok": True, "texto": texto, "codigo": codigo}
+
+
+@app.post("/api/ai/dual/run")
+async def api_ai_dual_run(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    objetivo = body.get("objetivo", "").strip()
+    if not objetivo:
+        return JSONResponse({"error": "objetivo requerido"}, status_code=400)
+
+    proyecto = body.get("proyecto", "")
+    sala = sala_de(proyecto) if proyecto else None
+    cwd_dir = Path(sala.directorio) if (sala and Path(sala.directorio).is_dir()) else WORKSPACE
+
+    def on_event(ev: dict):
+        asyncio.create_task(enviar_todos(ev))
+
+    resultado = await ai_engine.colaboracion_dual(objetivo, cwd=cwd_dir, on_event=on_event)
+    await difundir_arbol()
+    return resultado
+
+
+
 # ---------------------------------------------------------------- PTY Real Interactive Terminal
 @app.websocket("/pty")
 async def pty_endpoint(
@@ -822,6 +917,48 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
 
             elif tipo == "arbol":
                 await enviar(ws, {"tipo": "arbol", "arbol": _arbol()})
+
+            elif tipo == "hermes_run":
+                p_text = msg.get("prompt", "").strip()
+                if p_text:
+                    p_proy = msg.get("proyecto", "")
+                    s_obj = sala_de(p_proy) if p_proy else None
+                    c_dir = Path(s_obj.directorio) if (s_obj and Path(s_obj.directorio).is_dir()) else WORKSPACE
+                    await enviar_todos({"tipo": "hermes_stream_start", "prompt": p_text, "proyecto": p_proy})
+                    def _hk(chunk: str):
+                        asyncio.create_task(enviar_todos({"tipo": "hermes_stream_chunk", "chunk": chunk, "proyecto": p_proy}))
+                    async def _run_h():
+                        ret, sal = await ai_engine.ejecutar_hermes(p_text, cwd=c_dir, yolo=True, on_chunk=_hk)
+                        await enviar_todos({"tipo": "hermes_stream_end", "retcode": ret, "salida": sal, "proyecto": p_proy})
+                        await difundir_arbol()
+                    asyncio.create_task(_run_h())
+
+            elif tipo == "gemini_run":
+                p_text = msg.get("prompt", "").strip()
+                if p_text:
+                    async def _run_g():
+                        resp_t, cod_t = await ai_engine.consultar_gemini(
+                            p_text,
+                            contexto_archivo=msg.get("contexto", ""),
+                            nombre_archivo=msg.get("nombre_archivo", ""),
+                            modelo=msg.get("modelo", "gemini-3.6-flash"),
+                        )
+                        await enviar(ws, {"tipo": "gemini_response", "texto": resp_t, "codigo": cod_t, "id": msg.get("id")})
+                    asyncio.create_task(_run_g())
+
+            elif tipo == "dual_run":
+                obj_text = msg.get("objetivo", "").strip()
+                if obj_text:
+                    p_proy = msg.get("proyecto", "")
+                    s_obj = sala_de(p_proy) if p_proy else None
+                    c_dir = Path(s_obj.directorio) if (s_obj and Path(s_obj.directorio).is_dir()) else WORKSPACE
+                    def _ev_cb(ev: dict):
+                        asyncio.create_task(enviar_todos(ev))
+                    async def _run_d():
+                        res = await ai_engine.colaboracion_dual(obj_text, cwd=c_dir, on_event=_ev_cb)
+                        await enviar_todos({"tipo": "dual_colab_finish", "resultado": res})
+                        await difundir_arbol()
+                    asyncio.create_task(_run_d())
 
     except (WebSocketDisconnect, Exception):
         pass

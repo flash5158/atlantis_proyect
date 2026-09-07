@@ -1,957 +1,1297 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="jarvis">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXO 2.0 — Atlantis Real AI & Developer Hub</title>
+<title>NEXO Studio 2.0 — Dual AI Collaborative IDE (Hermes & Gemini)</title>
 
-<!-- Fuentes -->
+<!-- Fuentes Modernas 2026 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
 <!-- xterm.js (Terminal Interactiva PTY Real) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
 
-<!-- Monaco Editor (Motor de VS Code) -->
+<!-- Monaco Editor (Motor Oficial de VS Code) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 
 <style>
-:root[data-theme="jarvis"] {
-  --bg-0: #040711;
-  --bg-1: #080e1c;
-  --bg-2: #0e162b;
-  --bg-3: #141f3b;
-  --bg-hover: #1b294d;
-  --bg-active: #223461;
-  --border: #1a2744;
-  --border-soft: #121c33;
-  --border-strong: #00f0ff44;
-  --text-0: #f0f7ff;
-  --text-1: #c2daf5;
-  --text-2: #7a9ac4;
-  --text-3: #435c82;
-  --accent: #00f0ff;
-  --accent-dim: #0099cc;
-  --accent-glow: rgba(0, 240, 255, 0.25);
-  --accent-bg: rgba(0, 240, 255, 0.08);
-  --accent-secondary: #3b82f6;
-  --danger: #ff3366;
-  --warning: #ffb703;
-  --success: #00f59b;
-  --reactor-grad: linear-gradient(135deg, #00f0ff, #0055ff);
-}
+:root {
+  --bg-darkest: #07090e;
+  --bg-sidebar: #0b0f19;
+  --bg-panel: #0f1523;
+  --bg-card: #141c2e;
+  --bg-hover: #1b263e;
+  --bg-active: #223150;
+  
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-medium: #1f2a40;
+  --border-focus: #3b82f6;
 
-:root[data-theme="ultron"] {
-  --bg-0: #08080a;
-  --bg-1: #0e0e14;
-  --bg-2: #16161f;
-  --bg-3: #1f1f2b;
-  --bg-hover: #29293a;
-  --bg-active: #34344a;
-  --border: #282836;
-  --border-soft: #1b1b26;
-  --border-strong: #ff1e5655;
-  --text-0: #ffffff;
-  --text-1: #dcdce6;
-  --text-2: #9292a8;
-  --text-3: #565668;
-  --accent: #ff1e56;
-  --accent-dim: #cc103f;
-  --accent-glow: rgba(255, 30, 86, 0.28);
-  --accent-bg: rgba(255, 30, 86, 0.09);
-  --accent-secondary: #3a86ff;
-  --danger: #ff003c;
-  --warning: #ffaa00;
-  --success: #00ff88;
-  --reactor-grad: linear-gradient(135deg, #ff1e56, #ff003c);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+
+  --glow-cyan: rgba(6, 182, 212, 0.25);
+  --glow-purple: rgba(139, 92, 246, 0.25);
+  --glow-green: rgba(16, 185, 129, 0.25);
+
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body {
   height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', -apple-system, sans-serif;
-  background: var(--bg-0);
-  color: var(--text-1);
-  font-size: 13.5px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-darkest);
+  color: var(--text-primary);
+  font-size: 13px;
   -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* TOPBAR */
 .topbar {
-  height: 50px;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 12px;
-  flex-shrink: 0;
-  z-index: 100;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text-0);
-  letter-spacing: 0.08em;
-}
-.reactor-core {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--reactor-grad);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 14px var(--accent-glow);
-}
-.reactor-core-inner {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #000;
-  border: 1.5px solid #fff;
-}
-.logo-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-dim);
-  color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
-}
-.topbar-spacer { flex: 1; }
-
-.btn {
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-  color: var(--text-1);
-  font-size: 12px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 160ms ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent-dim);
-  color: var(--text-0);
-  box-shadow: 0 0 10px var(--accent-bg);
-}
-.btn-accent {
-  background: var(--accent-bg);
-  border-color: var(--accent-dim);
-  color: var(--accent);
-  font-weight: 600;
-}
-.btn-accent:hover {
-  background: var(--accent);
-  color: #000;
-  box-shadow: 0 0 14px var(--accent);
-}
-.btn-danger {
-  background: rgba(255, 51, 102, 0.1);
-  border-color: var(--danger);
-  color: var(--danger);
-}
-.btn-danger:hover {
-  background: var(--danger);
-  color: #fff;
-}
-.btn-hud {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-}
-
-/* LAYOUT */
-.main-layout {
-  display: flex;
-  height: calc(100vh - 50px - 28px);
-  overflow: hidden;
-}
-
-/* LEFT SIDEBAR */
-.sidebar {
-  width: 250px;
-  background: var(--bg-1);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-.sidebar-header {
-  padding: 10px 14px;
+  height: 48px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
+  padding: 0 16px;
+  gap: 16px;
+  z-index: 50;
+  user-select: none;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-2);
-  border-bottom: 1px solid var(--border-soft);
+  font-size: 15px;
+  letter-spacing: -0.02em;
 }
-.project-list-tree {
-  flex: 1;
-  overflow-y: auto;
-  padding: 6px;
-}
-.tree-proj-item {
-  border-radius: 6px;
-  margin-bottom: 3px;
-  overflow: hidden;
-}
-.tree-proj-title {
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
   display: flex;
   align-items: center;
-  padding: 6px 8px;
-  cursor: pointer;
+  justify-content: center;
+  box-shadow: 0 0 12px var(--glow-cyan);
+  color: white;
+  font-size: 14px;
+}
+.brand-name {
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
   gap: 6px;
+}
+.brand-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #c4b5fd;
+  border-radius: 4px;
   font-weight: 600;
-  font-size: 12.5px;
-  color: var(--text-0);
-  border-radius: 4px;
 }
-.tree-proj-title:hover { background: var(--bg-hover); }
-.tree-proj-item.active .tree-proj-title {
-  background: var(--accent-bg);
-  color: var(--accent);
-}
-.tree-proj-arrow {
-  font-size: 9px;
-  color: var(--text-3);
-  transition: transform 150ms ease;
-}
-.tree-proj-item.expanded .tree-proj-arrow {
-  transform: rotate(90deg);
-  color: var(--accent);
-}
-.tree-files-box {
-  padding-left: 20px;
-  display: none;
-}
-.tree-proj-item.expanded .tree-files-box { display: block; }
-.tree-file-item {
-  display: flex;
-  align-items: center;
-  padding: 4px 6px;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-2);
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-}
-.tree-file-item:hover { background: var(--bg-hover); color: var(--text-0); }
-.tree-file-item.active { background: var(--bg-active); color: var(--accent); font-weight: 600; }
 
-/* AI Presence Panel */
-.ai-status-footer {
-  padding: 10px 14px;
-  background: var(--bg-0);
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.ai-agent-indicator {
+.topbar-center {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
-.pulse-circle {
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.status-pill:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-card);
+}
+.status-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 8px var(--success);
+  background: var(--text-muted);
+}
+.status-dot.online {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse-dot 2s infinite;
+}
+.status-dot.gemini {
+  background: var(--accent-purple);
+  box-shadow: 0 0 8px var(--accent-purple);
+  animation: pulse-dot 2s infinite;
+}
+.status-dot.hermes {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
 }
 
-/* CENTER: EDITOR + TERMINAL */
-.center-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-  background: var(--bg-0);
-}
-.tabs-bar {
-  height: 36px;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  overflow-x: auto;
-  flex-shrink: 0;
-}
-.tab-node {
-  height: 100%;
+.topbar-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 14px;
+}
+.btn-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--text-2);
-  border-right: 1px solid var(--border-soft);
+  font-weight: 500;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-panel);
+  color: var(--text-primary);
   cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
+  transition: all 0.15s;
 }
-.tab-node:hover { background: var(--bg-hover); color: var(--text-0); }
-.tab-node.active {
-  background: var(--bg-0);
-  color: var(--accent);
-  border-top: 2px solid var(--accent);
+.btn-top:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
 }
-.tab-close { opacity: 0.5; font-size: 13px; }
-.tab-close:hover { opacity: 1; color: var(--danger); }
+.btn-top.accent {
+  background: linear-gradient(135deg, #0284c7, #7c3aed);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+.btn-top.accent:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 3px 15px rgba(124, 58, 237, 0.45);
+}
 
-.editor-surface {
-  flex: 1;
-  position: relative;
+/* APP SHELL */
+.app-container {
+  display: flex;
+  height: calc(100vh - 48px);
+  width: 100%;
   overflow: hidden;
 }
-#monacoContainer {
-  position: absolute;
-  inset: 0;
-}
 
-.editor-toolbar {
-  height: 36px;
-  background: var(--bg-1);
-  border-top: 1px solid var(--border-soft);
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.editor-status-label {
-  margin-right: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px;
-  color: var(--text-2);
-}
-
-/* TERMINAL PTY REAL */
-.terminal-section {
-  height: 230px;
-  background: var(--bg-0);
-  border-top: 1px solid var(--border);
+/* LEFT ICON RAIL */
+.icon-rail {
+  width: 48px;
+  background: var(--bg-darkest);
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-}
-.terminal-header {
-  height: 28px;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border-soft);
-  display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 10px 0;
   gap: 12px;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-#ptyTerminalWrapper {
-  flex: 1;
-  overflow: hidden;
-  padding: 4px 6px;
-  background: #000;
-}
-
-/* RIGHT: MATRIX (CHAT & REAL AI CO-PILOT) */
-.matrix-column {
-  width: 380px;
-  background: var(--bg-1);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
   flex-shrink: 0;
-  overflow: hidden;
 }
-.matrix-tabs-nav {
+.rail-btn {
+  width: 36px;
   height: 36px;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-}
-.matrix-tab-btn {
-  flex: 1;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--text-muted);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+  background: transparent;
+  border: none;
+  font-size: 16px;
 }
-.matrix-tab-btn.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  background: var(--bg-1);
+.rail-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+.rail-btn.active {
+  color: var(--accent-cyan);
+  background: var(--bg-card);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+.rail-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--accent-cyan);
+  border-radius: 0 3px 3px 0;
 }
 
-.matrix-view {
-  flex: 1;
-  display: none;
+/* SIDEBAR DRAWER */
+.sidebar-drawer {
+  width: 250px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
   flex-direction: column;
-  overflow: hidden;
+  flex-shrink: 0;
 }
-.matrix-view.active { display: flex; }
+.drawer-header {
+  height: 38px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.drawer-actions {
+  display: flex;
+  gap: 4px;
+}
+.tool-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tool-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
 
-/* Chat */
-.chat-log {
+.drawer-content {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 8px 6px;
+}
+
+/* FILE TREE */
+.tree-node {
+  padding: 4px 8px;
+  border-radius: 5px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.chat-row {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  max-width: 92%;
-}
-.chat-row.mine { align-self: flex-end; align-items: flex-end; }
-.chat-row.theirs { align-self: flex-start; align-items: flex-start; }
-.chat-row.ai { align-self: center; width: 98%; }
-.chat-author {
-  font-size: 10.5px;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--text-2);
-}
-.chat-bubble-content {
-  padding: 8px 12px;
-  border-radius: 8px;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  color: var(--text-secondary);
   font-size: 12.5px;
-  line-height: 1.45;
-  word-break: break-word;
+  transition: all 0.1s;
+  user-select: none;
+  font-family: 'Inter', sans-serif;
 }
-.chat-row.mine .chat-bubble-content {
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-dim);
-  color: var(--text-0);
+.tree-node:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
-.chat-row.theirs .chat-bubble-content {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  color: var(--text-1);
+.tree-node.active {
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--accent-cyan);
+  font-weight: 500;
 }
-.chat-row.ai .chat-bubble-content {
-  background: rgba(0, 240, 255, 0.06);
-  border: 1px solid var(--border-strong);
-  border-left: 3px solid var(--accent);
-  color: var(--text-0);
+.tree-node .icon {
+  font-size: 13px;
+  opacity: 0.85;
 }
-.chat-row.ai pre {
-  background: var(--bg-0);
-  padding: 8px;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
+.tree-node.folder {
+  font-weight: 600;
+  color: var(--text-muted);
   font-size: 11.5px;
-  overflow-x: auto;
+  text-transform: uppercase;
   margin-top: 6px;
 }
 
-.chat-input-bar {
-  padding: 8px;
-  background: var(--bg-2);
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
-}
-.chat-input-field {
+/* CENTER WORKSPACE */
+.center-workspace {
   flex: 1;
-  background: var(--bg-0);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-0);
-  padding: 8px 10px;
-  font-size: 12.5px;
-  outline: none;
-  resize: none;
-  max-height: 80px;
-}
-.chat-input-field:focus { border-color: var(--accent); }
-
-/* AI View */
-.ai-dashboard {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-.ai-box-card {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.ai-box-title {
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--text-0);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  min-width: 0;
+  background: var(--bg-darkest);
 }
 
-/* STATUSBAR */
-.statusbar {
-  height: 28px;
-  background: var(--bg-1);
-  border-top: 1px solid var(--border);
+/* TABS BAR */
+.editor-tabs {
+  height: 38px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  gap: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-3);
+  padding: 0 4px;
+  overflow-x: auto;
+  gap: 2px;
   flex-shrink: 0;
 }
-.status-item { display: flex; align-items: center; gap: 5px; color: var(--text-2); }
-.status-item.accent { color: var(--accent); }
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.15s;
+  user-select: none;
+}
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+.tab.active {
+  background: var(--bg-darkest);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  font-weight: 500;
+}
+.tab .tab-close {
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+.tab .tab-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.tab-dirty {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  display: none;
+}
+.tab.dirty .tab-dirty { display: block; }
+.tab.dirty .tab-close { display: none; }
 
-/* MODALS */
-.modal-mask {
-  position: fixed;
+/* BREADCRUMBS */
+.editor-breadcrumbs {
+  height: 24px;
+  background: var(--bg-darkest);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  gap: 6px;
+}
+.editor-breadcrumbs span.curr {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* MONACO CONTAINER */
+.monaco-wrapper {
+  flex: 1;
+  position: relative;
+  min-height: 200px;
+}
+#monacoEditor {
+  width: 100%;
+  height: 100%;
+}
+
+/* BOTTOM DOCK (TERMINALS & LOGS) */
+.bottom-dock {
+  height: 260px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.dock-header {
+  height: 34px;
+  background: var(--bg-darkest);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+.dock-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dock-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.dock-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+.dock-tab.active {
+  color: var(--accent-cyan);
+  background: var(--bg-card);
+}
+.dock-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dock-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #06080e;
+}
+.dock-panel {
+  position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(4px);
+  display: none;
+}
+.dock-panel.active {
+  display: flex;
+  flex-direction: column;
+}
+#ptyTerminalWrapper {
+  width: 100%;
+  height: 100%;
+  padding: 6px 8px;
+}
+.hermes-live-console {
+  width: 100%;
+  height: 100%;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #38bdf8;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: #05070d;
+}
+
+/* RIGHT AI COMMAND CENTER */
+.right-ai-panel {
+  width: 380px;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.ai-panel-header {
+  height: 44px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  gap: 4px;
+}
+.ai-tab {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 160ms ease;
+  gap: 6px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: all 0.15s;
 }
-.modal-mask.show { opacity: 1; pointer-events: auto; }
-.modal-card {
-  background: var(--bg-1);
-  border: 1px solid var(--border-strong);
-  border-radius: 12px;
-  padding: 22px;
-  width: 480px;
-  max-width: 92vw;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+.ai-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.ai-tab.active {
+  background: var(--bg-card);
+  color: var(--accent-cyan);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.ai-tab.dual.active {
+  color: #c084fc;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.ai-panel-body {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding: 12px;
   gap: 12px;
 }
-.modal-field {
-  width: 100%;
-  background: var(--bg-0);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: var(--text-0);
-  font-family: 'JetBrains Mono', monospace;
+.ai-view {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.ai-view.active {
+  display: flex;
+}
+
+/* DUAL AI CARDS */
+.colab-hero-card {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.12));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.colab-hero-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.colab-hero-desc {
   font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.dual-agent-badges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.agent-mini-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.agent-mini-card .name {
+  font-size: 11.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.agent-mini-card .role {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.agent-mini-card.hermes .name { color: var(--accent-cyan); }
+.agent-mini-card.gemini .name { color: #c084fc; }
+
+/* DUAL COLLABORATION TIMELINE */
+.colab-timeline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding-right: 4px;
+}
+.timeline-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeIn 0.2s ease;
+}
+.timeline-item.gemini {
+  border-left: 3px solid var(--accent-purple);
+}
+.timeline-item.hermes {
+  border-left: 3px solid var(--accent-cyan);
+}
+.timeline-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+.timeline-badge {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.timeline-time {
+  color: var(--text-dim);
+}
+.timeline-body {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.timeline-body code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+
+/* PROMPT INPUT BOXES */
+.ai-input-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.ai-input-box:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus);
+}
+.ai-input-box textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  resize: none;
+  min-height: 54px;
   outline: none;
 }
-.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.ai-input-box textarea::placeholder {
+  color: var(--text-dim);
+}
+.ai-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.quick-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.quick-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+}
+.quick-tag:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+.btn-send {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #0284c7, #6366f1);
+  color: white;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-send:hover {
+  filter: brightness(1.15);
+}
+.btn-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* CHAT MESSAGES */
+.chat-thread {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+.chat-bubble {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  line-height: 1.45;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chat-bubble.user {
+  align-self: flex-end;
+  background: #1e3a8a;
+  color: white;
+}
+.chat-bubble.peer {
+  align-self: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+}
+.chat-bubble.agent {
+  align-self: flex-start;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: var(--text-primary);
+}
+.chat-sender {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  width: 520px;
+  max-width: 92vw;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
 
 /* TOAST */
-.toast-notice {
+.toast-container {
   position: fixed;
-  bottom: 38px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--bg-2);
-  border: 1px solid var(--accent-dim);
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--text-0);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  z-index: 999;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 220ms ease;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.toast-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-left: 4px solid var(--accent-cyan);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  font-size: 12px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <header class="topbar">
-  <div class="logo">
-    <div class="reactor-core"><div class="reactor-core-inner"></div></div>
-    <span>NEXO 2.0</span>
-    <span class="logo-tag">ATLANTIS CORE</span>
+  <div class="brand">
+    <div class="brand-icon">⚛</div>
+    <div class="brand-name">
+      NEXO STUDIO
+      <span class="brand-tag">2.0 DUAL-AI</span>
+    </div>
   </div>
 
-  <div class="topbar-spacer"></div>
+  <div class="topbar-center">
+    <!-- Hermes Status -->
+    <div class="status-pill" id="pillHermes" title="Nous Hermes CLI (Conectado)">
+      <span class="status-dot hermes" id="dotHermes"></span>
+      <span id="labelHermes">Hermes: Detectando...</span>
+    </div>
 
-  <button class="btn btn-accent btn-hud" id="btnInviteFriend">
-    🔗 Conectar Amigo
-  </button>
+    <!-- Gemini Status -->
+    <div class="status-pill" id="pillGemini" title="Google Gemini 3.6 Flash (Conectado)">
+      <span class="status-dot gemini" id="dotGemini"></span>
+      <span id="labelGemini">Gemini 3.6: Detectando...</span>
+    </div>
 
-  <button class="btn btn-hud" id="btnConfigAi">
-    ⚙️ Configurar IA: <span id="labelAiProvider" style="color:var(--accent);">Auto</span>
-  </button>
+    <!-- PTY Shell Status -->
+    <div class="status-pill" id="pillPty" title="Terminal PTY Interactiva">
+      <span class="status-dot online"></span>
+      <span>PTY: ZSH</span>
+    </div>
 
-  <button class="btn btn-hud" id="btnToggleTheme">
-    ⚡ <span id="labelThemeName">JARVIS</span>
-  </button>
+    <!-- Colab Peers -->
+    <div class="status-pill" id="pillPeers" title="Compañeros en la sesión">
+      <span style="font-size: 12px;">👥</span>
+      <span id="labelPeers">2 Devs (Jaime & Amigo)</span>
+    </div>
+  </div>
 
-  <button class="btn btn-hud" id="btnToggleSound">
-    🔊 HUD Audio: <span id="labelSoundState">ON</span>
-  </button>
+  <div class="topbar-actions">
+    <button class="btn-top accent" id="btnLaunchDual">
+      <span>⚡</span> Colaboración Dual
+    </button>
+    <button class="btn-top" id="btnShareColab">
+      <span>🔗</span> Invitar Amigo
+    </button>
+    <button class="btn-top" id="btnSaveFile" title="Guardar (Ctrl+S)">
+      <span>💾</span> Guardar
+    </button>
+    <button class="btn-top" id="btnConfigModal" title="Ajustes">
+      <span>⚙️</span>
+    </button>
+  </div>
 </header>
 
-<!-- MAIN APP BODY -->
-<div class="main-layout">
+<!-- MAIN APP SHELL -->
+<div class="app-container">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <span>📁 Proyectos</span>
-      <div style="display:flex; gap:6px;">
-        <button class="btn btn-hud" style="padding:2px 6px;" id="btnRefreshTree" title="Refrescar">⟳</button>
-        <button class="btn btn-hud btn-accent" style="padding:2px 6px;" id="btnNewProject" title="Nuevo proyecto">+</button>
+  <!-- LEFT ICON RAIL -->
+  <div class="icon-rail">
+    <button class="rail-btn active" id="railFiles" title="Explorador de Archivos">📁</button>
+    <button class="rail-btn" id="railGit" title="Control Git & Cambios">🔀</button>
+    <button class="rail-btn" id="railColab" title="Colaboración & Túneles">🌐</button>
+  </div>
+
+  <!-- SIDEBAR DRAWER -->
+  <aside class="sidebar-drawer" id="sidebarDrawer">
+    <!-- Files View -->
+    <div id="drawerFiles" style="display: flex; flex-direction: column; height: 100%;">
+      <div class="drawer-header">
+        <span>Archivos del Proyecto</span>
+        <div class="drawer-actions">
+          <button class="tool-btn" id="btnNewFile" title="Nuevo Archivo">+</button>
+          <button class="tool-btn" id="btnRefreshTree" title="Actualizar">🔄</button>
+        </div>
+      </div>
+      <div class="drawer-content" id="fileTreeContainer">
+        <!-- Árbol dinámico -->
       </div>
     </div>
 
-    <div class="project-list-tree" id="treeProjectList"></div>
+    <!-- Git View -->
+    <div id="drawerGit" style="display: none; flex-direction: column; height: 100%;">
+      <div class="drawer-header">
+        <span>Control de Versiones (Git)</span>
+      </div>
+      <div class="drawer-content" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 11px; color: var(--text-muted);" id="gitBranchLabel">Rama: main</div>
+        <div id="gitChangesList" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+          <!-- Cambios git -->
+        </div>
+        <div class="ai-input-box" style="margin-top: auto;">
+          <textarea id="gitCommitMsg" placeholder="Mensaje del commit..." rows="2"></textarea>
+          <button class="btn-send" id="btnGitCommitPush" style="width: 100%; justify-content: center;">
+            Commit & Push a GitHub
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <div class="ai-status-footer">
-      <div style="font-family:'Chakra Petch',sans-serif; font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase;">
-        Matriz de Inteligencia Artificial
+    <!-- Colab View -->
+    <div id="drawerColab" style="display: none; flex-direction: column; height: 100%;">
+      <div class="drawer-header">
+        <span>Sesión Compartida</span>
       </div>
-      <div class="ai-agent-indicator">
-        <span class="pulse-circle"></span>
-        <span>Antigravity: <strong style="color:var(--accent);">Co-Pilot Listo</strong></span>
-      </div>
-      <div class="ai-agent-indicator">
-        <span class="pulse-circle" style="background:var(--accent-secondary); box-shadow:0 0 8px var(--accent-secondary);"></span>
-        <span>Hermes: <strong style="color:var(--accent-secondary);">Enlace Activo</strong></span>
+      <div class="drawer-content" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Host Local:</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--accent-cyan);">http://127.0.0.1:8787</div>
+        </div>
+        <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Túnel Cloudflare:</div>
+          <div id="tunnelStatusText" style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+            Ejecuta <code style="color: var(--accent-cyan);">./tunnel.sh</code> para crear un enlace público seguro para tu amigo.
+          </div>
+        </div>
+        <button class="btn-top" id="btnCopyInviteLink" style="justify-content: center; width: 100%;">
+          📋 Copiar Enlace de Invitación
+        </button>
       </div>
     </div>
   </aside>
 
-  <!-- CENTER (MONACO EDITOR & REAL PTY TERMINAL) -->
-  <main class="center-column">
-    <div class="tabs-bar" id="editorTabsBar"></div>
-
-    <!-- Monaco Code Editor Surface -->
-    <div class="editor-surface">
-      <div id="monacoContainer"></div>
+  <!-- CENTER WORKSPACE -->
+  <main class="center-workspace">
+    <!-- TABS -->
+    <div class="editor-tabs" id="editorTabs">
+      <!-- Tabs dinámicas -->
     </div>
 
-    <!-- Toolbar -->
-    <div class="editor-toolbar">
-      <span class="editor-status-label" id="activeFileLabel">Sin archivo activo</span>
-      <button class="btn btn-hud btn-accent" id="btnSaveActiveFile">💾 Guardar (Ctrl+S)</button>
-      <button class="btn btn-hud" id="btnRunInTerminal">▶ Ejecutar en Terminal</button>
-      <button class="btn btn-hud" id="btnAskAiCodeReview" style="color:var(--accent);">🤖 Revisar con IA</button>
-      <button class="btn btn-hud" id="btnApplyAiCode" style="display:none; color:var(--success);">✨ Aplicar Código de IA</button>
-      <button class="btn btn-hud" id="btnNewCodeFile">+ Archivo</button>
-      <button class="btn btn-hud btn-danger" id="btnDeleteActiveFile">🗑</button>
+    <!-- BREADCRUMBS -->
+    <div class="editor-breadcrumbs" id="editorBreadcrumbs">
+      <span>atlantis_proyect</span> &gt; <span class="curr" id="breadcrumbFile">Selecciona un archivo</span>
     </div>
 
-    <!-- Interactive PTY Terminal (xterm.js) -->
-    <div class="terminal-section">
-      <div class="terminal-header">
-        <span>▶ Terminal Interactiva PTY (zsh / bash nativo)</span>
-        <div style="flex:1;"></div>
-        <button class="btn btn-hud" style="padding:1px 6px; font-size:10px;" id="btnRestartPty">Reiniciar Shell</button>
+    <!-- MONACO EDITOR -->
+    <div class="monaco-wrapper">
+      <div id="monacoEditor"></div>
+    </div>
+
+    <!-- BOTTOM DOCK -->
+    <div class="bottom-dock" id="bottomDock">
+      <div class="dock-header">
+        <div class="dock-tabs">
+          <button class="dock-tab active" data-dock="pty">💻 Terminal PTY (ZSH)</button>
+          <button class="dock-tab" data-dock="hermes">🤖 Hermes Live Console</button>
+          <button class="dock-tab" data-dock="dual-log">🧠 Registro Dual AI</button>
+        </div>
+        <div class="dock-actions">
+          <button class="tool-btn" id="btnClearDock" title="Limpiar">🧹</button>
+          <button class="tool-btn" id="btnRestartPty" title="Reiniciar Shell">🔄</button>
+          <button class="tool-btn" id="btnToggleDock" title="Minimizar">🔽</button>
+        </div>
       </div>
-      <div id="ptyTerminalWrapper"></div>
+      <div class="dock-content">
+        <!-- Terminal PTY -->
+        <div class="dock-panel active" id="dockPanelPty">
+          <div id="ptyTerminalWrapper"></div>
+        </div>
+        <!-- Hermes Live Console -->
+        <div class="dock-panel" id="dockPanelHermes">
+          <div class="hermes-live-console" id="hermesLiveOutput">
+⚡ Hermes Agent Console listo.
+Ejecuta prompts directamente desde el panel derecho o menciona @hermes en el chat.
+          </div>
+        </div>
+        <!-- Dual Log -->
+        <div class="dock-panel" id="dockPanelDualLog">
+          <div class="hermes-live-console" id="dualColabLogOutput" style="color: #c084fc;">
+🧠 Registro de Colaboración Dual (Hermes ↔ Gemini).
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
-  <!-- RIGHT (MATRIX & CHAT) -->
-  <aside class="matrix-column">
-    <div class="matrix-tabs-nav">
-      <div class="matrix-tab-btn active" id="tabNavChat">💬 Chat & IA</div>
-      <div class="matrix-tab-btn" id="tabNavTasks">🤖 Tareas & Matriz</div>
+  <!-- RIGHT AI COMMAND CENTER -->
+  <aside class="right-ai-panel">
+    <div class="ai-panel-header">
+      <button class="ai-tab dual active" data-view="dual">⚡ Dual Colab</button>
+      <button class="ai-tab" data-view="hermes">🤖 Hermes</button>
+      <button class="ai-tab" data-view="gemini">🟣 Gemini</button>
+      <button class="ai-tab" data-view="chat">💬 Amigo</button>
     </div>
 
-    <!-- CHAT VIEW -->
-    <div class="matrix-view active" id="viewChatContent">
-      <div class="chat-log" id="chatMessagesStream"></div>
-      <div class="chat-input-bar">
-        <textarea class="chat-input-field" id="chatTextInput" rows="1" placeholder="Escribe al chat o usa @ia para pedir código..."></textarea>
-        <button class="btn btn-accent" id="btnSendChatMessage">➤</button>
-      </div>
-    </div>
+    <div class="ai-panel-body">
+      <!-- VIEW 1: DUAL COLLABORATION (HERMES ↔ GEMINI) -->
+      <div class="ai-view active" id="viewDual">
+        <div class="colab-hero-card">
+          <div class="colab-hero-title">
+            <span>✨</span> Matriz de Colaboración Autónoma
+          </div>
+          <div class="colab-hero-desc">
+            Gemini diseña la arquitectura técnica y Hermes ejecuta herramientas locales y modificaciones en el código.
+          </div>
+          <div class="dual-agent-badges">
+            <div class="agent-mini-card gemini">
+              <div class="name"><span>🟣</span> Gemini 3.6</div>
+              <div class="role">Arquitecto & Auditor</div>
+            </div>
+            <div class="agent-mini-card hermes">
+              <div class="name"><span>🟢</span> Hermes CLI</div>
+              <div class="role">Ejecutor en Workspace</div>
+            </div>
+          </div>
+        </div>
 
-    <!-- TASKS & MATRIX VIEW -->
-    <div class="matrix-view" id="viewTasksContent">
-      <div style="padding:10px 12px; background:var(--bg-0); border-bottom:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-family:'Chakra Petch',sans-serif; font-size:11px; font-weight:700; color:var(--accent);">TABLERO IA-a-IA</span>
-        <button class="btn btn-hud btn-accent" id="btnCreateTask">+ Asignar Tarea</button>
+        <div class="colab-timeline" id="dualColabTimeline">
+          <!-- Eventos de colaboración -->
+          <div class="timeline-item gemini">
+            <div class="timeline-item-header">
+              <span class="timeline-badge" style="color: #c084fc;">🟣 Gemini Arquitecto</span>
+              <span class="timeline-time">Listo</span>
+            </div>
+            <div class="timeline-body">
+              Esperando objetivo de desarrollo. Escribe una meta abajo para que comencemos a colaborar juntos en el código.
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-input-box">
+          <div class="quick-tags">
+            <button class="quick-tag" onclick="setDualPrompt('Corrige los errores y haz que el código pase pruebas')">Corregir Bugs</button>
+            <button class="quick-tag" onclick="setDualPrompt('Escribe tests unitarios para este proyecto')">Crear Tests</button>
+            <button class="quick-tag" onclick="setDualPrompt('Refactoriza el código para máxima velocidad y claridad')">Refactorizar</button>
+          </div>
+          <textarea id="inputDualObjective" placeholder="Objetivo para Gemini y Hermes (ej: Crea un endpoint para métricas y pruébalo)..."></textarea>
+          <div class="ai-input-footer">
+            <span style="font-size: 11px; color: var(--text-dim);">Gemini + Hermes</span>
+            <button class="btn-send" id="btnStartDualColab">
+              <span>🚀</span> Iniciar Colaboración
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="ai-dashboard" id="aiTasksDashboard"></div>
+
+      <!-- VIEW 2: HERMES AGENT DIRECT RUNNER -->
+      <div class="ai-view" id="viewHermes">
+        <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-weight: 600; font-size: 12.5px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
+            <span>🤖</span> Nous Hermes Agent CLI
+          </div>
+          <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">
+            Binario local: <code id="hermesBinPath" style="font-size: 11px; color: var(--text-muted);">~/.local/bin/hermes</code>
+          </div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="checkHermesYolo" checked>
+            <label for="checkHermesYolo" style="font-size: 11.5px; cursor: pointer;">Modo YOLO (--yolo, ejecución directa)</label>
+          </div>
+        </div>
+
+        <div class="chat-thread" id="hermesPromptHistory" style="max-height: 300px;">
+          <!-- Salidas previas -->
+        </div>
+
+        <div class="ai-input-box" style="margin-top: auto;">
+          <textarea id="inputHermesPrompt" placeholder="Instrucción para Hermes en el workspace local..."></textarea>
+          <div class="ai-input-footer">
+            <button class="quick-tag" onclick="$('inputHermesPrompt').value = 'Revisa los archivos del proyecto y resume el estado actual.'">Diagnóstico</button>
+            <button class="btn-send" id="btnRunHermes">
+              <span>⚡</span> Ejecutar Hermes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: GEMINI CO-PILOT -->
+      <div class="ai-view" id="viewGemini">
+        <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-weight: 600; font-size: 12.5px; color: #c084fc; display: flex; align-items: center; gap: 6px;">
+            <span>🟣</span> Google Gemini 3.6 Flash
+          </div>
+          <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">
+            API Oficial activa con razonamiento profundo y generación de código de alta velocidad.
+          </div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="checkGeminiIncludeFile" checked>
+            <label for="checkGeminiIncludeFile" style="font-size: 11.5px; cursor: pointer;">Incluir archivo actual como contexto</label>
+          </div>
+        </div>
+
+        <div class="chat-thread" id="geminiChatHistory" style="max-height: 300px;">
+          <!-- Conversación Gemini -->
+        </div>
+
+        <div class="ai-input-box" style="margin-top: auto;">
+          <textarea id="inputGeminiPrompt" placeholder="Pregunta o pide código a Gemini 3.6..."></textarea>
+          <div class="ai-input-footer">
+            <button class="quick-tag" onclick="$('inputGeminiPrompt').value = 'Explica la función de este archivo y sugiere optimizaciones.'">Optimizar</button>
+            <button class="btn-send" id="btnRunGemini" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+              <span>✨</span> Consultar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: PEER CHAT (AMIGO) -->
+      <div class="ai-view" id="viewChat">
+        <div class="chat-thread" id="peerChatThread" style="flex: 1;">
+          <!-- Mensajes de chat -->
+        </div>
+        <div class="ai-input-box">
+          <textarea id="inputPeerChat" placeholder="Mensaje para tu amigo (usa @hermes o @gemini para invocar IAs)..."></textarea>
+          <div class="ai-input-footer">
+            <span style="font-size: 11px; color: var(--text-dim);">Enter para enviar</span>
+            <button class="btn-send" id="btnSendPeerChat">Enviar</button>
+          </div>
+        </div>
+      </div>
     </div>
   </aside>
 </div>
 
-<!-- STATUSBAR -->
-<footer class="statusbar">
-  <div class="status-item accent">⚡ NEXO 2.0 ATLANTIS</div>
-  <div class="status-item" id="sbProject">Proyecto: general</div>
-  <div class="status-item" id="sbFile">Archivo: —</div>
-  <div style="flex:1;"></div>
-  <div class="status-item" id="sbPeers">Enlace Activo</div>
-  <div class="status-item">UTF-8</div>
-</footer>
-
-<!-- MODAL INVITAR AMIGO -->
-<div class="modal-mask" id="modalInvite">
-  <div class="modal-card" style="width: 560px;">
-    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
-      🤝 Conectar con tu Compañero
-    </div>
-    <p style="font-size:12px; color:var(--text-2); line-height:1.5;">
-      Comparte este enlace para que tu amigo entre directamente a la sesión sin configuración:
-    </p>
-
-    <div style="background:var(--bg-0); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:12px; display:flex; flex-direction:column; gap:8px;">
-      <div><strong>🌐 Enlace Directo:</strong> <span id="invitationUrl" style="color:var(--accent); user-select:all;">...</span></div>
-      <div><strong>🔑 Token:</strong> <span id="invitationToken" style="color:var(--warning); user-select:all;">...</span></div>
-      <div style="border-top:1px solid var(--border-soft); margin:4px 0;"></div>
-      <div style="color:var(--text-3); font-size:11px;"># Para conectar Hermes desde su terminal:</div>
-      <div style="color:var(--text-1); background:var(--bg-1); padding:6px; border-radius:4px; font-size:11px; user-select:all;" id="invitationCli">...</div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn btn-accent" id="btnCopyInviteData">📋 Copiar Todo</button>
-      <button class="btn" onclick="hideModal('modalInvite')">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONFIGURAR IA -->
-<div class="modal-mask" id="modalAiConfig">
+<!-- MODAL DE CONFIGURACIÓN -->
+<div class="modal-overlay" id="configModal">
   <div class="modal-card">
-    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
-      ⚙️ Configuración del Motor de IA
+    <div class="modal-title">
+      <span>Ajustes & Conectividad de IA</span>
+      <button class="modal-close" onclick="$('configModal').classList.remove('active')">✕</button>
     </div>
-    <p style="font-size:12px; color:var(--text-2);">
-      Elige el proveedor de Inteligencia Artificial para respuestas y generación de código en vivo:
-    </p>
-
-    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">Proveedor:</label>
-    <select class="modal-field" id="selAiProvider">
-      <option value="auto">Auto (Detectar por clave o motor inteligente)</option>
-      <option value="gemini">Google Gemini (Gemini 2.5 Flash - Gratis)</option>
-      <option value="groq">Groq (Llama 3.3 70B - Súper Rápido)</option>
-      <option value="openrouter">OpenRouter (Modelos DeepSeek R1 gratis)</option>
-      <option value="ollama">Ollama Local (Offline sin claves)</option>
-      <option value="openai">OpenAI / Compatible</option>
-    </select>
-
-    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">API Key (Opcional si usas Ollama o Motor Integrado):</label>
-    <input type="password" class="modal-field" id="inputAiApiKey" placeholder="Introduce tu clave API (ej: AIza... o gsk_...)">
-
-    <label style="font-size:11.5px; color:var(--text-2); font-weight:600;">Modelo específico (Opcional):</label>
-    <input type="text" class="modal-field" id="inputAiModel" placeholder="auto">
-
-    <div class="modal-actions">
-      <button class="btn" onclick="hideModal('modalAiConfig')">Cancelar</button>
-      <button class="btn btn-accent" id="btnSaveAiConfig">Guardar y Activar</button>
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 12.5px;">
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px;">Clave Google Gemini (GOOGLE_API_KEY):</label>
+        <input type="password" id="inputGeminiApiKey" style="width: 100%; padding: 8px; background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: 6px; color: white; font-family: monospace;">
+        <span style="font-size: 11px; color: var(--text-muted);">Detectada automáticamente desde ~/.hermes/.env</span>
+      </div>
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px;">Modelo Gemini:</label>
+        <select id="selectGeminiModel" style="width: 100%; padding: 8px; background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: 6px; color: white;">
+          <option value="gemini-3.6-flash">gemini-3.6-flash (Recomendado)</option>
+          <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+        </select>
+      </div>
+      <button class="btn-send" id="btnSaveConfig" style="width: 100%; justify-content: center; margin-top: 8px;">
+        Guardar Configuración
+      </button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NUEVA TAREA -->
-<div class="modal-mask" id="modalTask">
-  <div class="modal-card">
-    <div style="font-family:'Chakra Petch',sans-serif; font-size:16px; font-weight:700; color:var(--text-0);">
-      🤖 Asignar Tarea Colaborativa
-    </div>
-    <input class="modal-field" id="inputTaskTitle" placeholder="Título de la tarea">
-    <textarea class="modal-field" id="inputTaskDesc" rows="3" placeholder="Descripción o requerimientos..." style="resize:vertical;"></textarea>
-    <select class="modal-field" id="selTaskAssignee">
-      <option value="hermes">Asignar a: Hermes (Compañero)</option>
-      <option value="antigravity">Asignar a: Antigravity (Local)</option>
-      <option value="todos">Cualquiera disponible</option>
-    </select>
-    <div class="modal-actions">
-      <button class="btn" onclick="hideModal('modalTask')">Cancelar</button>
-      <button class="btn btn-accent" id="btnSubmitTask">Asignar</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast-notice" id="toastNotice">Mensaje</div>
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
 const $ = id => document.getElementById(id);
-let TOKEN = localStorage.getItem('nexo_token') || '';
-let NOMBRE = localStorage.getItem('nexo_nombre') || 'jaime';
-let CURRENT_THEME = localStorage.getItem('nexo_theme') || 'jarvis';
-let AUDIO_ENABLED = localStorage.getItem('nexo_audio') !== 'false';
-let currentProject = 'general';
-let currentFile = null;
-let openTabs = {};
-let projectsTree = [];
-let WS = null;
-let ptyWs = null;
-let ptyTerm = null;
+
+// ---------------------------------------------------- ESTADO GLOBAL
+const TOKEN = new URLSearchParams(location.search).get('token') || '';
+const NOMBRE = 'jaime';
+let currentProject = 'atlantis_proyect';
+let currentFile = '';
+let openFiles = {}; // { path: { model, content, dirty } }
 let monacoEditor = null;
-let lastAiGeneratedCode = null;
+let ptyTerm = null;
+let ptyWs = null;
+let WS = null;
 
-// Audio HUD
-function hudSpeech(text) {
-  if (!AUDIO_ENABLED || !window.speechSynthesis) return;
-  try {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'es-ES';
-    u.rate = 1.05;
-    window.speechSynthesis.speak(u);
-  } catch(e) {}
-}
-
-function showToast(msg) {
-  const t = $('toastNotice');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._tm);
-  t._tm = setTimeout(() => t.classList.remove('show'), 2600);
-}
-
-function showModal(id) { $(id).classList.add('show'); }
-function hideModal(id) { $(id).classList.remove('show'); }
-
-// Theme
-function applyTheme(theme) {
-  CURRENT_THEME = theme;
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('nexo_theme', theme);
-  $('labelThemeName').textContent = theme.toUpperCase();
-}
-$('btnToggleTheme').onclick = () => applyTheme(CURRENT_THEME === 'jarvis' ? 'ultron' : 'jarvis');
-
-// Audio Toggle
-$('btnToggleSound').onclick = () => {
-  AUDIO_ENABLED = !AUDIO_ENABLED;
-  localStorage.setItem('nexo_audio', AUDIO_ENABLED);
-  $('labelSoundState').textContent = AUDIO_ENABLED ? 'ON' : 'OFF';
-  showToast('Audio HUD: ' + (AUDIO_ENABLED ? 'Activado' : 'Silenciado'));
-};
-
-// ---------------------------------------------------- Autenticación Local Automática
-async function ensureAuth() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const qToken = urlParams.get('token');
-  if (qToken) {
-    TOKEN = qToken;
-    localStorage.setItem('nexo_token', TOKEN);
-    return;
-  }
-  if (!TOKEN) {
-    try {
-      const res = await fetch('/api/token_local');
-      if (res.ok) {
-        const d = await res.json();
-        if (d.token) {
-          TOKEN = d.token;
-          localStorage.setItem('nexo_token', TOKEN);
-        }
-      }
-    } catch(e) {}
-  }
-}
-
-// ---------------------------------------------------- MONACO EDITOR
-function initMonaco() {
-  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
-  require(['vs/editor/editor.main'], function() {
-    monacoEditor = monaco.editor.create($('monacoContainer'), {
-      value: '# Bienvenido a NEXO 2.0 (Atlantis)\n# Selecciona un archivo en el panel izquierdo para comenzar a programar.\n',
-      language: 'python',
-      theme: 'vs-dark',
-      automaticLayout: true,
-      fontSize: 13,
-      minimap: { enabled: true },
-      fontFamily: "'JetBrains Mono', monospace",
-      tabSize: 4,
-      scrollBeyondLastLine: false,
-    });
-
-    monacoEditor.onDidChangeModelContent(() => {
-      if (currentFile && openTabs[currentFile]) {
-        openTabs[currentFile].contenido = monacoEditor.getValue();
-        openTabs[currentFile].dirty = true;
-      }
-    });
+// ---------------------------------------------------- INICIALIZACIÓN MONACO
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+require(['vs/editor/editor.main'], function () {
+  monacoEditor = monaco.editor.create($('monacoEditor'), {
+    value: '// Bienvenido a NEXO Studio 2.0\n// Selecciona un archivo en la barra lateral para comenzar a editar.\n',
+    language: 'javascript',
+    theme: 'vs-dark',
+    fontSize: 13,
+    fontFamily: "'JetBrains Mono', monospace",
+    minimap: { enabled: true },
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    bracketPairColorization: { enabled: true },
+    lineNumbers: 'on',
+    roundedSelection: true,
+    cursorBlinking: 'smooth',
   });
-}
 
-function setEditorLanguage(filename) {
-  if (!monacoEditor) return;
-  const ext = filename.split('.').pop().toLowerCase();
-  const map = {
-    py: 'python', js: 'javascript', ts: 'typescript', html: 'html',
-    css: 'css', json: 'json', md: 'markdown', sh: 'shell',
-    yaml: 'yaml', yml: 'yaml', sql: 'sql', rust: 'rust', go: 'go',
-  };
-  const lang = map[ext] || 'plaintext';
-  const model = monacoEditor.getModel();
-  if (model) monaco.editor.setModelLanguage(model, lang);
-}
+  // Atajo Ctrl+S / Cmd+S
+  monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
+    saveActiveFile();
+  });
 
-// ---------------------------------------------------- TERMINAL PTY REAL (xterm.js)
+  monacoEditor.onDidChangeModelContent(() => {
+    if (currentFile && openFiles[currentFile]) {
+      openFiles[currentFile].dirty = true;
+      updateTabsUI();
+    }
+  });
+
+  // Iniciar Terminal PTY
+  initPtyTerminal();
+
+  // Iniciar WebSockets & Datos
+  connectWs();
+  checkAiStatus();
+  fetchTree();
+  fetchGitStatus();
+});
+
+// ---------------------------------------------------- TERMINAL PTY (xterm.js)
 function initPtyTerminal() {
   ptyTerm = new Terminal({
     cursorBlink: true,
     fontSize: 12.5,
     fontFamily: "'JetBrains Mono', monospace",
     theme: {
-      background: '#040711',
-      foreground: '#c2daf5',
-      cursor: '#00f0ff',
-      selectionBackground: 'rgba(0, 240, 255, 0.3)',
+      background: '#06080e',
+      foreground: '#e2e8f0',
+      cursor: '#06b6d4',
+      selectionBackground: 'rgba(6, 182, 212, 0.3)',
     }
   });
-
   const fitAddon = new FitAddon.FitAddon();
   ptyTerm.loadAddon(fitAddon);
   ptyTerm.open($('ptyTerminalWrapper'));
@@ -974,7 +1314,6 @@ function connectPtyWs() {
   if (ptyWs) { ptyWs.close(); ptyWs = null; }
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${proto}//${location.host}/pty?token=${encodeURIComponent(TOKEN)}&proyecto=${encodeURIComponent(currentProject)}`;
-  
   ptyWs = new WebSocket(url);
   ptyWs.binaryType = 'arraybuffer';
 
@@ -989,10 +1328,11 @@ function connectPtyWs() {
     }
   };
 }
+
 $('btnRestartPty').onclick = () => {
   ptyTerm.reset();
   connectPtyWs();
-  showToast('Shell reiniciada.');
+  showToast('Shell reiniciada');
 };
 
 // ---------------------------------------------------- WEBSOCKET DE CONTROL
@@ -1000,22 +1340,19 @@ function connectWs() {
   if (WS) { WS.close(); WS = null; }
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${proto}//${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`;
-
   WS = new WebSocket(url);
+
   WS.onopen = () => {
     wsSend({ tipo: 'join', proyecto: currentProject });
-    fetchTree();
-    fetchHistory();
-    fetchTasks();
-    showToast('NEXO 2.0 En Línea');
+    showToast('NEXO Studio Conectado');
   };
   WS.onmessage = ev => {
     try {
-      handleServerEvent(JSON.parse(ev.data));
+      handleWsEvent(JSON.parse(ev.data));
     } catch(e) {}
   };
   WS.onclose = () => {
-    setTimeout(() => { if (TOKEN && !WS) connectWs(); }, 3000);
+    setTimeout(connectWs, 3000);
   };
 }
 
@@ -1023,422 +1360,512 @@ function wsSend(obj) {
   if (WS && WS.readyState === 1) WS.send(JSON.stringify(obj));
 }
 
-// ---------------------------------------------------- API REST
-async function apiGet(endpoint) {
-  const sep = endpoint.includes('?') ? '&' : '?';
-  const res = await fetch(`${endpoint}${sep}token=${encodeURIComponent(TOKEN)}`);
-  return res.json();
-}
-async function apiPost(endpoint, body) {
-  const sep = endpoint.includes('?') ? '&' : '?';
-  const res = await fetch(`${endpoint}${sep}token=${encodeURIComponent(TOKEN)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
-}
-
-// ---------------------------------------------------- PROYECTOS Y ARCHIVOS
-async function fetchTree() {
-  const d = await apiGet('/api/arbol');
-  if (!d || !d.arbol) return;
-  projectsTree = d.arbol;
-  renderTree();
-}
-
-function renderTree() {
-  const c = $('treeProjectList');
-  c.innerHTML = '';
-  projectsTree.forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'tree-proj-item' + (p.nombre === currentProject ? ' active expanded' : '');
-    
-    const title = document.createElement('div');
-    title.className = 'tree-proj-title';
-    title.innerHTML = `<span class="tree-proj-arrow">▶</span> <span>${p.nombre}</span>`;
-    title.onclick = () => {
-      item.classList.toggle('expanded');
-      selectProject(p.nombre);
-    };
-
-    const filesBox = document.createElement('div');
-    filesBox.className = 'tree-files-box';
-    p.archivos.forEach(f => {
-      const fItem = document.createElement('div');
-      fItem.className = 'tree-file-item' + (currentFile === `${p.nombre}/${f}` ? ' active' : '');
-      fItem.innerHTML = `<span>📄</span> <span>${f}</span>`;
-      fItem.onclick = (e) => {
-        e.stopPropagation();
-        openFile(p.nombre, f);
-      };
-      filesBox.appendChild(fItem);
-    });
-
-    item.appendChild(title);
-    item.appendChild(filesBox);
-    c.appendChild(item);
-  });
-}
-
-function selectProject(proj) {
-  currentProject = proj;
-  $('sbProject').textContent = 'Proyecto: ' + proj;
-  wsSend({ tipo: 'join', proyecto: proj });
-  fetchHistory();
-  fetchTasks();
-  connectPtyWs();
-  renderTree();
-}
-
-async function openFile(proj, ruta) {
-  const full = `${proj}/${ruta}`;
-  currentFile = full;
-  $('sbFile').textContent = 'Archivo: ' + full;
-  $('activeFileLabel').textContent = full;
-
-  if (!openTabs[full]) {
-    openTabs[full] = { proyecto: proj, ruta: ruta, contenido: '', dirty: false };
+function handleWsEvent(d) {
+  if (d.tipo === 'chat') {
+    appendPeerChat(d.de, d.texto, d.fecha);
+  } else if (d.tipo === 'hermes_stream_start') {
+    appendHermesConsole(`\n▶ [HERMES EJECUTANDO]: ${d.prompt}\n`);
+    switchDockTab('hermes');
+  } else if (d.tipo === 'hermes_stream_chunk') {
+    appendHermesConsole(d.chunk);
+  } else if (d.tipo === 'hermes_stream_end') {
+    appendHermesConsole(`\n✔ [HERMES TERMINADO] Código: ${d.retcode}\n`);
+    fetchTree();
+    fetchGitStatus();
+  } else if (d.tipo === 'dual_colab_event') {
+    appendDualColabEvent(d);
+  } else if (d.tipo === 'dual_colab_finish') {
+    showToast('Colaboración Dual Completada con Éxito!');
+    fetchTree();
+    fetchGitStatus();
+  } else if (d.tipo === 'arbol') {
+    renderFileTree(d.arbol);
   }
-  renderTabs();
+}
 
-  const res = await apiGet(`/api/archivo?proyecto=${encodeURIComponent(proj)}&ruta=${encodeURIComponent(ruta)}`);
-  if (res && res.contenido !== undefined) {
-    openTabs[full].contenido = res.contenido;
-    if (monacoEditor) {
-      monacoEditor.setValue(res.contenido);
-      setEditorLanguage(ruta);
+// ---------------------------------------------------- VERIFICACIÓN DE ESTADO IA
+async function checkAiStatus() {
+  try {
+    const res = await fetch(`/api/ai/status?token=${encodeURIComponent(TOKEN)}`);
+    const st = await res.json();
+    
+    // Hermes
+    if (st.hermes && st.hermes.instalado) {
+      $('dotHermes').className = 'status-dot hermes';
+      $('labelHermes').innerText = `Hermes: Online (${st.hermes.modelo_hermes})`;
+      $('hermesBinPath').innerText = st.hermes.ruta;
+    } else {
+      $('dotHermes').className = 'status-dot';
+      $('labelHermes').innerText = 'Hermes: No instalado';
+    }
+
+    // Gemini
+    if (st.gemini && st.gemini.conectado) {
+      $('dotGemini').className = 'status-dot gemini';
+      $('labelGemini').innerText = `Gemini: Online (${st.gemini.modelo})`;
+    } else {
+      $('dotGemini').className = 'status-dot';
+      $('labelGemini').innerText = `Gemini: ${st.gemini.mensaje || 'Sin clave'}`;
+    }
+  } catch (e) {
+    console.error('Error comprobando estado IA:', e);
+  }
+}
+
+// ---------------------------------------------------- ÁRBOL DE ARCHIVOS
+async function fetchTree() {
+  try {
+    const res = await fetch(`/api/arbol?token=${encodeURIComponent(TOKEN)}`);
+    const d = await res.json();
+    if (d && d.arbol) renderFileTree(d.arbol);
+  } catch(e){}
+}
+
+function renderFileTree(tree) {
+  const container = $('fileTreeContainer');
+  container.innerHTML = '';
+
+  function buildNode(item, pathPrefix) {
+    const fullPath = pathPrefix ? `${pathPrefix}/${item.nombre}` : item.nombre;
+    const node = document.createElement('div');
+
+    if (item.tipo === 'carpeta') {
+      node.className = 'tree-node folder';
+      node.innerHTML = `<span>📁</span> <span>${item.nombre}</span>`;
+      container.appendChild(node);
+      if (item.hijos) {
+        item.hijos.forEach(ch => buildNode(ch, fullPath));
+      }
+    } else {
+      node.className = 'tree-node';
+      if (currentFile === fullPath) node.classList.add('active');
+      const icon = getFileIcon(item.nombre);
+      node.innerHTML = `<span>${icon}</span> <span>${item.nombre}</span>`;
+      node.onclick = () => openFile(fullPath);
+      container.appendChild(node);
     }
   }
-  renderTree();
+
+  if (Array.isArray(tree)) {
+    tree.forEach(item => buildNode(item, ''));
+  }
 }
 
-function renderTabs() {
-  const b = $('editorTabsBar');
-  b.innerHTML = '';
-  Object.keys(openTabs).forEach(k => {
-    const t = openTabs[k];
-    const n = document.createElement('div');
-    n.className = 'tab-node' + (currentFile === k ? ' active' : '');
-    n.innerHTML = `<span>${t.ruta}</span> <span class="tab-close">×</span>`;
-    n.onclick = () => openFile(t.proyecto, t.ruta);
-    n.querySelector('.tab-close').onclick = (e) => {
-      e.stopPropagation();
-      delete openTabs[k];
-      const keys = Object.keys(openTabs);
-      if (keys.length > 0) openFile(openTabs[keys[0]].proyecto, openTabs[keys[0]].ruta);
-      else {
-        currentFile = null;
-        if (monacoEditor) monacoEditor.setValue('');
-        $('activeFileLabel').textContent = 'Sin archivo activo';
-      }
-      renderTabs();
-      renderTree();
-    };
-    b.appendChild(n);
+function getFileIcon(name) {
+  if (name.endsWith('.py')) return '🐍';
+  if (name.endsWith('.js') || name.endsWith('.ts')) return '📜';
+  if (name.endsWith('.html')) return '🌐';
+  if (name.endsWith('.css')) return '🎨';
+  if (name.endsWith('.json')) return '📦';
+  if (name.endsWith('.md')) return '📝';
+  if (name.endsWith('.sh')) return '⚡';
+  return '📄';
+}
+
+// ---------------------------------------------------- GESTIÓN DE ARCHIVOS Y TABS
+async function openFile(path) {
+  currentFile = path;
+  $('breadcrumbFile').innerText = path;
+
+  if (!openFiles[path]) {
+    try {
+      const res = await fetch(`/api/archivo?ruta=${encodeURIComponent(path)}&token=${encodeURIComponent(TOKEN)}`);
+      const d = await res.json();
+      const content = d.contenido || '';
+      
+      const ext = path.split('.').pop().toLowerCase();
+      const langMap = {
+        py: 'python', js: 'javascript', ts: 'typescript', html: 'html',
+        css: 'css', json: 'json', md: 'markdown', sh: 'shell', yml: 'yaml', yaml: 'yaml'
+      };
+      const model = monaco.editor.createModel(content, langMap[ext] || 'plaintext');
+      openFiles[path] = { model, dirty: false };
+    } catch(e) {
+      showToast('Error cargando archivo: ' + path);
+      return;
+    }
+  }
+
+  monacoEditor.setModel(openFiles[path].model);
+  updateTabsUI();
+  fetchTree();
+}
+
+function updateTabsUI() {
+  const tabsContainer = $('editorTabs');
+  tabsContainer.innerHTML = '';
+
+  Object.keys(openFiles).forEach(p => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (p === currentFile ? ' active' : '') + (openFiles[p].dirty ? ' dirty' : '');
+    const filename = p.split('/').pop();
+    tab.innerHTML = `
+      <span>${getFileIcon(filename)}</span>
+      <span>${filename}</span>
+      <span class="tab-dirty"></span>
+      <span class="tab-close" onclick="closeTab('${p}', event)">✕</span>
+    `;
+    tab.onclick = () => openFile(p);
+    tabsContainer.appendChild(tab);
   });
 }
 
-function saveActiveFile() {
-  if (!currentFile || !openTabs[currentFile] || !monacoEditor) return;
-  const t = openTabs[currentFile];
-  const val = monacoEditor.getValue();
-  wsSend({
-    tipo: 'archivo_escribir',
-    proyecto: t.proyecto,
-    ruta: t.ruta,
-    contenido: val,
-  });
-  showToast('✓ Guardado: ' + t.ruta);
-  hudSpeech('Archivo guardado');
-}
-$('btnSaveActiveFile').onclick = saveActiveFile;
-
-// Ejecutar en terminal interactiva
-$('btnRunInTerminal').onclick = () => {
-  if (!currentFile || !openTabs[currentFile]) {
-    showToast('Abre un archivo primero');
-    return;
+function closeTab(path, ev) {
+  ev.stopPropagation();
+  if (openFiles[path]) {
+    openFiles[path].model.dispose();
+    delete openFiles[path];
   }
-  const t = openTabs[currentFile];
-  const ext = t.ruta.split('.').pop();
-  let cmd = `python3 ${t.ruta}\n`;
-  if (ext === 'js') cmd = `node ${t.ruta}\n`;
-  else if (ext === 'sh') cmd = `bash ${t.ruta}\n`;
-  
-  if (ptyWs && ptyWs.readyState === 1) {
-    ptyWs.send(cmd);
-    showToast('Ejecutando en terminal...');
+  const remaining = Object.keys(openFiles);
+  if (remaining.length > 0) {
+    openFile(remaining[remaining.length - 1]);
+  } else {
+    currentFile = '';
+    $('breadcrumbFile').innerText = 'Ningún archivo abierto';
+    monacoEditor.setValue('// Ningún archivo abierto\n');
+    updateTabsUI();
   }
-};
-
-// ---------------------------------------------------- REVISIÓN Y GENERACIÓN DE IA REAL
-$('btnAskAiCodeReview').onclick = async () => {
-  if (!currentFile || !monacoEditor) {
-    showToast('Abre un archivo para revisar');
-    return;
-  }
-  const t = openTabs[currentFile];
-  const code = monacoEditor.getValue();
-  showToast('🤖 IA analizando código en vivo...');
-  hudSpeech('Analizando código');
-
-  const res = await apiPost('/api/ai/msg', {
-    proyecto: t.proyecto,
-    tipo: 'revision',
-    titulo: `Revisión de ${t.ruta}`,
-    contenido: `Por favor analiza este código de ${t.ruta}, detecta errores sintácticos, lógica y sugiere mejoras:`,
-    archivos: [t.ruta],
-    codigo: code.substring(0, 8000),
-  });
-
-  if (res.ok) {
-    $('tabNavChat').click();
-  }
-};
-
-// Aplicar código de IA directamente en Monaco Editor
-$('btnApplyAiCode').onclick = () => {
-  if (!lastAiGeneratedCode || !monacoEditor) return;
-  monacoEditor.setValue(lastAiGeneratedCode);
-  saveActiveFile();
-  $('btnApplyAiCode').style.display = 'none';
-  showToast('✨ ¡Código de IA aplicado y guardado!');
-  hudSpeech('Código aplicado con éxito');
-};
-
-// ---------------------------------------------------- CHAT
-async function fetchHistory() {
-  const d = await apiGet(`/api/historial?proyecto=${encodeURIComponent(currentProject)}`);
-  if (!d || !d.historial) return;
-  const s = $('chatMessagesStream');
-  s.innerHTML = '';
-  d.historial.forEach(m => appendChat(m));
-  s.scrollTop = s.scrollHeight;
 }
 
-function appendChat(m) {
-  const s = $('chatMessagesStream');
-  const isAi = (m.de && m.de.includes('🤖')) || (m.de && m.de.includes('IA')) || (m.de === 'Antigravity') || (m.de === 'Hermes');
-  const isMe = m.de === NOMBRE;
+async function saveActiveFile() {
+  if (!currentFile || !openFiles[currentFile]) return;
+  const content = openFiles[currentFile].model.getValue();
 
-  const row = document.createElement('div');
-  row.className = 'chat-row ' + (isAi ? 'ai' : (isMe ? 'mine' : 'theirs'));
-
-  let bodyHtml = m.texto;
-  // Convertir bloques de código simples a pre
-  if (bodyHtml.includes('```')) {
-    bodyHtml = bodyHtml.replace(/```(?:\w+)?\n([\s\S]*?)```/g, (match, code) => {
-      lastAiGeneratedCode = code.trim();
-      $('btnApplyAiCode').style.display = 'inline-flex';
-      return `<pre>${escHtml(code.trim())}</pre>`;
+  try {
+    const res = await fetch(`/api/archivo?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ruta: currentFile, contenido: content }),
     });
+    const d = await res.json();
+    if (d.ok) {
+      openFiles[currentFile].dirty = false;
+      updateTabsUI();
+      showToast(`Guardado: ${currentFile}`);
+      fetchGitStatus();
+    }
+  } catch(e) {
+    showToast('Error al guardar archivo');
   }
+}
+$('btnSaveFile').onclick = saveActiveFile;
 
-  row.innerHTML = `
-    <div class="chat-author">${m.de} • ${m.fecha || ''}</div>
-    <div class="chat-bubble-content">${bodyHtml}</div>
-  `;
-  s.appendChild(row);
-  s.scrollTop = s.scrollHeight;
+// ---------------------------------------------------- COLABORACIÓN DUAL AUTÓNOMA
+function setDualPrompt(txt) {
+  $('inputDualObjective').value = txt;
 }
 
-function escHtml(s) {
+$('btnStartDualColab').onclick = async () => {
+  const obj = $('inputDualObjective').value.trim();
+  if (!obj) {
+    showToast('Introduce un objetivo de desarrollo');
+    return;
+  }
+  $('btnStartDualColab').disabled = true;
+  $('btnStartDualColab').innerHTML = '<span>⏳</span> Ejecutando...';
+
+  // Añadir al timeline local
+  appendDualColabEvent({
+    fase: 'inicio', de: 'Usuario',
+    mensaje: `Iniciando colaboración dual con objetivo: "${obj}"`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+  switchDockTab('dual-log');
+
+  try {
+    const res = await fetch(`/api/ai/dual/run?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ objetivo: obj }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Colaboración Dual Finalizada con éxito');
+    }
+  } catch(e) {
+    showToast('Error en Colaboración Dual');
+  } finally {
+    $('btnStartDualColab').disabled = false;
+    $('btnStartDualColab').innerHTML = '<span>🚀</span> Iniciar Colaboración';
+    $('inputDualObjective').value = '';
+    fetchTree();
+    fetchGitStatus();
+  }
+};
+
+function appendDualColabEvent(ev) {
+  const timeline = $('dualColabTimeline');
+  const item = document.createElement('div');
+  const isGemini = ev.de && ev.de.toLowerCase().includes('gemini');
+  item.className = 'timeline-item ' + (isGemini ? 'gemini' : 'hermes');
+  
+  const icon = isGemini ? '🟣' : '🟢';
+  const role = isGemini ? 'Gemini (Arquitecto)' : 'Hermes (Ejecutor)';
+
+  item.innerHTML = `
+    <div class="timeline-item-header">
+      <span class="timeline-badge" style="color: ${isGemini ? '#c084fc' : '#38bdf8'};">
+        ${icon} ${role}
+      </span>
+      <span class="timeline-time">${ev.timestamp || ''}</span>
+    </div>
+    <div class="timeline-body">${escapeHtml(ev.mensaje)}</div>
+  `;
+  timeline.appendChild(item);
+  timeline.scrollTop = timeline.scrollHeight;
+
+  // Registrar en el dock log
+  const logEl = $('dualColabLogOutput');
+  logEl.innerText += `\n[${ev.timestamp || ''}] ${ev.de}: ${ev.mensaje}\n`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ---------------------------------------------------- EJECUCIÓN DIRECTA HERMES
+$('btnRunHermes').onclick = async () => {
+  const prompt = $('inputHermesPrompt').value.trim();
+  if (!prompt) return;
+  const yolo = $('checkHermesYolo').checked;
+
+  $('btnRunHermes').disabled = true;
+  $('btnRunHermes').innerText = 'Ejecutando...';
+  switchDockTab('hermes');
+
+  try {
+    const res = await fetch(`/api/ai/hermes/run?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, yolo }),
+    });
+    const d = await res.json();
+    if (d.ok) showToast('Hermes completó la tarea');
+  } catch(e) {
+    showToast('Error ejecutando Hermes');
+  } finally {
+    $('btnRunHermes').disabled = false;
+    $('btnRunHermes').innerText = '⚡ Ejecutar Hermes';
+    $('inputHermesPrompt').value = '';
+  }
+};
+
+function appendHermesConsole(txt) {
+  const out = $('hermesLiveOutput');
+  out.innerText += txt;
+  out.scrollTop = out.scrollHeight;
+}
+
+// ---------------------------------------------------- CONSULTA DIRECTA GEMINI
+$('btnRunGemini').onclick = async () => {
+  const prompt = $('inputGeminiPrompt').value.trim();
+  if (!prompt) return;
+
+  let ctx = '';
+  if ($('checkGeminiIncludeFile').checked && currentFile && openFiles[currentFile]) {
+    ctx = openFiles[currentFile].model.getValue();
+  }
+
+  appendGeminiChat('Usuario', prompt);
+  $('inputGeminiPrompt').value = '';
+  $('btnRunGemini').disabled = true;
+
+  try {
+    const res = await fetch(`/api/ai/gemini/run?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        contexto: ctx,
+        nombre_archivo: currentFile,
+      }),
+    });
+    const d = await res.json();
+    if (d.texto) {
+      appendGeminiChat('Gemini 3.6', d.texto, d.codigo);
+    }
+  } catch(e) {
+    appendGeminiChat('Error', 'No se pudo conectar con Gemini.');
+  } finally {
+    $('btnRunGemini').disabled = false;
+  }
+};
+
+function appendGeminiChat(sender, text, code) {
+  const hist = $('geminiChatHistory');
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble ' + (sender === 'Usuario' ? 'user' : 'agent');
+  bubble.innerHTML = `
+    <div class="chat-sender">${sender}</div>
+    <div>${escapeHtml(text)}</div>
+  `;
+  if (code) {
+    const btnInsert = document.createElement('button');
+    btnInsert.className = 'quick-tag';
+    btnInsert.style.marginTop = '6px';
+    btnInsert.innerText = '📥 Insertar Código en Editor';
+    btnInsert.onclick = () => {
+      if (monacoEditor) {
+        const sel = monacoEditor.getSelection();
+        monacoEditor.executeEdits('gemini', [{ range: sel, text: code, forceMoveMarkers: true }]);
+        showToast('Código insertado');
+      }
+    };
+    bubble.appendChild(btnInsert);
+  }
+  hist.appendChild(bubble);
+  hist.scrollTop = hist.scrollHeight;
+}
+
+// ---------------------------------------------------- CHAT ENTRE PEERS
+$('btnSendPeerChat').onclick = sendPeerChat;
+$('inputPeerChat').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPeerChat(); } };
+
+function sendPeerChat() {
+  const text = $('inputPeerChat').value.trim();
+  if (!text) return;
+  wsSend({ tipo: 'chat', texto: text, proyecto: currentProject });
+  $('inputPeerChat').value = '';
+}
+
+function appendPeerChat(de, texto, fecha) {
+  const thread = $('peerChatThread');
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble ' + (de === NOMBRE ? 'user' : 'peer');
+  bubble.innerHTML = `
+    <div class="chat-sender">${de} • ${fecha || ''}</div>
+    <div>${escapeHtml(texto)}</div>
+  `;
+  thread.appendChild(bubble);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+// ---------------------------------------------------- GIT STATUS
+async function fetchGitStatus() {
+  try {
+    const res = await fetch(`/api/git/diff?token=${encodeURIComponent(TOKEN)}`);
+    const d = await res.json();
+    const list = $('gitChangesList');
+    list.innerHTML = '';
+    if (d && d.archivos && d.archivos.length > 0) {
+      d.archivos.forEach(f => {
+        const item = document.createElement('div');
+        item.style.padding = '4px 6px';
+        item.style.background = 'var(--bg-card)';
+        item.style.borderRadius = '4px';
+        item.style.color = '#fbbf24';
+        item.innerText = `● ${f}`;
+        list.appendChild(item);
+      });
+    } else {
+      list.innerHTML = '<span style="color: var(--text-dim); font-size: 11px;">Sin cambios pendientes</span>';
+    }
+  } catch(e){}
+}
+
+$('btnGitCommitPush').onclick = async () => {
+  const msg = $('gitCommitMsg').value.trim();
+  if (!msg) { showToast('Introduce un mensaje de commit'); return; }
+  $('btnGitCommitPush').disabled = true;
+  $('btnGitCommitPush').innerText = 'Guardando & Enviando...';
+
+  try {
+    const res = await fetch(`/api/git/commit?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje: msg }),
+    });
+    const d = await res.json();
+    if (d.ok) {
+      showToast('Commit & Push completado');
+      $('gitCommitMsg').value = '';
+      fetchGitStatus();
+    } else {
+      showToast('Error en commit: ' + (d.error || ''));
+    }
+  } catch(e) {
+    showToast('Error conectando a git');
+  } finally {
+    $('btnGitCommitPush').disabled = false;
+    $('btnGitCommitPush').innerText = 'Commit & Push a GitHub';
+  }
+};
+
+// ---------------------------------------------------- TABS Y VISTAS
+document.querySelectorAll('.dock-tab').forEach(b => {
+  b.onclick = () => switchDockTab(b.dataset.dock);
+});
+function switchDockTab(name) {
+  document.querySelectorAll('.dock-tab').forEach(b => b.classList.toggle('active', b.dataset.dock === name));
+  $('dockPanelPty').classList.toggle('active', name === 'pty');
+  $('dockPanelHermes').classList.toggle('active', name === 'hermes');
+  $('dockPanelDualLog').classList.toggle('active', name === 'dual-log');
+}
+
+document.querySelectorAll('.ai-tab').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.ai-view').forEach(v => v.classList.remove('active'));
+    $(`view${b.dataset.view.charAt(0).toUpperCase() + b.dataset.view.slice(1)}`).classList.add('active');
+  };
+});
+
+// Icon Rail Navigation
+$('railFiles').onclick = () => switchDrawer('Files');
+$('railGit').onclick = () => { switchDrawer('Git'); fetchGitStatus(); };
+$('railColab').onclick = () => switchDrawer('Colab');
+
+function switchDrawer(name) {
+  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+  $(`rail${name}`).classList.add('active');
+  $('drawerFiles').style.display = name === 'Files' ? 'flex' : 'none';
+  $('drawerGit').style.display = name === 'Git' ? 'flex' : 'none';
+  $('drawerColab').style.display = name === 'Colab' ? 'flex' : 'none';
+}
+
+// Botones Topbar
+$('btnLaunchDual').onclick = () => {
+  document.querySelector('.ai-tab[data-view="dual"]').click();
+  $('inputDualObjective').focus();
+};
+
+$('btnShareColab').onclick = () => {
+  const shareUrl = `${location.origin}/?token=${encodeURIComponent(TOKEN)}`;
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    showToast('¡Enlace de sesión copiado al portapapeles!');
+  });
+};
+$('btnCopyInviteLink').onclick = $('btnShareColab').onclick;
+
+$('btnConfigModal').onclick = () => {
+  $('configModal').classList.add('active');
+};
+
+$('btnClearDock').onclick = () => {
+  $('hermesLiveOutput').innerText = '';
+  $('dualColabLogOutput').innerText = '';
+  showToast('Consolas limpiadas');
+};
+
+let dockCollapsed = false;
+$('btnToggleDock').onclick = () => {
+  dockCollapsed = !dockCollapsed;
+  $('bottomDock').style.height = dockCollapsed ? '34px' : '260px';
+  $('btnToggleDock').innerText = dockCollapsed ? '🔼' : '🔽';
+};
+
+// Toast
+function showToast(msg) {
+  const container = $('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerText = msg;
+  container.appendChild(t);
+  setTimeout(() => { t.remove(); }, 3500);
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-
-function sendChatMessage() {
-  const input = $('chatTextInput');
-  const txt = input.value.trim();
-  if (!txt) return;
-  wsSend({
-    tipo: 'chat',
-    proyecto: currentProject,
-    texto: txt,
-    archivo: currentFile ? openTabs[currentFile].ruta : '',
-  });
-  input.value = '';
-}
-$('btnSendChatMessage').onclick = sendChatMessage;
-$('chatTextInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChatMessage();
-  }
-});
-
-// ---------------------------------------------------- TABLERO IA & TAREAS
-async function fetchTasks() {
-  const res = await apiGet(`/api/ai/tasks?proyecto=${encodeURIComponent(currentProject)}`);
-  const c = $('aiTasksDashboard');
-  c.innerHTML = '';
-  const list = (res && res.tareas) || [];
-  if (!list.length) {
-    c.innerHTML = '<div style="font-size:12px; color:var(--text-3);">No hay tareas registradas. Pulsa + para crear una.</div>';
-    return;
-  }
-  list.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'ai-box-card';
-    card.innerHTML = `
-      <div class="ai-box-title">
-        <span>${t.titulo}</span>
-        <span style="font-size:10px; color:var(--accent); font-family:'JetBrains Mono'; text-transform:uppercase;">${t.prioridad}</span>
-      </div>
-      <div style="font-size:11.5px; color:var(--text-2);">${t.descripcion || 'Sin descripción'}</div>
-      <div style="font-size:10px; color:var(--text-3); font-family:'JetBrains Mono';">Asignado a: <strong>${t.asignado}</strong></div>
-    `;
-    c.appendChild(card);
-  });
-}
-
-$('btnCreateTask').onclick = () => showModal('modalTask');
-$('btnSubmitTask').onclick = async () => {
-  const tit = $('inputTaskTitle').value.trim();
-  const desc = $('inputTaskDesc').value.trim();
-  const asig = $('selTaskAssignee').value;
-  if (!tit) return;
-
-  await apiPost('/api/ai/task', {
-    proyecto: currentProject,
-    titulo: tit,
-    descripcion: desc,
-    asignado: asig,
-  });
-
-  // Notificar al chat
-  wsSend({
-    tipo: 'chat',
-    proyecto: currentProject,
-    texto: `📋 Nueva tarea asignada a @${asig}: "${tit}"`,
-  });
-
-  hideModal('modalTask');
-  $('inputTaskTitle').value = '';
-  $('inputTaskDesc').value = '';
-  fetchTasks();
-  showToast('✓ Tarea enviada');
-};
-
-// ---------------------------------------------------- INVITACIÓN COMPAÑERO
-$('btnInviteFriend').onclick = () => {
-  const origin = window.location.origin;
-  $('invitationUrl').textContent = `${origin}/?token=${TOKEN}`;
-  $('invitationToken').textContent = TOKEN;
-  $('invitationCli').textContent = `python3 nexo-cli.py --server "${origin}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
-  showModal('modalInvite');
-};
-
-$('btnCopyInviteData').onclick = () => {
-  const origin = window.location.origin;
-  const invite = `🚀 NEXO 2.0 Atlantis — Conexión Colaborativa\n\n1. Enlace Web Directo:\n${origin}/?token=${TOKEN}\n\n2. Para Hermes (Terminal):\npython3 nexo-cli.py --server "${origin}" --token "${TOKEN}" --nombre hermes-2 escuchar`;
-  navigator.clipboard.writeText(invite).then(() => {
-    showToast('¡Invitación copiada al portapapeles!');
-  });
-};
-
-// ---------------------------------------------------- CONFIGURACIÓN IA
-$('btnConfigAi').onclick = async () => {
-  const cfg = await apiGet('/api/ai/config');
-  if (cfg) {
-    $('selAiProvider').value = cfg.proveedor || 'auto';
-    $('inputAiModel').value = cfg.modelo || 'auto';
-  }
-  showModal('modalAiConfig');
-};
-
-$('btnSaveAiConfig').onclick = async () => {
-  const prov = $('selAiProvider').value;
-  const key = $('inputAiApiKey').value.trim();
-  const mod = $('inputAiModel').value.trim();
-  await apiPost('/api/ai/config', {
-    proveedor: prov,
-    api_key: key,
-    modelo: mod,
-  });
-  $('labelAiProvider').textContent = prov.toUpperCase();
-  hideModal('modalAiConfig');
-  showToast('✓ Configuración de IA guardada');
-};
-
-// ---------------------------------------------------- EVENTOS DEL SERVIDOR
-function handleServerEvent(m) {
-  switch(m.tipo) {
-    case 'chat':
-      appendChat(m);
-      if (m.de !== NOMBRE && m.de.includes('🤖')) hudSpeech('Respuesta de IA recibida');
-      break;
-    case 'arbol':
-      projectsTree = m.arbol || [];
-      renderTree();
-      break;
-    case 'ai_msg':
-      fetchTasks();
-      fetchHistory();
-      break;
-    case 'ai_task_update':
-      fetchTasks();
-      break;
-  }
-}
-
-// Tabs switcher matrix
-$('tabNavChat').onclick = () => {
-  $('tabNavChat').classList.add('active');
-  $('tabNavTasks').classList.remove('active');
-  $('viewChatContent').classList.add('active');
-  $('viewTasksContent').classList.remove('active');
-};
-$('tabNavTasks').onclick = () => {
-  $('tabNavTasks').classList.add('active');
-  $('tabNavChat').classList.remove('active');
-  $('viewTasksContent').classList.add('active');
-  $('viewChatContent').classList.remove('active');
-  fetchTasks();
-};
-
-// Atajos
-document.addEventListener('keydown', e => {
-  const mod = e.ctrlKey || e.metaKey;
-  if (mod && e.key === 's') { e.preventDefault(); saveActiveFile(); }
-});
-
-// Nuevo proyecto
-$('btnNewProject').onclick = () => {
-  const n = prompt('Nombre del proyecto:');
-  if (n && n.trim()) {
-    wsSend({ tipo: 'proyecto_nuevo', nombre: n.trim() });
-    showToast('Creando: ' + n);
-  }
-};
-$('btnRefreshTree').onclick = fetchTree;
-
-// Nuevo archivo
-$('btnNewCodeFile').onclick = () => {
-  const f = prompt('Nombre del archivo (ej: main.py o src/app.py):', 'app.py');
-  if (f && f.trim()) {
-    wsSend({ tipo: 'archivo_escribir', proyecto: currentProject, ruta: f.trim(), contenido: '' });
-    openFile(currentProject, f.trim());
-  }
-};
-
-// Borrar archivo
-$('btnDeleteActiveFile').onclick = () => {
-  if (!currentFile || !openTabs[currentFile]) return;
-  const t = openTabs[currentFile];
-  if (confirm(`¿Eliminar ${t.ruta}?`)) {
-    wsSend({ tipo: 'archivo_borrar', proyecto: t.proyecto, ruta: t.ruta, confirmar: true });
-  }
-};
-
-// ---------------------------------------------------- INICIO
-(async () => {
-  applyTheme(CURRENT_THEME);
-  await ensureAuth();
-  initMonaco();
-  initPtyTerminal();
-  connectWs();
-})();
 </script>
 </body>
 </html>
