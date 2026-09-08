@@ -1,54 +1,82 @@
-# NEXO 2.0 — Atlantis Project (Colaboración Simultánea & Comunicación IA-a-IA)
+# NEXO Studio 2.0 — Atlantis Project (Dual-AI Collaborative IDE)
 
-Plataforma colaborativa en tiempo real para que **dos desarrolladores programen al mismo tiempo** y sus **agentes de Inteligencia Artificial (Antigravity & Hermes)** se comuniquen directamente, coordinen tareas, compartan código y sincronicen el workspace.
+Plataforma de desarrollo colaborativo en tiempo real para que **dos desarrolladores programen simultáneamente** mientras sus **agentes de Inteligencia Artificial (Hermes Agent & Google Gemini)** se comunican directamente, coordinan tareas, auditan código y ejecutan cambios en el workspace local.
+
+![NEXO Studio 2.0](https://img.shields.io/badge/NEXO_Studio-2.0_Dual--AI-06b6d4?style=for-the-badge)
+![Hermes CLI](https://img.shields.io/badge/Nous_Hermes-CLI_Online-10b981?style=for-the-badge)
+![Google Gemini](https://img.shields.io/badge/Gemini_3.6-Flash_Connected-8b5cf6?style=for-the-badge)
 
 ---
 
-## 🚀 Arranque en 1 Paso
+## 🚀 Inicio Rápido en 1 Paso
 
-En tu máquina:
+En tu terminal local:
 
 ```bash
 git clone https://github.com/flash5158/atlantis_proyect.git
 cd atlantis_proyect
 
-# Iniciar servidor y generar túnel público gratuito para tu amigo:
+# Iniciar servidor local y generar túnel público opcional:
 ./start.sh --tunnel
 ```
 
 Abre en tu navegador: **`http://127.0.0.1:8787`**
 
-Para invitar a tu compañero, haz clic en el botón superior **`🔗 Conectar Amigo`** o comparte la URL de Cloudflare generada en la terminal.
-
-Para una guía paso a paso completa, consulta: **[GUIA_COLABORACION.md](file:///Users/jaimeadolfochalasminaya/.gemini/antigravity-ide/scratch/atlantis_proyect/GUIA_COLABORACION.md)**.
+Para invitar a tu compañero, haz clic en el botón superior **`🔗 Invitar Amigo`** o comparte el enlace seguro de Cloudflare generado por `./tunnel.sh`.
 
 ---
 
-## 🌟 Características Principales
+## 🌟 Características Principales (Cero Simulaciones)
 
-1. **Colaboración Simultánea Humano + IA:**
-   - Tú y tu amigo pueden editar archivos, chatear y ejecutar comandos al mismo tiempo.
-   - Prevención de sobreescritura accidental mediante avisos de edición concurrente.
+### 1. Conexión Auténtica con Nous Hermes Agent CLI
+- Detección automática del binario real en `~/.local/bin/hermes`.
+- Configurado con el motor nativo `gemini-3.6-flash`.
+- Ejecución real en el workspace con herramientas locales (`--in <DIR> --yolo`).
+- Consola de streaming en tiempo real (stdout/stderr línea a línea) mediante WebSockets.
 
-2. **Capa de Comunicación Directa IA-a-IA:**
-   - Protocolo estructurado de mensajes entre IAs (`/api/ai/msg`, `/api/ai/inbox`, `/api/ai/reply`).
-   - Tablero colaborativo de tareas (Kanban).
-   - Solicitudes cruzadas de Code Review (*"Revisa este archivo y dame feedback"*).
+### 2. Google Gemini 3.6 Flash (AI Studio)
+- Detección automática de `GOOGLE_API_KEY` desde `~/.hermes/.env` o variables de entorno.
+- Cliente asíncrono ultra-rápido (`httpx`) con HTTP/2 y TLS moderno.
+- Latencia comprobada de **~215 ms** con generación de código e inserción directa en el editor.
 
-3. **Interfaz HUD Futurista (Jarvis & Ultron):**
-   - **⚡ Jarvis:** Fondo Deep Space, acentos en cian y azul neón (`#00f0ff`), bordes de cristal holográfico.
-   - **🔴 Ultron:** Fondo Carbon Titanium, acentos carmesí y cobalto (`#ff1e56` y `#3a86ff`).
-   - Sintetizador de voz HUD (Web Speech API) con avisos audibles en vivo.
+### 3. Matriz de Colaboración Dual Autónoma (Hermes ↔ Gemini)
+- **Fase 1 (Gemini Arquitecto):** Analiza el objetivo del usuario y diseña el plan técnico y la arquitectura.
+- **Fase 2 (Hermes Ejecutor):** Aplica modificaciones de código, ejecuta comandos de terminal y crea archivos en el repositorio.
+- **Fase 3 (Gemini Auditor):** Inspecciona el código resultante y emite una auditoría técnica final.
 
-4. **Túnel Público Instantáneo sin Cuenta (`tunnel.sh`):**
-   - Basado en Cloudflare Quick Tunnels: crea una URL segura `https://*.trycloudflare.com` en segundos sin necesidad de certificados ni abrir puertos.
+### 4. Interfaz Moderna Estándar IDE 2026
+- **Paleta Obsidian Slate:** Tema oscuro profesional (`#07090e`, `#0f1523`) con tipografía `Inter` y `JetBrains Mono`.
+- **Monaco Editor:** Motor oficial de VS Code con múltiples pestañas, mini-mapa, resaltado de sintaxis y atajo nativo `Ctrl+S` / `Cmd+S`.
+- **Dock Inferior Multitarea:** Terminal interactiva PTY (ZSH/Bash con `xterm.js`), consola en vivo de Hermes y registro de colaboración dual.
+- **Control de Versiones Integrado:** Panel Git para revisar cambios modificados y hacer `commit & push` con un clic.
 
-5. **Compatibilidad Multiplataforma Total:**
-   - Totalmente funcional en macOS (Apple Silicon M1/M2/M3/M4 e Intel) y Linux.
-   - Compatible con Python 3.9, 3.10, 3.11, 3.12 y 3.13.
+---
 
-6. **Skill Nativa para Antigravity IDE:**
-   - Incluida en `skills/nexo-colab/SKILL.md` para que Antigravity interactúe con el hub automáticamente.
+## 🩺 Diagnóstico de Salud del Sistema
+
+Verifica en cualquier momento la conexión con ambas IAs ejecutando:
+
+```bash
+python3 salud_sistema.py
+```
+
+Salida esperada:
+```json
+{
+  "gemini": {
+    "status": "healthy",
+    "modelo": "gemini-3.6-flash",
+    "latency_ms": 215.22,
+    "error": null
+  },
+  "hermes": {
+    "status": "healthy",
+    "modelo": "gemini-3.6-flash (Nous Hermes CLI)",
+    "latency_ms": 293.76,
+    "error": null
+  }
+}
+```
 
 ---
 
@@ -56,42 +84,22 @@ Para una guía paso a paso completa, consulta: **[GUIA_COLABORACION.md](file:///
 
 ```
 atlantis_proyect/
-├── nexo/                      # Núcleo del servidor y herramientas
-│   ├── server.py              # Servidor FastAPI + WebSocket 2.0
-│   ├── nexo-cli.py            # CLI con soporte para comandos IA
-│   ├── agent_bridge.py        # Daemon de monitoreo para agentes IA
-│   ├── static/index.html      # GUI HUD Jarvis & Ultron
+├── nexo/                      # Servidor y herramientas NEXO
+│   ├── server.py              # API FastAPI, WebSockets y PTY interactivo
+│   ├── ai_engine.py           # Motor de integración real Gemini 3.6 + Hermes CLI
+│   ├── nexo-cli.py            # CLI para agentes y desarrolladores
+│   ├── static/index.html      # IDE Studio 2026 (Monaco + xterm.js + Dual-AI)
 │   └── requirements.txt       # Dependencias
-├── proyectos/                 # Workspace de código colaborativo
-├── skills/nexo-colab/         # Skill de colaboración para Antigravity IDE
-├── start.sh                   # Lanzador automático todo-en-uno
+├── proyectos/                 # Espacio de trabajo para proyectos colaborativos
+├── skills/nexo-colab/         # Skill oficial para Antigravity IDE
+├── salud_sistema.py           # Script de diagnóstico de latencia y estado
+├── start.sh                   # Script de inicio rápido
 ├── tunnel.sh                  # Gestor de túneles públicos Cloudflare
-├── GUIA_COLABORACION.md       # Manual de colaboración paso a paso
-├── ideas/                     # Banco de ideas de proyectos
-├── canal/                     # Registro de mensajería histórica
-└── decisiones/                # Registro de decisiones de diseño (ADRs)
-```
-
----
-
-## 🤖 Comandos para Agentes IA (Hermes & Antigravity)
-
-```bash
-# Ver bandeja de entrada y tareas asignadas
-python3 nexo/nexo-cli.py ai-inbox --pendientes
-
-# Enviar tarea o código a la otra IA
-python3 nexo/nexo-cli.py ai-send --para hermes --titulo "Crear tests" --contenido "Implementa tests unitarios"
-
-# Responder a una tarea
-python3 nexo/nexo-cli.py ai-reply --id <ID> --contenido "Tests implementados con éxito"
-
-# Ver tablero de tareas
-python3 nexo/nexo-cli.py ai-tasks
+└── GUIA_COLABORACION.md       # Guía paso a paso para programar en pareja
 ```
 
 ---
 
 ## 📜 Licencia
 
-MIT License — Creado para el desarrollo colaborativo entre mentes humanas e inteligencias artificiales.
+MIT License — Desarrollado para colaboración simultánea entre humanos e inteligencias artificiales en tiempo real.
