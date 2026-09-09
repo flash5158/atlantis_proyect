@@ -4,7 +4,25 @@
 
 // ---------------------------------------------------- ESTADO GLOBAL
 const urlParams = new URLSearchParams(location.search);
-const TOKEN = urlParams.get('token') || '';
+let TOKEN = urlParams.get('token') || localStorage.getItem('nexo_token') || '';
+if (urlParams.get('token')) {
+  localStorage.setItem('nexo_token', urlParams.get('token'));
+}
+
+async function ensureToken() {
+  if (TOKEN) return;
+  try {
+    const res = await fetch('/api/token_local');
+    const d = await res.json();
+    if (d && d.token) {
+      TOKEN = d.token;
+      localStorage.setItem('nexo_token', TOKEN);
+      fetchInitialFeed();
+      connectMainWebSocket();
+    }
+  } catch(e) {}
+}
+
 const initialUser = (urlParams.get('user') || '').toLowerCase();
 let CURRENT_USER = (initialUser === 'amigo' || initialUser === 'daniel') ? initialUser : (localStorage.getItem('nexo_user') || 'daniel');
 
@@ -89,31 +107,106 @@ function updateIdentityUI() {
   }
 }
 
-// ---------------------------------------------------- WEBSOCKET PRINCIPAL
+// ---------------------------------------------------- WEBSOCKET Y POLLING SERVERLESS
+let isPollingActive = false;
+let pollingInterval = null;
+
+async function fetchInitialFeed() {
+  try {
+    const res = await fetch(`/api/social/feed?token=${encodeURIComponent(TOKEN)}`);
+    const d = await res.json();
+    if (d.ok && d.feed) {
+      renderSocialFeed(d.feed, d.entidades, d.presencia);
+    }
+  } catch(e) {}
+}
+
+async function pollFeedUpdate() {
+  try {
+    const res = await fetch(`/api/social/feed?token=${encodeURIComponent(TOKEN)}`);
+    const d = await res.json();
+    if (d.ok && d.feed) {
+      syncFeedState(d.feed, d.presencia);
+    }
+  } catch(e) {}
+}
+
+function syncFeedState(newFeed, newPresencia) {
+  if (newPresencia) updatePresenceUI(newPresencia);
+  if (!newFeed) return;
+  // Comparar longitud o timestamps para actualizar solo si hay cambios
+  const currentCount = SOCIAL_FEED.length;
+  const newCount = newFeed.length;
+  const currentReplies = SOCIAL_FEED.reduce((acc, p) => acc + (p.respuestas ? p.respuestas.length : 0), 0);
+  const newReplies = newFeed.reduce((acc, p) => acc + (p.respuestas ? p.respuestas.length : 0), 0);
+
+  if (currentCount !== newCount || currentReplies !== newReplies) {
+    renderSocialFeed(newFeed, SOCIAL_ENTIDADES, newPresencia);
+  } else {
+    // Actualizar reacciones existentes
+    newFeed.forEach(np => {
+      const existing = SOCIAL_FEED.find(p => p.id === np.id);
+      if (existing) {
+        existing.reacciones = np.reacciones;
+        const bar = document.getElementById(`reactions-${np.id}`);
+        if (bar) bar.innerHTML = renderReactionsHtml(np.id, np.reacciones);
+      }
+    });
+  }
+}
+
+function startHttpPolling() {
+  if (isPollingActive) return;
+  isPollingActive = true;
+  fetchInitialFeed();
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(pollFeedUpdate, 3500);
+}
+
 function connectMainWebSocket() {
   if (WS) {
     try { WS.close(); } catch(e){}
     WS = null;
   }
 
+  // Si estamos en Vercel, iniciar polling directamente como respaldo
+  if (location.hostname.includes('vercel.app')) {
+    startHttpPolling();
+  }
+
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${proto}//${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(CURRENT_USER)}`;
-  WS = new WebSocket(url);
+  
+  try {
+    WS = new WebSocket(url);
 
-  WS.onopen = () => {
-    wsSend({ tipo: 'join', proyecto: 'atlantis_proyect' });
-    showToast(`NEXO Conectado en vivo como ${CURRENT_USER === 'daniel' ? 'Daniel' : 'Amigo'}`);
-  };
+    WS.onopen = () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+      isPollingActive = false;
+      wsSend({ tipo: 'join', proyecto: 'atlantis_proyect' });
+      showToast(`NEXO Conectado en vivo como ${CURRENT_USER === 'daniel' ? 'Daniel' : 'Amigo'}`);
+    };
 
-  WS.onmessage = ev => {
-    try {
-      handleServerMessage(JSON.parse(ev.data));
-    } catch(e) {}
-  };
+    WS.onmessage = ev => {
+      try {
+        handleServerMessage(JSON.parse(ev.data));
+      } catch(e) {}
+    };
 
-  WS.onclose = () => {
-    setTimeout(connectMainWebSocket, 3000);
-  };
+    WS.onerror = () => {
+      startHttpPolling();
+    };
+
+    WS.onclose = () => {
+      startHttpPolling();
+      setTimeout(connectMainWebSocket, 5000);
+    };
+  } catch(err) {
+    startHttpPolling();
+  }
 }
 
 function wsSend(obj) {
@@ -280,6 +373,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Inicializar Módulo Social
   initSocialModule();
+
+  // Asegurar token y cargar feed inmediatamente
+  ensureToken();
+  fetchInitialFeed();
 
   // Inicializar WebSockets & Datos
   connectMainWebSocket();

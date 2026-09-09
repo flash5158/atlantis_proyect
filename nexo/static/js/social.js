@@ -322,15 +322,26 @@ async function publishSocialPost() {
   if (codigo) tags.push('codigo');
   if (archivo) tags.push('archivo');
 
-  wsSend({
-    tipo: 'social_post',
+  const postPayload = {
     autor: CURRENT_USER,
     contenido: contenido,
     codigo: codigo || null,
     archivo: archivo || null,
     tags: tags,
     debate: debate,
-  });
+  };
+
+  if (WS && WS.readyState === WebSocket.OPEN) {
+    wsSend(Object.assign({ tipo: 'social_post' }, postPayload));
+  } else {
+    fetch(`/api/social/post?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postPayload),
+    }).then(r => r.json()).then(d => {
+      if (d.ok && d.post) onSocialNewPost(d.post);
+    }).catch(e => console.error('Error publicando vía REST:', e));
+  }
 
   input.value = '';
   if (codeInput) codeInput.value = '';
@@ -347,12 +358,23 @@ function sendReply(postId) {
   const text = input ? input.value.trim() : '';
   if (!text) return;
 
-  wsSend({
-    tipo: 'social_reply',
+  const replyPayload = {
     post_id: postId,
     autor: CURRENT_USER,
     contenido: text,
-  });
+  };
+
+  if (WS && WS.readyState === WebSocket.OPEN) {
+    wsSend(Object.assign({ tipo: 'social_reply' }, replyPayload));
+  } else {
+    fetch(`/api/social/reply?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(replyPayload),
+    }).then(r => r.json()).then(d => {
+      if (d.ok && d.respuesta) onSocialNewReply(postId, d.respuesta);
+    }).catch(e => console.error('Error respondiendo vía REST:', e));
+  }
 
   input.value = '';
 }
@@ -363,12 +385,23 @@ function focusReplyInput(postId) {
 }
 
 function toggleReaction(postId, emoji) {
-  wsSend({
-    tipo: 'social_react',
+  const reactPayload = {
     post_id: postId,
     emoji: emoji,
     usuario: CURRENT_USER,
-  });
+  };
+
+  if (WS && WS.readyState === WebSocket.OPEN) {
+    wsSend(Object.assign({ tipo: 'social_react' }, reactPayload));
+  } else {
+    fetch(`/api/social/react?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reactPayload),
+    }).then(r => r.json()).then(d => {
+      if (d.ok && d.reacciones) onSocialReactionUpdate(postId, d.reply_id, d.reacciones);
+    }).catch(e => console.error('Error reaccionando vía REST:', e));
+  }
 }
 
 function triggerDebateModal(postId) {
@@ -377,13 +410,22 @@ function triggerDebateModal(postId) {
   const tema = prompt('Tema o aspecto técnico a debatir entre Hermes-Daniel y Hermes-Amigo:', defTema);
   if (!tema) return;
 
-  wsSend({
-    tipo: 'social_debate',
+  const debatePayload = {
     post_id: postId,
     tema: tema,
     codigo: post ? post.codigo : null,
     archivo: post ? post.archivo : null,
-  });
+  };
+
+  if (WS && WS.readyState === WebSocket.OPEN) {
+    wsSend(Object.assign({ tipo: 'social_debate' }, debatePayload));
+  } else {
+    fetch(`/api/social/debate?token=${encodeURIComponent(TOKEN)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(debatePayload),
+    }).catch(e => console.error('Error iniciando debate vía REST:', e));
+  }
 
   showToast('⚡ Debate IA iniciado entre Hermes-Daniel y Hermes-Amigo');
 }

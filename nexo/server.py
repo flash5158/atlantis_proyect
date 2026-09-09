@@ -19,15 +19,21 @@ import hmac
 import json
 import os
 import platform
-import pty
 import re
 import secrets
 import shutil
 import signal
-import struct
 import subprocess
-import termios
 import time
+
+try:
+    import fcntl
+    import pty
+    import struct
+    import termios
+    HAS_PTY = True
+except ImportError:
+    HAS_PTY = False
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -46,20 +52,31 @@ HOME = Path.home()
 BASE = Path(__file__).resolve().parent
 REPO_ROOT = BASE.parent
 
-env_ws = os.environ.get("NEXO_WORKSPACE")
-if env_ws and Path(env_ws).exists():
-    WORKSPACE = Path(env_ws).resolve()
-elif (REPO_ROOT / "proyectos").exists():
-    WORKSPACE = REPO_ROOT.resolve()
-elif (BASE / "colab-hub").exists():
-    WORKSPACE = (BASE / "colab-hub").resolve()
-elif (HOME / "colab-hub").exists():
-    WORKSPACE = (HOME / "colab-hub").resolve()
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+if IS_VERCEL:
+    WORKSPACE = Path("/tmp/atlantis_proyect").resolve()
+    PROYECTOS = WORKSPACE / "proyectos"
+    NEXO_DATA_DIR = Path("/tmp/.nexo")
 else:
-    WORKSPACE = REPO_ROOT.resolve()
+    env_ws = os.environ.get("NEXO_WORKSPACE")
+    if env_ws and Path(env_ws).exists():
+        WORKSPACE = Path(env_ws).resolve()
+    elif (REPO_ROOT / "proyectos").exists():
+        WORKSPACE = REPO_ROOT.resolve()
+    elif (BASE / "colab-hub").exists():
+        WORKSPACE = (BASE / "colab-hub").resolve()
+    elif (HOME / "colab-hub").exists():
+        WORKSPACE = (HOME / "colab-hub").resolve()
+    else:
+        WORKSPACE = REPO_ROOT.resolve()
 
-PROYECTOS = WORKSPACE / "proyectos"
-NEXO_DATA_DIR = WORKSPACE / ".nexo"
+    PROYECTOS = WORKSPACE / "proyectos"
+    NEXO_DATA_DIR = WORKSPACE / ".nexo"
+
+STATIC_DIR = BASE / "static"
+if not STATIC_DIR.is_dir() and (REPO_ROOT / "nexo" / "static").is_dir():
+    STATIC_DIR = REPO_ROOT / "nexo" / "static"
+
 AI_DATA_FILE = NEXO_DATA_DIR / "ai_colab.json"
 CONFIG = BASE / "config.json"
 PORT = int(os.environ.get("PORT", "8787"))
@@ -88,20 +105,25 @@ def cargar_config() -> dict:
     cfg.setdefault("ai_proveedor", "auto")
     cfg.setdefault("ai_api_key", os.environ.get("GEMINI_API_KEY") or os.environ.get("GROQ_API_KEY") or "")
     cfg.setdefault("ai_modelo", "auto")
-    CONFIG.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    try:
+        CONFIG.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
     return cfg
 
 
 CFG = cargar_config()
 TOKEN = os.environ.get("TOKEN") or CFG["token"]
-PROYECTOS.mkdir(parents=True, exist_ok=True)
-NEXO_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-if not (PROYECTOS / "README.md").exists():
-    (PROYECTOS / "README.md").write_text(
-        "# Proyectos de NEXO\n\nDirectorio de trabajo colaborativo para código compartido.\n",
-        encoding="utf-8",
-    )
+try:
+    PROYECTOS.mkdir(parents=True, exist_ok=True)
+    NEXO_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not (PROYECTOS / "README.md").exists():
+        (PROYECTOS / "README.md").write_text(
+            "# Proyectos de NEXO\n\nDirectorio de trabajo colaborativo para código compartido.\n",
+            encoding="utf-8",
+        )
+except Exception:
+    pass
 
 
 # ---------------------------------------------------------------- Datos de IA y Presencia
@@ -196,7 +218,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 CONECTADOS: set[WebSocket] = set()
 SALAS: dict[str, Sala] = {}
@@ -321,13 +343,13 @@ async def difundir_arbol():
 # ---------------------------------------------------------------- Endpoints REST
 @app.get("/")
 async def raiz():
-    return FileResponse(BASE / "static" / "index.html")
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/api/token_local")
 async def api_token_local(request: Request):
-    """Devuelve el token automáticamente a conexiones locales para acceso instantáneo."""
-    if es_local(request):
+    """Devuelve el token automáticamente a conexiones locales o Vercel para acceso instantáneo."""
+    if es_local(request) or IS_VERCEL or os.environ.get("NEXO_PUBLIC"):
         return {"token": TOKEN, "local": True}
     return JSONResponse({"error": "No permitido"}, status_code=403)
 
@@ -895,6 +917,12 @@ async def pty_endpoint(
         return
 
     await ws.accept()
+
+    if not HAS_PTY:
+        await ws.send_text("\r\n\x1b[33m[NEXO Cloud] Terminal interactiva PTY deshabilitada en modo Serverless (Vercel).\x1b[0m\r\n\x1b[36mPara una sesión shell local completa, ejecuta NEXO en tu máquina local.\x1b[0m\r\n")
+        await asyncio.sleep(1)
+        await ws.close()
+        return
 
     master, slave = pty.openpty()
     wsz = struct.pack("HHHH", max(rows, 10), max(cols, 40), 0, 0)

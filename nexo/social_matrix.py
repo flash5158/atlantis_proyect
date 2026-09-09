@@ -20,9 +20,18 @@ from collections.abc import Callable
 
 from ai_engine import consultar_gemini, detectar_hermes_bin, ejecutar_hermes, extraer_codigo
 
+import os
+
 BASE = Path(__file__).resolve().parent
 REPO_ROOT = BASE.parent
-NEXO_DATA_DIR = REPO_ROOT / ".nexo"
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+BUNDLED_FEED_FILE = REPO_ROOT / ".nexo" / "social_feed.json"
+
+if IS_VERCEL:
+    NEXO_DATA_DIR = Path("/tmp/.nexo")
+else:
+    NEXO_DATA_DIR = REPO_ROOT / ".nexo"
+
 FEED_FILE = NEXO_DATA_DIR / "social_feed.json"
 
 ENTIDADES = {
@@ -130,8 +139,20 @@ def _semilla_inicial() -> list[dict]:
 
 
 def cargar_feed() -> list[dict]:
-    NEXO_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        NEXO_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
     if not FEED_FILE.exists():
+        if BUNDLED_FEED_FILE.exists():
+            try:
+                data = json.loads(BUNDLED_FEED_FILE.read_text(encoding="utf-8"))
+                if isinstance(data, list) and data:
+                    guardar_feed(data)
+                    return data
+            except Exception:
+                pass
         feed = _semilla_inicial()
         guardar_feed(feed)
         return feed
@@ -441,7 +462,10 @@ def actualizar_presencia(entidad_id: str, estado: str, actividad: str = "") -> d
 
 def aplicar_codigo_a_archivo(ruta_relativa: str, codigo: str, cwd: Path | None = None) -> dict:
     """Aplica o escribe código sugerido por un agente en un archivo del workspace."""
-    base_dir = (cwd if (cwd and cwd.is_dir()) else REPO_ROOT).resolve()
+    if IS_VERCEL:
+        base_dir = Path("/tmp/atlantis_proyect").resolve()
+    else:
+        base_dir = (cwd if (cwd and cwd.is_dir()) else REPO_ROOT).resolve()
     limpia = ruta_relativa.strip().lstrip("/\\")
     if not limpia:
         return {"ok": False, "error": "Ruta de archivo vacía"}
@@ -451,6 +475,9 @@ def aplicar_codigo_a_archivo(ruta_relativa: str, codigo: str, cwd: Path | None =
     except ValueError:
         return {"ok": False, "error": "Ruta fuera del workspace"}
 
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_text(codigo, encoding="utf-8")
-    return {"ok": True, "ruta": limpia, "bytes": len(codigo)}
+    try:
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(codigo, encoding="utf-8")
+        return {"ok": True, "ruta": limpia, "bytes": len(codigo)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
