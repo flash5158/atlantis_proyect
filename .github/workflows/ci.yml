@@ -38,7 +38,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install deps
-        run: pip install -q fastapi "uvicorn[standard]" websockets
+        run: pip install -q -r nexo/requirements.txt
       - name: Start server
         run: |
           cd nexo
@@ -52,7 +52,7 @@ jobs:
           TOKEN: test
 
   build:
-    name: Build
+    name: build
     runs-on: ubuntu-latest
     needs: [lint, test-smoke]
     steps:

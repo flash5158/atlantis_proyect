@@ -27,7 +27,8 @@ import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncGenerator, Callable, Dict, List, Optional, Tuple
+from typing import Any
+from collections.abc import Callable
 
 import httpx
 
@@ -39,7 +40,7 @@ HERMES_ENV_FILE = HERMES_DIR / ".env"
 HERMES_BIN_DEFAULT = Path.home() / ".local" / "bin" / "hermes"
 
 
-def detectar_hermes_bin() -> Optional[Path]:
+def detectar_hermes_bin() -> Path | None:
     """Localiza el binario ejecutable real de Hermes Agent."""
     if HERMES_BIN_DEFAULT.is_file() and os.access(HERMES_BIN_DEFAULT, os.X_OK):
         return HERMES_BIN_DEFAULT
@@ -129,21 +130,12 @@ async def consultar_gemini(
     nombre_archivo: str = "",
     modelo: str = "gemini-3.6-flash",
     sistema: str = "",
-    historial: Optional[list] = None,
-) -> tuple[str, Optional[str]]:
+    historial: list | None = None,
+) -> tuple[str, str | None]:
     """Ejecuta una consulta real a Google Gemini usando la API oficial.
 
     Retorna (texto_respuesta, codigo_extraido).
     """
-    cfg = obtener_config_ia()
-    key = cfg["api_key"]
-    if not key:
-        return (
-            "Error: No se encontró una clave de Gemini (GOOGLE_API_KEY). "
-            "Asegúrate de que esté configurada en ~/.hermes/.env o en el panel de configuración.",
-            None,
-        )
-
     system_text = sistema or (
         "Eres Gemini 3.6 Flash, el Co-Piloto de IA y Arquitecto de Software en la plataforma NEXO Atlantis. "
         "Colaboras en tiempo real con dos desarrolladores y con Hermes Agent (Nous Research). "
@@ -154,6 +146,29 @@ async def consultar_gemini(
     full_text = prompt
     if nombre_archivo and contexto_archivo:
         full_text += f"\n\n--- Archivo: {nombre_archivo} ---\n{contexto_archivo[:12000]}\n--- Fin del archivo ---"
+
+    cfg = obtener_config_ia()
+    key = cfg["api_key"]
+    if not key:
+        # Si no hay clave externa de Gemini, intentar delegar al agente Hermes local
+        hermes_bin = detectar_hermes_bin()
+        if hermes_bin:
+            try:
+                ret, out = await ejecutar_hermes(
+                    f"{system_text}\n\n{full_text}",
+                    yolo=True,
+                    timeout=120,
+                )
+                if ret == 0 and out.strip():
+                    return (out.strip(), extraer_codigo(out))
+            except Exception:
+                pass
+
+        return (
+            "Para activar consultas en la nube con Google Gemini 3.6 Flash / 2.5 Pro, "
+            "configura tu GOOGLE_API_KEY en ~/.hermes/.env o en el panel de configuración de NEXO.",
+            None,
+        )
 
     contents = []
     # Añadir historial si existe
@@ -212,9 +227,9 @@ async def consultar_gemini(
 # ---------------------------------------------------------------- Hermes Real CLI Runner
 async def ejecutar_hermes(
     prompt: str,
-    cwd: Optional[Path] = None,
+    cwd: Path | None = None,
     yolo: bool = True,
-    on_chunk: Optional[Callable[[str], None]] = None,
+    on_chunk: Callable[[str], None] | None = None,
     timeout: int = 180,
 ) -> tuple[int, str]:
     """Ejecuta el binario real de Hermes Agent en el workspace.
@@ -265,7 +280,7 @@ async def ejecutar_hermes(
                 salida_completa.append(decoded)
                 if on_chunk:
                     on_chunk(decoded)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             try:
                 proc.kill()
             except Exception:
@@ -293,8 +308,8 @@ async def ejecutar_hermes(
 # ---------------------------------------------------------------- Colaboración Dual (Hermes ↔ Gemini)
 async def colaboracion_dual(
     objetivo: str,
-    cwd: Optional[Path] = None,
-    on_event: Optional[Callable[[dict], None]] = None,
+    cwd: Path | None = None,
+    on_event: Callable[[dict], None] | None = None,
 ) -> dict:
     """Ejecuta una colaboración autónoma completa entre Gemini y Hermes.
 
@@ -377,7 +392,7 @@ async def colaboracion_dual(
 
 
 # ---------------------------------------------------------------- Utilidades y Estado
-def extraer_codigo(texto: str) -> Optional[str]:
+def extraer_codigo(texto: str) -> str | None:
     """Extrae el primer bloque de código relevante de una respuesta markdown."""
     match = re.search(r"```(?:\w+)?\n([\s\S]+?)\n```", texto)
     if match:
@@ -443,7 +458,7 @@ async def generar_respuesta_ia(
     contexto_archivo: str = "",
     nombre_archivo: str = "",
     agente_nombre: str = "Gemini",
-) -> tuple[str, Optional[str]]:
+) -> tuple[str, str | None]:
     """Función de compatibilidad para endpoints de chat existentes."""
     if agente_nombre.lower() in ("hermes", "hermes agent"):
         hermes_bin = detectar_hermes_bin()

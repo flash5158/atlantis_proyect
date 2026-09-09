@@ -37,7 +37,6 @@ import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Optional
 
 import websockets
 
@@ -226,7 +225,7 @@ async def enviar_y_esperar(args, msg: dict, hasta="run_fin", timeout=300) -> lis
             while True:
                 try:
                     raw = await asyncio.wait_for(ws.recv(), timeout=timeout)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     out.append({"tipo": "error", "texto": "Tiempo de espera agotado"})
                     break
                 m = json.loads(raw)
