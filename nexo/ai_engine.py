@@ -138,9 +138,23 @@ async def consultar_gemini(
     cfg = obtener_config_ia()
     key = cfg["api_key"]
     if not key:
+        # Si no hay clave externa de Gemini, intentar delegar al agente Hermes local
+        hermes_bin = detectar_hermes_bin()
+        if hermes_bin:
+            try:
+                ret, out = await ejecutar_hermes(
+                    f"{system_text}\n\n{full_text}",
+                    yolo=True,
+                    timeout=120,
+                )
+                if ret == 0 and out.strip():
+                    return (out.strip(), extraer_codigo(out))
+            except Exception:
+                pass
+
         return (
-            "Error: No se encontró una clave de Gemini (GOOGLE_API_KEY). "
-            "Asegúrate de que esté configurada en ~/.hermes/.env o en el panel de configuración.",
+            "Para activar consultas en la nube con Google Gemini 3.6 Flash / 2.5 Pro, "
+            "configura tu GOOGLE_API_KEY en ~/.hermes/.env o en el panel de configuración de NEXO.",
             None,
         )
 

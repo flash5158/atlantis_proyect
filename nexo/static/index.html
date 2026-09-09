@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXO Studio 2.0 — Dual AI Collaborative IDE (Hermes & Gemini)</title>
+<title>NEXO Studio 2.0 — Antigravity Social & AI Collaboration Matrix</title>
 
 <!-- Fuentes Modernas 2026 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
-<!-- xterm.js (Terminal Interactiva PTY Real) -->
+<!-- xterm.js (Terminal Interactiva PTY) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
@@ -18,1854 +18,313 @@
 <!-- Monaco Editor (Motor Oficial de VS Code) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 
-<style>
-:root {
-  --bg-darkest: #07090e;
-  --bg-sidebar: #0b0f19;
-  --bg-panel: #0f1523;
-  --bg-card: #141c2e;
-  --bg-hover: #1b263e;
-  --bg-active: #223150;
-  
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-medium: #1f2a40;
-  --border-focus: #3b82f6;
-
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-dim: #475569;
-
-  --accent-cyan: #06b6d4;
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
-  --accent-pink: #ec4899;
-  --accent-green: #10b981;
-  --accent-orange: #f59e0b;
-  --accent-red: #ef4444;
-
-  --glow-cyan: rgba(6, 182, 212, 0.25);
-  --glow-purple: rgba(139, 92, 246, 0.25);
-  --glow-green: rgba(16, 185, 129, 0.25);
-
-  --radius-sm: 6px;
-  --radius-md: 9px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  height: 100vh;
-  overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg-darkest);
-  color: var(--text-primary);
-  font-size: 13px;
-  -webkit-font-smoothing: antialiased;
-}
-
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* TOPBAR */
-.topbar {
-  height: 48px;
-  background: var(--bg-sidebar);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  gap: 16px;
-  z-index: 50;
-  user-select: none;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.02em;
-}
-.brand-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 12px var(--glow-cyan);
-  color: white;
-  font-size: 14px;
-}
-.brand-name {
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.brand-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: #c4b5fd;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.topbar-center {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.status-pill {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.status-pill:hover {
-  border-color: var(--border-medium);
-  background: var(--bg-card);
-}
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-muted);
-}
-.status-dot.online {
-  background: var(--accent-green);
-  box-shadow: 0 0 8px var(--accent-green);
-  animation: pulse-dot 2s infinite;
-}
-.status-dot.gemini {
-  background: var(--accent-purple);
-  box-shadow: 0 0 8px var(--accent-purple);
-  animation: pulse-dot 2s infinite;
-}
-.status-dot.hermes {
-  background: var(--accent-cyan);
-  box-shadow: 0 0 8px var(--accent-cyan);
-  animation: pulse-dot 2s infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.15); }
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.btn-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--border-medium);
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-top:hover {
-  background: var(--bg-hover);
-  border-color: var(--text-muted);
-}
-.btn-top.accent {
-  background: linear-gradient(135deg, #0284c7, #7c3aed);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  font-weight: 600;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
-}
-.btn-top.accent:hover {
-  filter: brightness(1.12);
-  box-shadow: 0 3px 15px rgba(124, 58, 237, 0.45);
-}
-
-/* APP SHELL */
-.app-container {
-  display: flex;
-  height: calc(100vh - 48px);
-  width: 100%;
-  overflow: hidden;
-}
-
-/* LEFT ICON RAIL */
-.icon-rail {
-  width: 48px;
-  background: var(--bg-darkest);
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0;
-  gap: 12px;
-  flex-shrink: 0;
-}
-.rail-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.15s;
-  position: relative;
-  background: transparent;
-  border: none;
-  font-size: 16px;
-}
-.rail-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-card);
-}
-.rail-btn.active {
-  color: var(--accent-cyan);
-  background: var(--bg-card);
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
-}
-.rail-btn.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  background: var(--accent-cyan);
-  border-radius: 0 3px 3px 0;
-}
-
-/* SIDEBAR DRAWER */
-.sidebar-drawer {
-  width: 250px;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-.drawer-header {
-  height: 38px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.drawer-actions {
-  display: flex;
-  gap: 4px;
-}
-.tool-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.tool-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-
-.drawer-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 6px;
-}
-
-/* FILE TREE */
-.tree-node {
-  padding: 4px 8px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 12.5px;
-  transition: all 0.1s;
-  user-select: none;
-  font-family: 'Inter', sans-serif;
-}
-.tree-node:hover {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-.tree-node.active {
-  background: rgba(6, 182, 212, 0.12);
-  color: var(--accent-cyan);
-  font-weight: 500;
-}
-.tree-node .icon {
-  font-size: 13px;
-  opacity: 0.85;
-}
-.tree-node.folder {
-  font-weight: 600;
-  color: var(--text-muted);
-  font-size: 11.5px;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-
-/* CENTER WORKSPACE */
-.center-workspace {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background: var(--bg-darkest);
-}
-
-/* TABS BAR */
-.editor-tabs {
-  height: 38px;
-  background: var(--bg-sidebar);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-  overflow-x: auto;
-  gap: 2px;
-  flex-shrink: 0;
-}
-.tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 6px 6px 0 0;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-bottom: none;
-  transition: all 0.15s;
-  user-select: none;
-}
-.tab:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.03);
-}
-.tab.active {
-  background: var(--bg-darkest);
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-  font-weight: 500;
-}
-.tab .tab-close {
-  opacity: 0.5;
-  cursor: pointer;
-  border-radius: 3px;
-  padding: 1px 3px;
-}
-.tab .tab-close:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-}
-.tab-dirty {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-cyan);
-  display: none;
-}
-.tab.dirty .tab-dirty { display: block; }
-.tab.dirty .tab-close { display: none; }
-
-/* BREADCRUMBS */
-.editor-breadcrumbs {
-  height: 24px;
-  background: var(--bg-darkest);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  font-size: 11px;
-  color: var(--text-muted);
-  gap: 6px;
-}
-.editor-breadcrumbs span.curr {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-/* MONACO CONTAINER */
-.monaco-wrapper {
-  flex: 1;
-  position: relative;
-  min-height: 200px;
-}
-#monacoEditor {
-  width: 100%;
-  height: 100%;
-}
-
-/* BOTTOM DOCK (TERMINALS & LOGS) */
-.bottom-dock {
-  height: 260px;
-  background: var(--bg-sidebar);
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-.dock-header {
-  height: 34px;
-  background: var(--bg-darkest);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-}
-.dock-tabs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.dock-tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11.5px;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  font-weight: 500;
-  transition: all 0.15s;
-}
-.dock-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-card);
-}
-.dock-tab.active {
-  color: var(--accent-cyan);
-  background: var(--bg-card);
-}
-.dock-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.dock-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  background: #06080e;
-}
-.dock-panel {
-  position: absolute;
-  inset: 0;
-  display: none;
-}
-.dock-panel.active {
-  display: flex;
-  flex-direction: column;
-}
-#ptyTerminalWrapper {
-  width: 100%;
-  height: 100%;
-  padding: 6px 8px;
-}
-.hermes-live-console {
-  width: 100%;
-  height: 100%;
-  padding: 8px 12px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: #38bdf8;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-  background: #05070d;
-}
-
-/* RIGHT AI COMMAND CENTER */
-.right-ai-panel {
-  width: 380px;
-  background: var(--bg-sidebar);
-  border-left: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-.ai-panel-header {
-  height: 44px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  padding: 0 6px;
-  gap: 4px;
-}
-.ai-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  transition: all 0.15s;
-}
-.ai-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-.ai-tab.active {
-  background: var(--bg-card);
-  color: var(--accent-cyan);
-  font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-}
-.ai-tab.dual.active {
-  color: #c084fc;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-}
-
-.ai-panel-body {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  gap: 12px;
-}
-.ai-view {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-.ai-view.active {
-  display: flex;
-}
-
-/* DUAL AI CARDS */
-.colab-hero-card {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.12));
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.colab-hero-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.colab-hero-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.dual-agent-badges {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.agent-mini-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.agent-mini-card .name {
-  font-size: 11.5px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.agent-mini-card .role {
-  font-size: 10.5px;
-  color: var(--text-muted);
-}
-.agent-mini-card.hermes .name { color: var(--accent-cyan); }
-.agent-mini-card.gemini .name { color: #c084fc; }
-
-/* DUAL COLLABORATION TIMELINE */
-.colab-timeline {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  max-height: 380px;
-  padding-right: 4px;
-}
-.timeline-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  animation: fadeIn 0.2s ease;
-}
-.timeline-item.gemini {
-  border-left: 3px solid var(--accent-purple);
-}
-.timeline-item.hermes {
-  border-left: 3px solid var(--accent-cyan);
-}
-.timeline-item-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
-}
-.timeline-badge {
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.timeline-time {
-  color: var(--text-dim);
-}
-.timeline-body {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.timeline-body code {
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-size: 11.5px;
-}
-
-/* PROMPT INPUT BOXES */
-.ai-input-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: all 0.2s;
-}
-.ai-input-box:focus-within {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 1px var(--border-focus);
-}
-.ai-input-box textarea {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  font-size: 12.5px;
-  resize: none;
-  min-height: 54px;
-  outline: none;
-}
-.ai-input-box textarea::placeholder {
-  color: var(--text-dim);
-}
-.ai-input-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.quick-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-.quick-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border: none;
-}
-.quick-tag:hover {
-  background: var(--bg-active);
-  color: var(--text-primary);
-}
-.btn-send {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #0284c7, #6366f1);
-  color: white;
-  border: none;
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-send:hover {
-  filter: brightness(1.15);
-}
-.btn-send:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* CHAT MESSAGES */
-.chat-thread {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-right: 4px;
-}
-.chat-bubble {
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  font-size: 12.5px;
-  line-height: 1.45;
-  max-width: 90%;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.chat-bubble.user {
-  align-self: flex-end;
-  background: #1e3a8a;
-  color: white;
-}
-.chat-bubble.peer {
-  align-self: flex-start;
-  background: var(--bg-card);
-  border: 1px solid var(--border-medium);
-}
-.chat-bubble.agent {
-  align-self: flex-start;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  color: var(--text-primary);
-}
-.chat-sender {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-.modal-overlay.active { display: flex; }
-.modal-card {
-  width: 520px;
-  max-width: 92vw;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-close {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 16px;
-}
-
-/* TOAST */
-.toast-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.toast {
-  background: var(--bg-card);
-  border: 1px solid var(--border-medium);
-  border-left: 4px solid var(--accent-cyan);
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  font-size: 12px;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  animation: slideIn 0.2s ease;
-}
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
+<!-- Estilos Principales -->
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-<!-- TOPBAR -->
+<!-- TOPBAR NAVEGACIÓN -->
 <header class="topbar">
   <div class="brand">
     <div class="brand-icon">⚛</div>
     <div class="brand-name">
       NEXO STUDIO
-      <span class="brand-tag">2.0 DUAL-AI</span>
+      <span class="brand-tag">ANTIGRAVITY MATRIX</span>
     </div>
   </div>
 
-  <div class="topbar-center">
-    <!-- Hermes Status -->
-    <div class="status-pill" id="pillHermes" title="Nous Hermes CLI (Conectado)">
-      <span class="status-dot hermes" id="dotHermes"></span>
-      <span id="labelHermes">Hermes: Detectando...</span>
-    </div>
-
-    <!-- Gemini Status -->
-    <div class="status-pill" id="pillGemini" title="Google Gemini 3.6 Flash (Conectado)">
-      <span class="status-dot gemini" id="dotGemini"></span>
-      <span id="labelGemini">Gemini 3.6: Detectando...</span>
-    </div>
-
-    <!-- PTY Shell Status -->
-    <div class="status-pill" id="pillPty" title="Terminal PTY Interactiva">
-      <span class="status-dot online"></span>
-      <span>PTY: ZSH</span>
-    </div>
-
-    <!-- Colab Peers -->
-    <div class="status-pill" id="pillPeers" title="Compañeros en la sesión">
-      <span style="font-size: 12px;">👥</span>
-      <span id="labelPeers">2 Devs (Jaime & Amigo)</span>
-    </div>
-  </div>
-
-  <div class="topbar-actions">
-    <button class="btn-top accent" id="btnLaunchDual">
-      <span>⚡</span> Colaboración Dual
+  <!-- Selector de Vistas Principales -->
+  <nav class="nav-modes">
+    <button type="button" class="nav-mode-btn social active" data-view="social">
+      <span>👥</span> Red Social (4)
     </button>
-    <button class="btn-top" id="btnShareColab">
+    <button type="button" class="nav-mode-btn editor" data-view="editor">
+      <span>💻</span> Estudio de Código
+    </button>
+    <button type="button" class="nav-mode-btn agents" data-view="agents">
+      <span>⚡</span> Centro de Agentes
+    </button>
+  </nav>
+
+  <!-- Acciones y Presencia -->
+  <div class="topbar-actions">
+    <!-- Alternador Rápido de Identidad -->
+    <div class="status-pill" id="pillCurrentIdentity" title="Haz clic para alternar entre Daniel y Amigo">
+      <span>👤</span>
+      <span id="labelCurrentIdentity">Tú: Daniel (Dev 1)</span>
+      <span style="font-size: 10px; color: var(--accent-daniel); margin-left: 4px;">⇄ Alternar</span>
+    </div>
+
+    <!-- Hermes Health Status -->
+    <div class="status-pill" id="pillHermesStatus" title="Nous Hermes CLI en máquina local">
+      <span class="status-dot hermes" id="dotHermesStatus"></span>
+      <span id="labelHermesStatus">Hermes: Conectando...</span>
+    </div>
+
+    <!-- Gemini Health Status -->
+    <div class="status-pill" id="pillGeminiStatus" title="Google Gemini 3.6 Flash Oficial">
+      <span class="status-dot gemini" id="dotGeminiStatus"></span>
+      <span id="labelGeminiStatus">Gemini: Detectando...</span>
+    </div>
+
+    <!-- Botón Invitar Amigo -->
+    <button type="button" class="btn-top accent" id="btnShareInviteLink" title="Copiar enlace directo preconfigurado para tu amigo">
       <span>🔗</span> Invitar Amigo
     </button>
-    <button class="btn-top" id="btnSaveFile" title="Guardar (Ctrl+S)">
+
+    <!-- Botón Guardar Archivo -->
+    <button type="button" class="btn-top" id="btnSaveActiveFile" title="Guardar archivo activo (Ctrl+S)">
       <span>💾</span> Guardar
-    </button>
-    <button class="btn-top" id="btnConfigModal" title="Ajustes">
-      <span>⚙️</span>
     </button>
   </div>
 </header>
 
-<!-- MAIN APP SHELL -->
-<div class="app-container">
+<!-- VIEWPORT DE APLICACIÓN -->
+<main class="app-viewport">
 
-  <!-- LEFT ICON RAIL -->
-  <div class="icon-rail">
-    <button class="rail-btn active" id="railFiles" title="Explorador de Archivos">📁</button>
-    <button class="rail-btn" id="railGit" title="Control Git & Cambios">🔀</button>
-    <button class="rail-btn" id="railColab" title="Colaboración & Túneles">🌐</button>
-  </div>
+  <!-- ====================================================================
+       VISTA 1: RED SOCIAL NEXO (DANIEL, AMIGO, HERMES-DANIEL, HERMES-AMIGO)
+       ==================================================================== -->
+  <section class="view-panel active" id="viewSocial">
+    <div class="social-viewport">
+      <div class="social-container">
 
-  <!-- SIDEBAR DRAWER -->
-  <aside class="sidebar-drawer" id="sidebarDrawer">
-    <!-- Files View -->
-    <div id="drawerFiles" style="display: flex; flex-direction: column; height: 100%;">
-      <div class="drawer-header">
-        <span>Archivos del Proyecto</span>
-        <div class="drawer-actions">
-          <button class="tool-btn" id="btnNewFile" title="Nuevo Archivo">+</button>
-          <button class="tool-btn" id="btnRefreshTree" title="Actualizar">🔄</button>
-        </div>
-      </div>
-      <div class="drawer-content" id="fileTreeContainer">
-        <!-- Árbol dinámico -->
-      </div>
-    </div>
-
-    <!-- Git View -->
-    <div id="drawerGit" style="display: none; flex-direction: column; height: 100%;">
-      <div class="drawer-header">
-        <span>Control de Versiones (Git)</span>
-      </div>
-      <div class="drawer-content" style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="font-size: 11px; color: var(--text-muted);" id="gitBranchLabel">Rama: main</div>
-        <div id="gitChangesList" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-          <!-- Cambios git -->
-        </div>
-        <div class="ai-input-box" style="margin-top: auto;">
-          <textarea id="gitCommitMsg" placeholder="Mensaje del commit..." rows="2"></textarea>
-          <button class="btn-send" id="btnGitCommitPush" style="width: 100%; justify-content: center;">
-            Commit & Push a GitHub
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Colab View -->
-    <div id="drawerColab" style="display: none; flex-direction: column; height: 100%;">
-      <div class="drawer-header">
-        <span>Sesión Compartida</span>
-      </div>
-      <div class="drawer-content" style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Host Local:</div>
-          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--accent-cyan);">http://127.0.0.1:8787</div>
-        </div>
-        <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Túnel Cloudflare:</div>
-          <div id="tunnelStatusText" style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
-            Ejecuta <code style="color: var(--accent-cyan);">./tunnel.sh</code> para crear un enlace público seguro para tu amigo.
-          </div>
-        </div>
-        <button class="btn-top" id="btnCopyInviteLink" style="justify-content: center; width: 100%;">
-          📋 Copiar Enlace de Invitación
-        </button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- CENTER WORKSPACE -->
-  <main class="center-workspace">
-    <!-- TABS -->
-    <div class="editor-tabs" id="editorTabs">
-      <!-- Tabs dinámicas -->
-    </div>
-
-    <!-- BREADCRUMBS -->
-    <div class="editor-breadcrumbs" id="editorBreadcrumbs">
-      <span>atlantis_proyect</span> &gt; <span class="curr" id="breadcrumbFile">Selecciona un archivo</span>
-    </div>
-
-    <!-- MONACO EDITOR -->
-    <div class="monaco-wrapper">
-      <div id="monacoEditor"></div>
-    </div>
-
-    <!-- BOTTOM DOCK -->
-    <div class="bottom-dock" id="bottomDock">
-      <div class="dock-header">
-        <div class="dock-tabs">
-          <button class="dock-tab active" data-dock="pty">💻 Terminal PTY (ZSH)</button>
-          <button class="dock-tab" data-dock="hermes">🤖 Hermes Live Console</button>
-          <button class="dock-tab" data-dock="dual-log">🧠 Registro Dual AI</button>
-        </div>
-        <div class="dock-actions">
-          <button class="tool-btn" id="btnClearDock" title="Limpiar">🧹</button>
-          <button class="tool-btn" id="btnRestartPty" title="Reiniciar Shell">🔄</button>
-          <button class="tool-btn" id="btnToggleDock" title="Minimizar">🔽</button>
-        </div>
-      </div>
-      <div class="dock-content">
-        <!-- Terminal PTY -->
-        <div class="dock-panel active" id="dockPanelPty">
-          <div id="ptyTerminalWrapper"></div>
-        </div>
-        <!-- Hermes Live Console -->
-        <div class="dock-panel" id="dockPanelHermes">
-          <div class="hermes-live-console" id="hermesLiveOutput">
-⚡ Hermes Agent Console listo.
-Ejecuta prompts directamente desde el panel derecho o menciona @hermes en el chat.
-          </div>
-        </div>
-        <!-- Dual Log -->
-        <div class="dock-panel" id="dockPanelDualLog">
-          <div class="hermes-live-console" id="dualColabLogOutput" style="color: #c084fc;">
-🧠 Registro de Colaboración Dual (Hermes ↔ Gemini).
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- RIGHT AI COMMAND CENTER -->
-  <aside class="right-ai-panel">
-    <div class="ai-panel-header">
-      <button class="ai-tab dual active" data-view="dual">⚡ Dual Colab</button>
-      <button class="ai-tab" data-view="hermes">🤖 Hermes</button>
-      <button class="ai-tab" data-view="gemini">🟣 Gemini</button>
-      <button class="ai-tab" data-view="chat">💬 Amigo</button>
-    </div>
-
-    <div class="ai-panel-body">
-      <!-- VIEW 1: DUAL COLLABORATION (HERMES ↔ GEMINI) -->
-      <div class="ai-view active" id="viewDual">
-        <div class="colab-hero-card">
-          <div class="colab-hero-title">
-            <span>✨</span> Matriz de Colaboración Autónoma
-          </div>
-          <div class="colab-hero-desc">
-            Gemini diseña la arquitectura técnica y Hermes ejecuta herramientas locales y modificaciones en el código.
-          </div>
-          <div class="dual-agent-badges">
-            <div class="agent-mini-card gemini">
-              <div class="name"><span>🟣</span> Gemini 3.6</div>
-              <div class="role">Arquitecto & Auditor</div>
+        <!-- Banner de Estado de las 4 Entidades -->
+        <div class="entity-hero-grid">
+          <!-- Daniel -->
+          <div class="entity-hero-card daniel" id="cardEntity-daniel">
+            <div class="entity-hero-top">
+              <div class="entity-hero-avatar daniel">👤</div>
+              <div class="entity-hero-meta">
+                <div class="entity-hero-name">
+                  <span>Daniel</span>
+                  <span class="entity-hero-badge daniel">DEV 1</span>
+                </div>
+                <div class="entity-hero-role">Desarrollador Lead</div>
+              </div>
+              <span class="status-dot online" id="statusDot-daniel"></span>
             </div>
-            <div class="agent-mini-card hermes">
-              <div class="name"><span>🟢</span> Hermes CLI</div>
-              <div class="role">Ejecutor en Workspace</div>
+            <div class="entity-hero-status" id="statusMsg-daniel">
+              <span>📍</span> <span>En vivo en NEXO Studio</span>
+            </div>
+            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@daniel')">@mencionar</button>
+          </div>
+
+          <!-- Hermes-Daniel -->
+          <div class="entity-hero-card hermes-daniel" id="cardEntity-hermes-daniel">
+            <div class="entity-hero-top">
+              <div class="entity-hero-avatar hermes-daniel">🤖</div>
+              <div class="entity-hero-meta">
+                <div class="entity-hero-name">
+                  <span>Hermes-Daniel</span>
+                  <span class="entity-hero-badge hermes-daniel">ALPHA</span>
+                </div>
+                <div class="entity-hero-role">IA Ejecutora & Creadora</div>
+              </div>
+              <span class="status-dot hermes" id="statusDot-hermes-daniel"></span>
+            </div>
+            <div class="entity-hero-status" id="statusMsg-hermes-daniel">
+              <span>⚡</span> <span>Listo para programar tareas</span>
+            </div>
+            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@hermes-daniel')">@mencionar</button>
+          </div>
+
+          <!-- Amigo -->
+          <div class="entity-hero-card amigo" id="cardEntity-amigo">
+            <div class="entity-hero-top">
+              <div class="entity-hero-avatar amigo">👤</div>
+              <div class="entity-hero-meta">
+                <div class="entity-hero-name">
+                  <span>Amigo</span>
+                  <span class="entity-hero-badge amigo">DEV 2</span>
+                </div>
+                <div class="entity-hero-role">Desarrollador Colaborador</div>
+              </div>
+              <span class="status-dot online" id="statusDot-amigo"></span>
+            </div>
+            <div class="entity-hero-status" id="statusMsg-amigo">
+              <span>📍</span> <span>Conectado a la sesión</span>
+            </div>
+            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@amigo')">@mencionar</button>
+          </div>
+
+          <!-- Hermes-Amigo -->
+          <div class="entity-hero-card hermes-amigo" id="cardEntity-hermes-amigo">
+            <div class="entity-hero-top">
+              <div class="entity-hero-avatar hermes-amigo">🤖</div>
+              <div class="entity-hero-meta">
+                <div class="entity-hero-name">
+                  <span>Hermes-Amigo</span>
+                  <span class="entity-hero-badge hermes-amigo">BETA</span>
+                </div>
+                <div class="entity-hero-role">IA Auditora & Crítica</div>
+              </div>
+              <span class="status-dot gemini" id="statusDot-hermes-amigo"></span>
+            </div>
+            <div class="entity-hero-status" id="statusMsg-hermes-amigo">
+              <span>🛡️</span> <span>Auditando calidad & seguridad</span>
+            </div>
+            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@hermes-amigo')">@mencionar</button>
+          </div>
+        </div>
+
+        <!-- Compositor de Publicaciones -->
+        <div class="social-composer-card">
+          <div class="composer-top">
+            <div class="composer-author-info">
+              <div class="composer-author-avatar" id="composerAuthorAvatar">👤</div>
+              <div>
+                <div class="composer-author-text">
+                  Publicando como: <strong id="composerAuthorName" style="color: var(--accent-daniel);">Daniel</strong>
+                </div>
+                <div class="composer-hint">Menciona a @hermes-daniel o @hermes-amigo para obtener respuestas y código autónomos</div>
+              </div>
+            </div>
+            <div class="composer-quick-actions">
+              <button type="button" class="composer-tool-btn" id="btnToggleComposerCode">
+                <span>💻</span> Adjuntar Código
+              </button>
+              <button type="button" class="composer-tool-btn" id="btnAttachActiveFile">
+                <span>📎</span> Adjuntar Archivo Abierto
+              </button>
+            </div>
+          </div>
+
+          <textarea class="composer-textarea" id="socialPostInput" placeholder="¿Qué vamos a debatir o construir hoy? Escribe aquí y menciona a @hermes-daniel, @hermes-amigo o @amigo..."></textarea>
+
+          <!-- Cajón de Código Adjunto -->
+          <div class="composer-code-drawer" id="composerCodeDrawer" style="display: none;">
+            <div class="code-drawer-header">
+              <span>Fragmento de Código / Archivo adjunto:</span>
+              <input type="text" id="composerAttachedFileName" class="code-drawer-input" placeholder="ruta/archivo.py (opcional)">
+            </div>
+            <textarea class="code-drawer-textarea" id="socialPostCode" placeholder="// Pega el código para que las IAs y tu amigo lo revisen o debatan..."></textarea>
+          </div>
+
+          <!-- Barra Inferior del Compositor -->
+          <div class="composer-bottom">
+            <div class="mention-chips">
+              <span style="font-size: 11px; color: var(--text-muted); margin-right: 2px;">Mencionar:</span>
+              <button type="button" class="mention-chip green" onclick="insertMention('@hermes-daniel')">@hermes-daniel</button>
+              <button type="button" class="mention-chip purple" onclick="insertMention('@hermes-amigo')">@hermes-amigo</button>
+              <button type="button" class="mention-chip cyan" onclick="insertMention('@daniel')">@daniel</button>
+              <button type="button" class="mention-chip orange" onclick="insertMention('@amigo')">@amigo</button>
+              <button type="button" class="mention-chip blue" onclick="insertMention('@todos')">@todos</button>
+            </div>
+            <div class="composer-controls">
+              <label class="debate-toggle" title="Si se activa, los 2 Hermes debatirán autónomamente en el hilo del post">
+                <input type="checkbox" id="checkAutoDebate">
+                <span>⚡ Activar Debate Dual</span>
+              </label>
+              <button type="button" class="btn-publish" id="btnPublishSocialPost">
+                <span>🚀 Publicar en la Red</span>
+              </button>
             </div>
           </div>
         </div>
 
-        <div class="colab-timeline" id="dualColabTimeline">
-          <!-- Eventos de colaboración -->
-          <div class="timeline-item gemini">
-            <div class="timeline-item-header">
-              <span class="timeline-badge" style="color: #c084fc;">🟣 Gemini Arquitecto</span>
-              <span class="timeline-time">Listo</span>
-            </div>
-            <div class="timeline-body">
-              Esperando objetivo de desarrollo. Escribe una meta abajo para que comencemos a colaborar juntos en el código.
-            </div>
-          </div>
+        <!-- Timeline de Publicaciones -->
+        <div class="social-timeline" id="socialTimelineContainer">
+          <!-- Se llena dinámicamente -->
         </div>
 
-        <div class="ai-input-box">
-          <div class="quick-tags">
-            <button class="quick-tag" onclick="setDualPrompt('Corrige los errores y haz que el código pase pruebas')">Corregir Bugs</button>
-            <button class="quick-tag" onclick="setDualPrompt('Escribe tests unitarios para este proyecto')">Crear Tests</button>
-            <button class="quick-tag" onclick="setDualPrompt('Refactoriza el código para máxima velocidad y claridad')">Refactorizar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       VISTA 2: ESTUDIO DE CÓDIGO (MONACO + EXPLORADOR + TERMINAL PTY)
+       ==================================================================== -->
+  <section class="view-panel" id="viewEditor">
+    <div class="editor-layout">
+
+      <!-- Barra Lateral: Explorador de Archivos -->
+      <aside class="editor-sidebar">
+        <div class="sidebar-header">
+          <span>ARCHIVOS DEL PROYECTO</span>
+          <div class="sidebar-actions">
+            <button type="button" class="btn-top" style="padding: 2px 6px;" onclick="fetchFileTree()" title="Actualizar árbol">🔄</button>
           </div>
-          <textarea id="inputDualObjective" placeholder="Objetivo para Gemini y Hermes (ej: Crea un endpoint para métricas y pruébalo)..."></textarea>
-          <div class="ai-input-footer">
-            <span style="font-size: 11px; color: var(--text-dim);">Gemini + Hermes</span>
-            <button class="btn-send" id="btnStartDualColab">
-              <span>🚀</span> Iniciar Colaboración
+        </div>
+        <div class="tree-container" id="fileTreeContainer">
+          <!-- Nodos de archivo generados dinámicamente -->
+        </div>
+      </aside>
+
+      <!-- Panel Central: Monaco Editor y Tabs -->
+      <div class="editor-main-panel">
+        <div class="tabs-bar" id="editorTabsBar">
+          <!-- Pestañas de archivos abiertos -->
+        </div>
+        <div class="breadcrumbs-bar">
+          <span>atlantis_proyect</span> &gt; <span class="file-curr" id="breadcrumbCurrentFile">Selecciona un archivo</span>
+        </div>
+
+        <div class="monaco-container">
+          <div id="monacoEditorInstance"></div>
+        </div>
+
+        <!-- Dock Inferior: Terminal PTY (ZSH/Bash) -->
+        <div class="terminal-dock">
+          <div class="dock-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="dock-tab-btn active">💻 Terminal PTY Interactiva</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn-top" id="btnRestartPty" style="padding: 2px 8px;" title="Reiniciar sesión shell">🔄 Reiniciar Shell</button>
+            </div>
+          </div>
+          <div class="terminal-wrapper" id="ptyTerminalContainer"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       VISTA 3: CENTRO DE AGENTES (HERMES DIRECT + DUAL RUNNER)
+       ==================================================================== -->
+  <section class="view-panel" id="viewAgents">
+    <div class="agents-viewport">
+      <div class="agents-container">
+
+        <!-- Runner Directo Nous Hermes CLI -->
+        <div class="agent-runner-card">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">🤖</span>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Nous Hermes Agent CLI</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);">Ejecución de tareas autónomas en el workspace local (~/.local/bin/hermes)</div>
+              </div>
+            </div>
+            <button type="button" class="btn-top" id="btnClearHermesConsole">🧹 Limpiar</button>
+          </div>
+
+          <div class="runner-console" id="hermesLiveConsoleOutput">⚡ Consola de Hermes lista. Escribe una instrucción abajo para ejecutar herramientas locales...</div>
+
+          <div style="display: flex; gap: 10px;">
+            <textarea id="inputHermesDirectPrompt" class="composer-textarea" style="min-height: 60px;" placeholder="Instrucción para Hermes en el workspace (ej: Revisa la seguridad del proyecto y crea tests)..."></textarea>
+            <button type="button" class="btn-publish" id="btnRunHermesDirect" style="align-self: flex-end; height: 42px; white-space: nowrap;">
+              <span>⚡ Ejecutar Hermes</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- VIEW 2: HERMES AGENT DIRECT RUNNER -->
-      <div class="ai-view" id="viewHermes">
-        <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-weight: 600; font-size: 12.5px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
-            <span>🤖</span> Nous Hermes Agent CLI
-          </div>
-          <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">
-            Binario local: <code id="hermesBinPath" style="font-size: 11px; color: var(--text-muted);">~/.local/bin/hermes</code>
-          </div>
-          <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px;">
-            <input type="checkbox" id="checkHermesYolo" checked>
-            <label for="checkHermesYolo" style="font-size: 11.5px; cursor: pointer;">Modo YOLO (--yolo, ejecución directa)</label>
-          </div>
-        </div>
-
-        <div class="chat-thread" id="hermesPromptHistory" style="max-height: 300px;">
-          <!-- Salidas previas -->
-        </div>
-
-        <div class="ai-input-box" style="margin-top: auto;">
-          <textarea id="inputHermesPrompt" placeholder="Instrucción para Hermes en el workspace local..."></textarea>
-          <div class="ai-input-footer">
-            <button class="quick-tag" onclick="$('inputHermesPrompt').value = 'Revisa los archivos del proyecto y resume el estado actual.'">Diagnóstico</button>
-            <button class="btn-send" id="btnRunHermes">
-              <span>⚡</span> Ejecutar Hermes
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 3: GEMINI CO-PILOT -->
-      <div class="ai-view" id="viewGemini">
-        <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-weight: 600; font-size: 12.5px; color: #c084fc; display: flex; align-items: center; gap: 6px;">
-            <span>🟣</span> Google Gemini 3.6 Flash
-          </div>
-          <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">
-            API Oficial activa con razonamiento profundo y generación de código de alta velocidad.
-          </div>
-          <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px;">
-            <input type="checkbox" id="checkGeminiIncludeFile" checked>
-            <label for="checkGeminiIncludeFile" style="font-size: 11.5px; cursor: pointer;">Incluir archivo actual como contexto</label>
-          </div>
-        </div>
-
-        <div class="chat-thread" id="geminiChatHistory" style="max-height: 300px;">
-          <!-- Conversación Gemini -->
-        </div>
-
-        <div class="ai-input-box" style="margin-top: auto;">
-          <textarea id="inputGeminiPrompt" placeholder="Pregunta o pide código a Gemini 3.6..."></textarea>
-          <div class="ai-input-footer">
-            <button class="quick-tag" onclick="$('inputGeminiPrompt').value = 'Explica la función de este archivo y sugiere optimizaciones.'">Optimizar</button>
-            <button class="btn-send" id="btnRunGemini" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
-              <span>✨</span> Consultar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 4: PEER CHAT (AMIGO) -->
-      <div class="ai-view" id="viewChat">
-        <div class="chat-thread" id="peerChatThread" style="flex: 1;">
-          <!-- Mensajes de chat -->
-        </div>
-        <div class="ai-input-box">
-          <textarea id="inputPeerChat" placeholder="Mensaje para tu amigo (usa @hermes o @gemini para invocar IAs)..."></textarea>
-          <div class="ai-input-footer">
-            <span style="font-size: 11px; color: var(--text-dim);">Enter para enviar</span>
-            <button class="btn-send" id="btnSendPeerChat">Enviar</button>
-          </div>
-        </div>
       </div>
     </div>
-  </aside>
-</div>
+  </section>
 
-<!-- MODAL DE CONFIGURACIÓN -->
-<div class="modal-overlay" id="configModal">
-  <div class="modal-card">
-    <div class="modal-title">
-      <span>Ajustes & Conectividad de IA</span>
-      <button class="modal-close" onclick="$('configModal').classList.remove('active')">✕</button>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 12.5px;">
-      <div>
-        <label style="font-weight: 600; display: block; margin-bottom: 4px;">Clave Google Gemini (GOOGLE_API_KEY):</label>
-        <input type="password" id="inputGeminiApiKey" style="width: 100%; padding: 8px; background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: 6px; color: white; font-family: monospace;">
-        <span style="font-size: 11px; color: var(--text-muted);">Detectada automáticamente desde ~/.hermes/.env</span>
-      </div>
-      <div>
-        <label style="font-weight: 600; display: block; margin-bottom: 4px;">Modelo Gemini:</label>
-        <select id="selectGeminiModel" style="width: 100%; padding: 8px; background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: 6px; color: white;">
-          <option value="gemini-3.6-flash">gemini-3.6-flash (Recomendado)</option>
-          <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-        </select>
-      </div>
-      <button class="btn-send" id="btnSaveConfig" style="width: 100%; justify-content: center; margin-top: 8px;">
-        Guardar Configuración
-      </button>
-    </div>
-  </div>
-</div>
+</main>
 
-<!-- TOAST CONTAINER -->
+<!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
-<script>
-const $ = id => document.getElementById(id);
+<!-- Scripts de la Aplicación -->
+<script src="/static/js/terminal.js"></script>
+<script src="/static/js/editor.js"></script>
+<script src="/static/js/social.js"></script>
+<script src="/static/js/app.js"></script>
 
-// ---------------------------------------------------- ESTADO GLOBAL
-const TOKEN = new URLSearchParams(location.search).get('token') || '';
-const NOMBRE = 'jaime';
-let currentProject = 'atlantis_proyect';
-let currentFile = '';
-let openFiles = {}; // { path: { model, content, dirty } }
-let monacoEditor = null;
-let ptyTerm = null;
-let ptyWs = null;
-let WS = null;
-
-// ---------------------------------------------------- INICIALIZACIÓN MONACO
-require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
-require(['vs/editor/editor.main'], function () {
-  monacoEditor = monaco.editor.create($('monacoEditor'), {
-    value: '// Bienvenido a NEXO Studio 2.0\n// Selecciona un archivo en la barra lateral para comenzar a editar.\n',
-    language: 'javascript',
-    theme: 'vs-dark',
-    fontSize: 13,
-    fontFamily: "'JetBrains Mono', monospace",
-    minimap: { enabled: true },
-    automaticLayout: true,
-    scrollBeyondLastLine: false,
-    bracketPairColorization: { enabled: true },
-    lineNumbers: 'on',
-    roundedSelection: true,
-    cursorBlinking: 'smooth',
-  });
-
-  // Atajo Ctrl+S / Cmd+S
-  monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
-    saveActiveFile();
-  });
-
-  monacoEditor.onDidChangeModelContent(() => {
-    if (currentFile && openFiles[currentFile]) {
-      openFiles[currentFile].dirty = true;
-      updateTabsUI();
-    }
-  });
-
-  // Iniciar Terminal PTY
-  initPtyTerminal();
-
-  // Iniciar WebSockets & Datos
-  connectWs();
-  checkAiStatus();
-  fetchTree();
-  fetchGitStatus();
-});
-
-// ---------------------------------------------------- TERMINAL PTY (xterm.js)
-function initPtyTerminal() {
-  ptyTerm = new Terminal({
-    cursorBlink: true,
-    fontSize: 12.5,
-    fontFamily: "'JetBrains Mono', monospace",
-    theme: {
-      background: '#06080e',
-      foreground: '#e2e8f0',
-      cursor: '#06b6d4',
-      selectionBackground: 'rgba(6, 182, 212, 0.3)',
-    }
-  });
-  const fitAddon = new FitAddon.FitAddon();
-  ptyTerm.loadAddon(fitAddon);
-  ptyTerm.open($('ptyTerminalWrapper'));
-  fitAddon.fit();
-  window.addEventListener('resize', () => { try { fitAddon.fit(); } catch(e){} });
-
-  connectPtyWs();
-
-  ptyTerm.onData(data => {
-    if (ptyWs && ptyWs.readyState === 1) ptyWs.send(data);
-  });
-  ptyTerm.onResize(size => {
-    if (ptyWs && ptyWs.readyState === 1) {
-      ptyWs.send(JSON.stringify({ tipo: 'resize', cols: size.cols, rows: size.rows }));
-    }
-  });
-}
-
-function connectPtyWs() {
-  if (ptyWs) { ptyWs.close(); ptyWs = null; }
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = `${proto}//${location.host}/pty?token=${encodeURIComponent(TOKEN)}&proyecto=${encodeURIComponent(currentProject)}`;
-  ptyWs = new WebSocket(url);
-  ptyWs.binaryType = 'arraybuffer';
-
-  ptyWs.onopen = () => {
-    ptyTerm.write('\r\n\x1b[36m⚡ [NEXO PTY Shell Conectada — ' + currentProject + ']\x1b[0m\r\n');
-  };
-  ptyWs.onmessage = ev => {
-    if (ev.data instanceof ArrayBuffer) {
-      ptyTerm.write(new Uint8Array(ev.data));
-    } else {
-      ptyTerm.write(ev.data);
-    }
-  };
-}
-
-$('btnRestartPty').onclick = () => {
-  ptyTerm.reset();
-  connectPtyWs();
-  showToast('Shell reiniciada');
-};
-
-// ---------------------------------------------------- WEBSOCKET DE CONTROL
-function connectWs() {
-  if (WS) { WS.close(); WS = null; }
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = `${proto}//${location.host}/ws?token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(NOMBRE)}`;
-  WS = new WebSocket(url);
-
-  WS.onopen = () => {
-    wsSend({ tipo: 'join', proyecto: currentProject });
-    showToast('NEXO Studio Conectado');
-  };
-  WS.onmessage = ev => {
-    try {
-      handleWsEvent(JSON.parse(ev.data));
-    } catch(e) {}
-  };
-  WS.onclose = () => {
-    setTimeout(connectWs, 3000);
-  };
-}
-
-function wsSend(obj) {
-  if (WS && WS.readyState === 1) WS.send(JSON.stringify(obj));
-}
-
-function handleWsEvent(d) {
-  if (d.tipo === 'chat') {
-    appendPeerChat(d.de, d.texto, d.fecha);
-  } else if (d.tipo === 'hermes_stream_start') {
-    appendHermesConsole(`\n▶ [HERMES EJECUTANDO]: ${d.prompt}\n`);
-    switchDockTab('hermes');
-  } else if (d.tipo === 'hermes_stream_chunk') {
-    appendHermesConsole(d.chunk);
-  } else if (d.tipo === 'hermes_stream_end') {
-    appendHermesConsole(`\n✔ [HERMES TERMINADO] Código: ${d.retcode}\n`);
-    fetchTree();
-    fetchGitStatus();
-  } else if (d.tipo === 'dual_colab_event') {
-    appendDualColabEvent(d);
-  } else if (d.tipo === 'dual_colab_finish') {
-    showToast('Colaboración Dual Completada con Éxito!');
-    fetchTree();
-    fetchGitStatus();
-  } else if (d.tipo === 'arbol') {
-    renderFileTree(d.arbol);
-  }
-}
-
-// ---------------------------------------------------- VERIFICACIÓN DE ESTADO IA
-async function checkAiStatus() {
-  try {
-    const res = await fetch(`/api/ai/status?token=${encodeURIComponent(TOKEN)}`);
-    const st = await res.json();
-    
-    // Hermes
-    if (st.hermes && st.hermes.instalado) {
-      $('dotHermes').className = 'status-dot hermes';
-      $('labelHermes').innerText = `Hermes: Online (${st.hermes.modelo_hermes})`;
-      $('hermesBinPath').innerText = st.hermes.ruta;
-    } else {
-      $('dotHermes').className = 'status-dot';
-      $('labelHermes').innerText = 'Hermes: No instalado';
-    }
-
-    // Gemini
-    if (st.gemini && st.gemini.conectado) {
-      $('dotGemini').className = 'status-dot gemini';
-      $('labelGemini').innerText = `Gemini: Online (${st.gemini.modelo})`;
-    } else {
-      $('dotGemini').className = 'status-dot';
-      $('labelGemini').innerText = `Gemini: ${st.gemini.mensaje || 'Sin clave'}`;
-    }
-  } catch (e) {
-    console.error('Error comprobando estado IA:', e);
-  }
-}
-
-// ---------------------------------------------------- ÁRBOL DE ARCHIVOS
-async function fetchTree() {
-  try {
-    const res = await fetch(`/api/arbol?token=${encodeURIComponent(TOKEN)}`);
-    const d = await res.json();
-    if (d && d.arbol) renderFileTree(d.arbol);
-  } catch(e){}
-}
-
-function renderFileTree(tree) {
-  const container = $('fileTreeContainer');
-  container.innerHTML = '';
-
-  function buildNode(item, pathPrefix) {
-    const fullPath = pathPrefix ? `${pathPrefix}/${item.nombre}` : item.nombre;
-    const node = document.createElement('div');
-
-    if (item.tipo === 'carpeta') {
-      node.className = 'tree-node folder';
-      node.innerHTML = `<span>📁</span> <span>${item.nombre}</span>`;
-      container.appendChild(node);
-      if (item.hijos) {
-        item.hijos.forEach(ch => buildNode(ch, fullPath));
-      }
-    } else {
-      node.className = 'tree-node';
-      if (currentFile === fullPath) node.classList.add('active');
-      const icon = getFileIcon(item.nombre);
-      node.innerHTML = `<span>${icon}</span> <span>${item.nombre}</span>`;
-      node.onclick = () => openFile(fullPath);
-      container.appendChild(node);
-    }
-  }
-
-  if (Array.isArray(tree)) {
-    tree.forEach(item => buildNode(item, ''));
-  }
-}
-
-function getFileIcon(name) {
-  if (name.endsWith('.py')) return '🐍';
-  if (name.endsWith('.js') || name.endsWith('.ts')) return '📜';
-  if (name.endsWith('.html')) return '🌐';
-  if (name.endsWith('.css')) return '🎨';
-  if (name.endsWith('.json')) return '📦';
-  if (name.endsWith('.md')) return '📝';
-  if (name.endsWith('.sh')) return '⚡';
-  return '📄';
-}
-
-// ---------------------------------------------------- GESTIÓN DE ARCHIVOS Y TABS
-async function openFile(path) {
-  currentFile = path;
-  $('breadcrumbFile').innerText = path;
-
-  if (!openFiles[path]) {
-    try {
-      const res = await fetch(`/api/archivo?ruta=${encodeURIComponent(path)}&token=${encodeURIComponent(TOKEN)}`);
-      const d = await res.json();
-      const content = d.contenido || '';
-      
-      const ext = path.split('.').pop().toLowerCase();
-      const langMap = {
-        py: 'python', js: 'javascript', ts: 'typescript', html: 'html',
-        css: 'css', json: 'json', md: 'markdown', sh: 'shell', yml: 'yaml', yaml: 'yaml'
-      };
-      const model = monaco.editor.createModel(content, langMap[ext] || 'plaintext');
-      openFiles[path] = { model, dirty: false };
-    } catch(e) {
-      showToast('Error cargando archivo: ' + path);
-      return;
-    }
-  }
-
-  monacoEditor.setModel(openFiles[path].model);
-  updateTabsUI();
-  fetchTree();
-}
-
-function updateTabsUI() {
-  const tabsContainer = $('editorTabs');
-  tabsContainer.innerHTML = '';
-
-  Object.keys(openFiles).forEach(p => {
-    const tab = document.createElement('div');
-    tab.className = 'tab' + (p === currentFile ? ' active' : '') + (openFiles[p].dirty ? ' dirty' : '');
-    const filename = p.split('/').pop();
-    tab.innerHTML = `
-      <span>${getFileIcon(filename)}</span>
-      <span>${filename}</span>
-      <span class="tab-dirty"></span>
-      <span class="tab-close" onclick="closeTab('${p}', event)">✕</span>
-    `;
-    tab.onclick = () => openFile(p);
-    tabsContainer.appendChild(tab);
-  });
-}
-
-function closeTab(path, ev) {
-  ev.stopPropagation();
-  if (openFiles[path]) {
-    openFiles[path].model.dispose();
-    delete openFiles[path];
-  }
-  const remaining = Object.keys(openFiles);
-  if (remaining.length > 0) {
-    openFile(remaining[remaining.length - 1]);
-  } else {
-    currentFile = '';
-    $('breadcrumbFile').innerText = 'Ningún archivo abierto';
-    monacoEditor.setValue('// Ningún archivo abierto\n');
-    updateTabsUI();
-  }
-}
-
-async function saveActiveFile() {
-  if (!currentFile || !openFiles[currentFile]) return;
-  const content = openFiles[currentFile].model.getValue();
-
-  try {
-    const res = await fetch(`/api/archivo?token=${encodeURIComponent(TOKEN)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ruta: currentFile, contenido: content }),
-    });
-    const d = await res.json();
-    if (d.ok) {
-      openFiles[currentFile].dirty = false;
-      updateTabsUI();
-      showToast(`Guardado: ${currentFile}`);
-      fetchGitStatus();
-    }
-  } catch(e) {
-    showToast('Error al guardar archivo');
-  }
-}
-$('btnSaveFile').onclick = saveActiveFile;
-
-// ---------------------------------------------------- COLABORACIÓN DUAL AUTÓNOMA
-function setDualPrompt(txt) {
-  $('inputDualObjective').value = txt;
-}
-
-$('btnStartDualColab').onclick = async () => {
-  const obj = $('inputDualObjective').value.trim();
-  if (!obj) {
-    showToast('Introduce un objetivo de desarrollo');
-    return;
-  }
-  $('btnStartDualColab').disabled = true;
-  $('btnStartDualColab').innerHTML = '<span>⏳</span> Ejecutando...';
-
-  // Añadir al timeline local
-  appendDualColabEvent({
-    fase: 'inicio', de: 'Usuario',
-    mensaje: `Iniciando colaboración dual con objetivo: "${obj}"`,
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  });
-  switchDockTab('dual-log');
-
-  try {
-    const res = await fetch(`/api/ai/dual/run?token=${encodeURIComponent(TOKEN)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ objetivo: obj }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      showToast('Colaboración Dual Finalizada con éxito');
-    }
-  } catch(e) {
-    showToast('Error en Colaboración Dual');
-  } finally {
-    $('btnStartDualColab').disabled = false;
-    $('btnStartDualColab').innerHTML = '<span>🚀</span> Iniciar Colaboración';
-    $('inputDualObjective').value = '';
-    fetchTree();
-    fetchGitStatus();
-  }
-};
-
-function appendDualColabEvent(ev) {
-  const timeline = $('dualColabTimeline');
-  const item = document.createElement('div');
-  const isGemini = ev.de && ev.de.toLowerCase().includes('gemini');
-  item.className = 'timeline-item ' + (isGemini ? 'gemini' : 'hermes');
-  
-  const icon = isGemini ? '🟣' : '🟢';
-  const role = isGemini ? 'Gemini (Arquitecto)' : 'Hermes (Ejecutor)';
-
-  item.innerHTML = `
-    <div class="timeline-item-header">
-      <span class="timeline-badge" style="color: ${isGemini ? '#c084fc' : '#38bdf8'};">
-        ${icon} ${role}
-      </span>
-      <span class="timeline-time">${ev.timestamp || ''}</span>
-    </div>
-    <div class="timeline-body">${escapeHtml(ev.mensaje)}</div>
-  `;
-  timeline.appendChild(item);
-  timeline.scrollTop = timeline.scrollHeight;
-
-  // Registrar en el dock log
-  const logEl = $('dualColabLogOutput');
-  logEl.innerText += `\n[${ev.timestamp || ''}] ${ev.de}: ${ev.mensaje}\n`;
-  logEl.scrollTop = logEl.scrollHeight;
-}
-
-// ---------------------------------------------------- EJECUCIÓN DIRECTA HERMES
-$('btnRunHermes').onclick = async () => {
-  const prompt = $('inputHermesPrompt').value.trim();
-  if (!prompt) return;
-  const yolo = $('checkHermesYolo').checked;
-
-  $('btnRunHermes').disabled = true;
-  $('btnRunHermes').innerText = 'Ejecutando...';
-  switchDockTab('hermes');
-
-  try {
-    const res = await fetch(`/api/ai/hermes/run?token=${encodeURIComponent(TOKEN)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, yolo }),
-    });
-    const d = await res.json();
-    if (d.ok) showToast('Hermes completó la tarea');
-  } catch(e) {
-    showToast('Error ejecutando Hermes');
-  } finally {
-    $('btnRunHermes').disabled = false;
-    $('btnRunHermes').innerText = '⚡ Ejecutar Hermes';
-    $('inputHermesPrompt').value = '';
-  }
-};
-
-function appendHermesConsole(txt) {
-  const out = $('hermesLiveOutput');
-  out.innerText += txt;
-  out.scrollTop = out.scrollHeight;
-}
-
-// ---------------------------------------------------- CONSULTA DIRECTA GEMINI
-$('btnRunGemini').onclick = async () => {
-  const prompt = $('inputGeminiPrompt').value.trim();
-  if (!prompt) return;
-
-  let ctx = '';
-  if ($('checkGeminiIncludeFile').checked && currentFile && openFiles[currentFile]) {
-    ctx = openFiles[currentFile].model.getValue();
-  }
-
-  appendGeminiChat('Usuario', prompt);
-  $('inputGeminiPrompt').value = '';
-  $('btnRunGemini').disabled = true;
-
-  try {
-    const res = await fetch(`/api/ai/gemini/run?token=${encodeURIComponent(TOKEN)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        contexto: ctx,
-        nombre_archivo: currentFile,
-      }),
-    });
-    const d = await res.json();
-    if (d.texto) {
-      appendGeminiChat('Gemini 3.6', d.texto, d.codigo);
-    }
-  } catch(e) {
-    appendGeminiChat('Error', 'No se pudo conectar con Gemini.');
-  } finally {
-    $('btnRunGemini').disabled = false;
-  }
-};
-
-function appendGeminiChat(sender, text, code) {
-  const hist = $('geminiChatHistory');
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble ' + (sender === 'Usuario' ? 'user' : 'agent');
-  bubble.innerHTML = `
-    <div class="chat-sender">${sender}</div>
-    <div>${escapeHtml(text)}</div>
-  `;
-  if (code) {
-    const btnInsert = document.createElement('button');
-    btnInsert.className = 'quick-tag';
-    btnInsert.style.marginTop = '6px';
-    btnInsert.innerText = '📥 Insertar Código en Editor';
-    btnInsert.onclick = () => {
-      if (monacoEditor) {
-        const sel = monacoEditor.getSelection();
-        monacoEditor.executeEdits('gemini', [{ range: sel, text: code, forceMoveMarkers: true }]);
-        showToast('Código insertado');
-      }
-    };
-    bubble.appendChild(btnInsert);
-  }
-  hist.appendChild(bubble);
-  hist.scrollTop = hist.scrollHeight;
-}
-
-// ---------------------------------------------------- CHAT ENTRE PEERS
-$('btnSendPeerChat').onclick = sendPeerChat;
-$('inputPeerChat').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPeerChat(); } };
-
-function sendPeerChat() {
-  const text = $('inputPeerChat').value.trim();
-  if (!text) return;
-  wsSend({ tipo: 'chat', texto: text, proyecto: currentProject });
-  $('inputPeerChat').value = '';
-}
-
-function appendPeerChat(de, texto, fecha) {
-  const thread = $('peerChatThread');
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble ' + (de === NOMBRE ? 'user' : 'peer');
-  bubble.innerHTML = `
-    <div class="chat-sender">${de} • ${fecha || ''}</div>
-    <div>${escapeHtml(texto)}</div>
-  `;
-  thread.appendChild(bubble);
-  thread.scrollTop = thread.scrollHeight;
-}
-
-// ---------------------------------------------------- GIT STATUS
-async function fetchGitStatus() {
-  try {
-    const res = await fetch(`/api/git/diff?token=${encodeURIComponent(TOKEN)}`);
-    const d = await res.json();
-    const list = $('gitChangesList');
-    list.innerHTML = '';
-    if (d && d.archivos && d.archivos.length > 0) {
-      d.archivos.forEach(f => {
-        const item = document.createElement('div');
-        item.style.padding = '4px 6px';
-        item.style.background = 'var(--bg-card)';
-        item.style.borderRadius = '4px';
-        item.style.color = '#fbbf24';
-        item.innerText = `● ${f}`;
-        list.appendChild(item);
-      });
-    } else {
-      list.innerHTML = '<span style="color: var(--text-dim); font-size: 11px;">Sin cambios pendientes</span>';
-    }
-  } catch(e){}
-}
-
-$('btnGitCommitPush').onclick = async () => {
-  const msg = $('gitCommitMsg').value.trim();
-  if (!msg) { showToast('Introduce un mensaje de commit'); return; }
-  $('btnGitCommitPush').disabled = true;
-  $('btnGitCommitPush').innerText = 'Guardando & Enviando...';
-
-  try {
-    const res = await fetch(`/api/git/commit?token=${encodeURIComponent(TOKEN)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mensaje: msg }),
-    });
-    const d = await res.json();
-    if (d.ok) {
-      showToast('Commit & Push completado');
-      $('gitCommitMsg').value = '';
-      fetchGitStatus();
-    } else {
-      showToast('Error en commit: ' + (d.error || ''));
-    }
-  } catch(e) {
-    showToast('Error conectando a git');
-  } finally {
-    $('btnGitCommitPush').disabled = false;
-    $('btnGitCommitPush').innerText = 'Commit & Push a GitHub';
-  }
-};
-
-// ---------------------------------------------------- TABS Y VISTAS
-document.querySelectorAll('.dock-tab').forEach(b => {
-  b.onclick = () => switchDockTab(b.dataset.dock);
-});
-function switchDockTab(name) {
-  document.querySelectorAll('.dock-tab').forEach(b => b.classList.toggle('active', b.dataset.dock === name));
-  $('dockPanelPty').classList.toggle('active', name === 'pty');
-  $('dockPanelHermes').classList.toggle('active', name === 'hermes');
-  $('dockPanelDualLog').classList.toggle('active', name === 'dual-log');
-}
-
-document.querySelectorAll('.ai-tab').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('.ai-view').forEach(v => v.classList.remove('active'));
-    $(`view${b.dataset.view.charAt(0).toUpperCase() + b.dataset.view.slice(1)}`).classList.add('active');
-  };
-});
-
-// Icon Rail Navigation
-$('railFiles').onclick = () => switchDrawer('Files');
-$('railGit').onclick = () => { switchDrawer('Git'); fetchGitStatus(); };
-$('railColab').onclick = () => switchDrawer('Colab');
-
-function switchDrawer(name) {
-  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
-  $(`rail${name}`).classList.add('active');
-  $('drawerFiles').style.display = name === 'Files' ? 'flex' : 'none';
-  $('drawerGit').style.display = name === 'Git' ? 'flex' : 'none';
-  $('drawerColab').style.display = name === 'Colab' ? 'flex' : 'none';
-}
-
-// Botones Topbar
-$('btnLaunchDual').onclick = () => {
-  document.querySelector('.ai-tab[data-view="dual"]').click();
-  $('inputDualObjective').focus();
-};
-
-$('btnShareColab').onclick = () => {
-  const shareUrl = `${location.origin}/?token=${encodeURIComponent(TOKEN)}`;
-  navigator.clipboard.writeText(shareUrl).then(() => {
-    showToast('¡Enlace de sesión copiado al portapapeles!');
-  });
-};
-$('btnCopyInviteLink').onclick = $('btnShareColab').onclick;
-
-$('btnConfigModal').onclick = () => {
-  $('configModal').classList.add('active');
-};
-
-$('btnClearDock').onclick = () => {
-  $('hermesLiveOutput').innerText = '';
-  $('dualColabLogOutput').innerText = '';
-  showToast('Consolas limpiadas');
-};
-
-let dockCollapsed = false;
-$('btnToggleDock').onclick = () => {
-  dockCollapsed = !dockCollapsed;
-  $('bottomDock').style.height = dockCollapsed ? '34px' : '260px';
-  $('btnToggleDock').innerText = dockCollapsed ? '🔼' : '🔽';
-};
-
-// Toast
-function showToast(msg) {
-  const container = $('toastContainer');
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerText = msg;
-  container.appendChild(t);
-  setTimeout(() => { t.remove(); }, 3500);
-}
-
-function escapeHtml(s) {
-  if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-</script>
 </body>
 </html>

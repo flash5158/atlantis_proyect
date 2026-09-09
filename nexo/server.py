@@ -40,8 +40,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-# Importar motor de IA real
+# Importar motor de IA real y Red Social
 import ai_engine
+import social_matrix
 
 # ---------------------------------------------------------------- Rutas y Workspace
 HOME = Path.home()
@@ -388,7 +389,7 @@ async def api_historial(proyecto: str, request: Request, token: str = Query(""))
 
 
 @app.get("/api/archivo")
-async def api_archivo(proyecto: str, ruta: str, request: Request, token: str = Query("")):
+async def api_archivo(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
     if not es_local(request) and not token_ok(token):
         return JSONResponse({"error": "token inválido"}, status_code=401)
     try:
@@ -397,13 +398,30 @@ async def api_archivo(proyecto: str, ruta: str, request: Request, token: str = Q
         if not p.is_file():
             return JSONResponse({"error": "no es un archivo"}, status_code=404)
         texto = p.read_text(encoding="utf-8", errors="replace")
-        return {"ruta": ruta, "contenido": texto}
+        return {"ok": True, "ruta": ruta, "contenido": texto}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/archivo")
+async def api_archivo_guardar(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        contenido = body.get("contenido", "")
+        sala = sala_de(proyecto)
+        p = ruta_segura(sala, ruta)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(contenido, encoding="utf-8")
+        await difundir_arbol()
+        return {"ok": True, "ruta": ruta, "bytes": len(contenido)}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.get("/api/descargar")
-async def api_descargar(proyecto: str, ruta: str, request: Request, token: str = Query("")):
+async def api_descargar(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
     if not es_local(request) and not token_ok(token):
         return JSONResponse({"error": "token inválido"}, status_code=401)
     try:
@@ -669,6 +687,202 @@ async def api_ai_dual_run(req: Request, token: str = Query("")):
     return resultado
 
 
+# ---------------------------------------------------------------- Social Matrix (Red Social 4 Entidades)
+@app.get("/api/social/feed")
+async def api_social_feed(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    feed = social_matrix.cargar_feed()
+    return {
+        "ok": True,
+        "feed": feed,
+        "entidades": social_matrix.ENTIDADES,
+        "presencia": social_matrix.ESTADO_PRESENCIA,
+    }
+
+
+@app.get("/api/social/entities")
+async def api_social_entities(request: Request, token: str = Query("")):
+    return {
+        "entidades": social_matrix.ENTIDADES,
+        "presencia": social_matrix.ESTADO_PRESENCIA,
+    }
+
+
+@app.post("/api/social/post")
+async def api_social_post(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await req.json()
+    except Exception:
+        return JSONResponse({"error": "JSON mal formado"}, status_code=400)
+
+    autor = body.get("autor", "daniel")
+    contenido = body.get("contenido", "").strip()
+    codigo = body.get("codigo")
+    archivo = body.get("archivo")
+    tags = body.get("tags", [])
+    auto_debate = bool(body.get("debate", False))
+
+    if not contenido:
+        return JSONResponse({"error": "El contenido no puede estar vacío"}, status_code=400)
+
+    nuevo_post = social_matrix.crear_post(autor, contenido, codigo=codigo, archivo=archivo, tags=tags)
+    await enviar_todos({"tipo": "social_new_post", "post": nuevo_post})
+
+    if auto_debate:
+        async def _run_debate():
+            def _on_ev(ev):
+                asyncio.create_task(enviar_todos(ev))
+            await social_matrix.ejecutar_debate_dual_feed(
+                nuevo_post["id"],
+                contenido,
+                codigo=codigo,
+                archivo=archivo,
+                cwd=WORKSPACE,
+                on_evento=_on_ev,
+            )
+        asyncio.create_task(_run_debate())
+    else:
+        async def _run_menciones():
+            def _on_ia_rep(ev):
+                asyncio.create_task(enviar_todos(ev))
+            await social_matrix.procesar_menciones_feed(
+                nuevo_post["id"],
+                contenido,
+                codigo=codigo,
+                archivo=archivo,
+                cwd=WORKSPACE,
+                on_ia_reply=_on_ia_rep,
+            )
+        asyncio.create_task(_run_menciones())
+
+    return {"ok": True, "post": nuevo_post}
+
+
+@app.post("/api/social/reply")
+async def api_social_reply(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await req.json()
+    except Exception:
+        return JSONResponse({"error": "JSON mal formado"}, status_code=400)
+
+    post_id = body.get("post_id")
+    autor = body.get("autor", "daniel")
+    contenido = body.get("contenido", "").strip()
+    codigo = body.get("codigo")
+
+    if not post_id or not contenido:
+        return JSONResponse({"error": "Faltan campos obligatorios"}, status_code=400)
+
+    resp = social_matrix.agregar_respuesta(post_id, autor, contenido, codigo=codigo)
+    if not resp:
+        return JSONResponse({"error": "Post no encontrado"}, status_code=404)
+
+    await enviar_todos({"tipo": "social_new_reply", "post_id": post_id, "respuesta": resp})
+
+    async def _run_menciones_rep():
+        def _on_ia_rep(ev):
+            asyncio.create_task(enviar_todos(ev))
+        await social_matrix.procesar_menciones_feed(
+            post_id,
+            contenido,
+            codigo=codigo,
+            cwd=WORKSPACE,
+            on_ia_reply=_on_ia_rep,
+        )
+    asyncio.create_task(_run_menciones_rep())
+
+    return {"ok": True, "respuesta": resp}
+
+
+@app.post("/api/social/react")
+async def api_social_react(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await req.json()
+    except Exception:
+        return JSONResponse({"error": "JSON mal formado"}, status_code=400)
+
+    post_id = body.get("post_id")
+    emoji = body.get("emoji", "🔥")
+    usuario = body.get("usuario", "daniel")
+    reply_id = body.get("reply_id")
+
+    res = social_matrix.alternar_reaccion(post_id, emoji, usuario, reply_id=reply_id)
+    if not res.get("ok"):
+        return JSONResponse(res, status_code=400)
+
+    await enviar_todos({
+        "tipo": "social_reaction_update",
+        "post_id": post_id,
+        "reply_id": reply_id,
+        "emoji": emoji,
+        "reacciones": res["reacciones"],
+    })
+    return res
+
+
+@app.post("/api/social/debate")
+async def api_social_debate(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await req.json()
+    except Exception:
+        return JSONResponse({"error": "JSON mal formado"}, status_code=400)
+
+    post_id = body.get("post_id")
+    tema = body.get("tema", "").strip()
+    codigo = body.get("codigo")
+    archivo = body.get("archivo")
+
+    if not post_id or not tema:
+        return JSONResponse({"error": "Faltan campos obligatorios"}, status_code=400)
+
+    async def _run_debate():
+        def _on_ev(ev):
+            asyncio.create_task(enviar_todos(ev))
+        await social_matrix.ejecutar_debate_dual_feed(
+            post_id,
+            tema,
+            codigo=codigo,
+            archivo=archivo,
+            cwd=WORKSPACE,
+            on_evento=_on_ev,
+        )
+    asyncio.create_task(_run_debate())
+    return {"ok": True, "mensaje": "Debate IA iniciado"}
+
+
+@app.post("/api/social/apply_code")
+async def api_social_apply_code(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await req.json()
+    except Exception:
+        return JSONResponse({"error": "JSON mal formado"}, status_code=400)
+
+    ruta = body.get("ruta", "").strip()
+    codigo = body.get("codigo", "")
+    if not ruta or not codigo:
+        return JSONResponse({"error": "ruta y codigo son obligatorios"}, status_code=400)
+
+    res = social_matrix.aplicar_codigo_a_archivo(ruta, codigo, cwd=WORKSPACE)
+    if res.get("ok"):
+        await difundir_arbol()
+        await enviar_todos({
+            "tipo": "sistema",
+            "texto": f"💾 Código aplicado a `{ruta}` ({res.get('bytes', 0)} bytes).",
+            "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        })
+    return res
+
 
 # ---------------------------------------------------------------- PTY Real Interactive Terminal
 @app.websocket("/pty")
@@ -765,10 +979,22 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
     CONECTADOS.add(ws)
     mis_salas: set[Sala] = set()
 
+    # Presencia en la matriz social
+    entidad_id = "daniel" if "daniel" in nombre_usuario.lower() else ("amigo" if "amigo" in nombre_usuario.lower() else None)
+    if entidad_id:
+        social_matrix.actualizar_presencia(entidad_id, "online", "En vivo en NEXO Studio")
+
     await enviar_todos({
         "tipo": "presencia",
         "conectados": len(CONECTADOS),
         "agentes": AI_STORE.get("agentes", {}),
+    })
+    # Estado inicial de la Red Social
+    await enviar(ws, {
+        "tipo": "social_init",
+        "feed": social_matrix.cargar_feed(),
+        "entidades": social_matrix.ENTIDADES,
+        "presencia": social_matrix.ESTADO_PRESENCIA,
     })
 
     try:
@@ -959,6 +1185,89 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
                         await enviar_todos({"tipo": "dual_colab_finish", "resultado": res})
                         await difundir_arbol()
                     asyncio.create_task(_run_d())
+
+            # --- Eventos Red Social (4 Entidades) ---
+            elif tipo == "social_post":
+                s_autor = msg.get("autor", entidad_id or "daniel")
+                s_cont = msg.get("contenido", "").strip()
+                s_cod = msg.get("codigo")
+                s_arch = msg.get("archivo")
+                s_tags = msg.get("tags", [])
+                s_deb = bool(msg.get("debate", False))
+                if s_cont:
+                    nuevo_p = social_matrix.crear_post(s_autor, s_cont, codigo=s_cod, archivo=s_arch, tags=s_tags)
+                    await enviar_todos({"tipo": "social_new_post", "post": nuevo_p})
+                    if s_deb:
+                        async def _run_deb_ws():
+                            def _on_deb_ev(ev):
+                                asyncio.create_task(enviar_todos(ev))
+                            await social_matrix.ejecutar_debate_dual_feed(
+                                nuevo_p["id"], s_cont, codigo=s_cod, archivo=s_arch, cwd=WORKSPACE, on_evento=_on_deb_ev
+                            )
+                        asyncio.create_task(_run_deb_ws())
+                    else:
+                        async def _run_menc_ws():
+                            def _on_menc_rep(ev):
+                                asyncio.create_task(enviar_todos(ev))
+                            await social_matrix.procesar_menciones_feed(
+                                nuevo_p["id"], s_cont, codigo=s_cod, archivo=s_arch, cwd=WORKSPACE, on_ia_reply=_on_menc_rep
+                            )
+                        asyncio.create_task(_run_menc_ws())
+
+            elif tipo == "social_reply":
+                s_pid = msg.get("post_id")
+                s_autor = msg.get("autor", entidad_id or "daniel")
+                s_cont = msg.get("contenido", "").strip()
+                s_cod = msg.get("codigo")
+                if s_pid and s_cont:
+                    s_r = social_matrix.agregar_respuesta(s_pid, s_autor, s_cont, codigo=s_cod)
+                    if s_r:
+                        await enviar_todos({"tipo": "social_new_reply", "post_id": s_pid, "respuesta": s_r})
+                        async def _run_rep_menc():
+                            def _on_menc_ev(ev):
+                                asyncio.create_task(enviar_todos(ev))
+                            await social_matrix.procesar_menciones_feed(
+                                s_pid, s_cont, codigo=s_cod, cwd=WORKSPACE, on_ia_reply=_on_menc_ev
+                            )
+                        asyncio.create_task(_run_rep_menc())
+
+            elif tipo == "social_react":
+                s_pid = msg.get("post_id")
+                s_emoji = msg.get("emoji", "🔥")
+                s_usr = msg.get("usuario", entidad_id or "daniel")
+                s_rid = msg.get("reply_id")
+                if s_pid:
+                    s_res = social_matrix.alternar_reaccion(s_pid, s_emoji, s_usr, reply_id=s_rid)
+                    if s_res.get("ok"):
+                        await enviar_todos({
+                            "tipo": "social_reaction_update",
+                            "post_id": s_pid,
+                            "reply_id": s_rid,
+                            "emoji": s_emoji,
+                            "reacciones": s_res["reacciones"],
+                        })
+
+            elif tipo == "social_debate":
+                s_pid = msg.get("post_id")
+                s_tema = msg.get("tema", "").strip()
+                s_cod = msg.get("codigo")
+                s_arch = msg.get("archivo")
+                if s_pid and s_tema:
+                    async def _run_manual_deb():
+                        def _on_ev(ev):
+                            asyncio.create_task(enviar_todos(ev))
+                        await social_matrix.ejecutar_debate_dual_feed(
+                            s_pid, s_tema, codigo=s_cod, archivo=s_arch, cwd=WORKSPACE, on_evento=_on_ev
+                        )
+                    asyncio.create_task(_run_manual_deb())
+
+            elif tipo == "social_presence":
+                s_ent = msg.get("entidad")
+                s_est = msg.get("estado", "online")
+                s_act = msg.get("actividad", "")
+                if s_ent:
+                    pres_act = social_matrix.actualizar_presencia(s_ent, s_est, s_act)
+                    await enviar_todos({"tipo": "social_presence_update", "presencia": pres_act})
 
     except (WebSocketDisconnect, Exception):
         pass
