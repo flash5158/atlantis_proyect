@@ -147,13 +147,18 @@ function createPostElement(post) {
     codeHtml = `
       <div class="post-code-block">
         <div class="post-code-header">
-          <span>📄 ${escapeHtml(fn)}</span>
+          <div class="post-code-window-controls">
+            <span class="traffic-dot red" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="traffic-dot yellow" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="traffic-dot green" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="post-code-title">📄 ${escapeHtml(fn)}</span>
+          </div>
           <div class="post-code-actions">
             <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(${JSON.stringify(post.codigo)}, ${JSON.stringify(post.archivo || '')})">
               📥 Abrir en Editor
             </button>
             <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(${JSON.stringify(fn)}, ${JSON.stringify(post.codigo)})">
-              💾 Aplicar al archivo
+              💾 Aplicar
             </button>
           </div>
         </div>
@@ -174,7 +179,7 @@ function createPostElement(post) {
   el.innerHTML = `
     <div class="post-header">
       <div class="post-author-box">
-        <div class="post-author-avatar" style="border-color: ${ent.color};">${ent.avatar}</div>
+        <div class="post-author-avatar" style="border-color: ${ent.color}; box-shadow: 0 0 10px ${ent.color}40;">${ent.avatar}</div>
         <div>
           <div class="post-author-name">
             <span>${escapeHtml(ent.nombre)}</span>
@@ -240,13 +245,18 @@ function renderReplyHtml(postId, reply) {
     codeSnippet = `
       <div class="post-code-block" style="margin-top: 8px;">
         <div class="post-code-header">
-          <span>Propuesta de Código (${escapeHtml(fn)})</span>
+          <div class="post-code-window-controls">
+            <span class="traffic-dot red" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="traffic-dot yellow" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="traffic-dot green" style="width: 8.5px; height: 8.5px;"></span>
+            <span class="post-code-title">📄 ${escapeHtml(fn)}</span>
+          </div>
           <div class="post-code-actions">
             <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(${JSON.stringify(reply.codigo)}, ${JSON.stringify(fn)})">
               📥 Abrir en Editor
             </button>
             <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(${JSON.stringify(fn)}, ${JSON.stringify(reply.codigo)})">
-              💾 Aplicar al archivo
+              💾 Aplicar
             </button>
           </div>
         </div>
@@ -481,6 +491,11 @@ function onSocialIaTyping(postId, ia) {
     tip.style.display = 'flex';
     const isCritic = (ia === 'hermes-amigo');
     tip.className = `ai-typing-card ${isCritic ? 'critic' : ''}`;
-    tip.innerHTML = `<span>🤖</span> <span>${isCritic ? 'Hermes-Amigo está auditando código y redactando observaciones...' : 'Hermes-Daniel está pensando la propuesta técnica...'}</span>`;
+    tip.innerHTML = `
+      <span style="font-size: 16px;">✨</span>
+      <span style="font-size: 12px; font-weight: 500; color: #FFF;">
+        ${isCritic ? 'Apple Intelligence & Hermes-Amigo auditando calidad y redactando observaciones...' : 'Apple Intelligence & Hermes-Daniel sintetizando propuesta y generando código...'}
+      </span>
+    `;
   }
 }

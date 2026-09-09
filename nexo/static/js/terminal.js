@@ -13,12 +13,12 @@ function initPtyTerminal() {
   ptyTerm = new Terminal({
     cursorBlink: true,
     fontSize: 12.5,
-    fontFamily: "'JetBrains Mono', monospace",
+    fontFamily: '"SF Mono", "Menlo", "Monaco", monospace',
     theme: {
-      background: '#04060a',
-      foreground: '#e2e8f0',
-      cursor: '#06b6d4',
-      selectionBackground: 'rgba(6, 182, 212, 0.3)',
+      background: '#050508',
+      foreground: '#E2E8F0',
+      cursor: '#0A84FF',
+      selectionBackground: 'rgba(10, 132, 255, 0.3)',
     }
   });
 
