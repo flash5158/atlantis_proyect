@@ -7,3 +7,4 @@ nexo/config.json
 proyectos/*/.nexo-chat.md
 .nexo/
 
+.vercel

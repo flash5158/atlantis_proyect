@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXO Studio 2.0 — Antigravity Social & AI Collaboration Matrix</title>
+<title>NEXO Studio 2.0 — Antigravity designed by Apple</title>
 
-<!-- Fuentes Modernas 2026 -->
+<!-- Apple Typography (SF Pro & Inter Fallback) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -15,25 +15,35 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
 
-<!-- Monaco Editor (Motor Oficial de VS Code) -->
+<!-- Monaco Editor (Motor de VS Code) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 
-<!-- Estilos Principales -->
+<!-- Estilos Apple HIG & Liquid Glass -->
 <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-<!-- TOPBAR NAVEGACIÓN -->
+<!-- TOPBAR: macOS Title Bar & Dynamic Island Controls -->
 <header class="topbar">
-  <div class="brand">
-    <div class="brand-icon">⚛</div>
-    <div class="brand-name">
-      NEXO STUDIO
-      <span class="brand-tag">ANTIGRAVITY MATRIX</span>
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <!-- macOS Window Traffic Lights -->
+    <div class="macos-traffic-lights" aria-label="macOS Window Controls">
+      <span class="traffic-dot red" title="Cerrar"></span>
+      <span class="traffic-dot yellow" title="Minimizar"></span>
+      <span class="traffic-dot green" title="Maximizar"></span>
+    </div>
+
+    <!-- Apple Brand Mark -->
+    <div class="brand">
+      <div class="brand-icon"></div>
+      <div class="brand-name">
+        NEXO Studio
+        <span class="brand-tag">ANTIGRAVITY BY APPLE</span>
+      </div>
     </div>
   </div>
 
-  <!-- Selector de Vistas Principales -->
+  <!-- macOS Floating Segmented Control -->
   <nav class="nav-modes">
     <button type="button" class="nav-mode-btn social active" data-view="social">
       <span>👥</span> Red Social (4)
@@ -46,9 +56,9 @@
     </button>
   </nav>
 
-  <!-- Acciones y Presencia -->
+  <!-- Acciones y Dynamic Island Status Pills -->
   <div class="topbar-actions">
-    <!-- Alternador Rápido de Identidad -->
+    <!-- Alternador de Identidad -->
     <div class="status-pill" id="pillCurrentIdentity" title="Haz clic para alternar entre Daniel y Amigo">
       <span>👤</span>
       <span id="labelCurrentIdentity">Tú: Daniel (Dev 1)</span>
@@ -68,19 +78,19 @@
     </div>
 
     <!-- Botón Invitar Amigo -->
-    <button type="button" class="btn-top accent" id="btnShareInviteLink" title="Copiar enlace directo preconfigurado para tu amigo">
+    <button type="button" class="btn-top" id="btnShareInviteLink" title="Copiar enlace directo preconfigurado para tu amigo">
       <span>🔗</span> Invitar Amigo
     </button>
 
-    <!-- Botón Guardar Archivo -->
-    <button type="button" class="btn-top" id="btnSaveActiveFile" title="Guardar archivo activo (Ctrl+S)">
+    <!-- Botón Guardar Archivo Activo -->
+    <button type="button" class="btn-top save" id="btnSaveActiveFile" title="Guardar archivo activo (Ctrl+S / Cmd+S)">
       <span>💾</span> Guardar
     </button>
   </div>
 </header>
 
 <!-- VIEWPORT DE APLICACIÓN -->
-<main class="app-viewport">
+<main class="app-container app-viewport">
 
   <!-- ====================================================================
        VISTA 1: RED SOCIAL NEXO (DANIEL, AMIGO, HERMES-DANIEL, HERMES-AMIGO)
@@ -89,102 +99,90 @@
     <div class="social-viewport">
       <div class="social-container">
 
-        <!-- Banner de Estado de las 4 Entidades -->
-        <div class="entity-hero-grid">
+        <!-- Apple Floating Dock: Las 4 Entidades -->
+        <div class="entities-hero-bar entity-hero-grid">
           <!-- Daniel -->
-          <div class="entity-hero-card daniel" id="cardEntity-daniel">
-            <div class="entity-hero-top">
-              <div class="entity-hero-avatar daniel">👤</div>
-              <div class="entity-hero-meta">
-                <div class="entity-hero-name">
-                  <span>Daniel</span>
-                  <span class="entity-hero-badge daniel">DEV 1</span>
-                </div>
-                <div class="entity-hero-role">Desarrollador Lead</div>
+          <div class="entity-hero-card daniel" id="cardEntity-daniel" onclick="insertMention('@daniel')" title="Clic para mencionar a @daniel">
+            <div class="entity-hero-avatar-ring">👤</div>
+            <div class="entity-hero-info">
+              <div class="entity-hero-name-row">
+                <span class="entity-hero-name">Daniel</span>
+                <span class="entity-hero-badge daniel">DEV 1</span>
+                <span class="status-dot online" id="statusDot-daniel"></span>
               </div>
-              <span class="status-dot online" id="statusDot-daniel"></span>
+              <div class="entity-hero-role">Lead Developer</div>
+              <div class="entity-hero-status" id="statusMsg-daniel">
+                <span>📍</span> <span>En vivo en NEXO Studio</span>
+              </div>
             </div>
-            <div class="entity-hero-status" id="statusMsg-daniel">
-              <span>📍</span> <span>En vivo en NEXO Studio</span>
-            </div>
-            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@daniel')">@mencionar</button>
           </div>
 
           <!-- Hermes-Daniel -->
-          <div class="entity-hero-card hermes-daniel" id="cardEntity-hermes-daniel">
-            <div class="entity-hero-top">
-              <div class="entity-hero-avatar hermes-daniel">🤖</div>
-              <div class="entity-hero-meta">
-                <div class="entity-hero-name">
-                  <span>Hermes-Daniel</span>
-                  <span class="entity-hero-badge hermes-daniel">ALPHA</span>
-                </div>
-                <div class="entity-hero-role">IA Ejecutora & Creadora</div>
+          <div class="entity-hero-card hermes-daniel" id="cardEntity-hermes-daniel" onclick="insertMention('@hermes-daniel')" title="Clic para mencionar a @hermes-daniel">
+            <div class="entity-hero-avatar-ring">🤖</div>
+            <div class="entity-hero-info">
+              <div class="entity-hero-name-row">
+                <span class="entity-hero-name">Hermes-Daniel</span>
+                <span class="entity-hero-badge hermes-daniel">ALPHA</span>
+                <span class="status-dot hermes" id="statusDot-hermes-daniel"></span>
               </div>
-              <span class="status-dot hermes" id="statusDot-hermes-daniel"></span>
+              <div class="entity-hero-role">IA Ejecutora & Creadora</div>
+              <div class="entity-hero-status" id="statusMsg-hermes-daniel">
+                <span>⚡</span> <span>Listo para programar tareas</span>
+              </div>
             </div>
-            <div class="entity-hero-status" id="statusMsg-hermes-daniel">
-              <span>⚡</span> <span>Listo para programar tareas</span>
-            </div>
-            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@hermes-daniel')">@mencionar</button>
           </div>
 
           <!-- Amigo -->
-          <div class="entity-hero-card amigo" id="cardEntity-amigo">
-            <div class="entity-hero-top">
-              <div class="entity-hero-avatar amigo">👤</div>
-              <div class="entity-hero-meta">
-                <div class="entity-hero-name">
-                  <span>Amigo</span>
-                  <span class="entity-hero-badge amigo">DEV 2</span>
-                </div>
-                <div class="entity-hero-role">Desarrollador Colaborador</div>
+          <div class="entity-hero-card amigo" id="cardEntity-amigo" onclick="insertMention('@amigo')" title="Clic para mencionar a @amigo">
+            <div class="entity-hero-avatar-ring">👤</div>
+            <div class="entity-hero-info">
+              <div class="entity-hero-name-row">
+                <span class="entity-hero-name">Amigo</span>
+                <span class="entity-hero-badge amigo">DEV 2</span>
+                <span class="status-dot online" id="statusDot-amigo"></span>
               </div>
-              <span class="status-dot online" id="statusDot-amigo"></span>
+              <div class="entity-hero-role">Colaborador</div>
+              <div class="entity-hero-status" id="statusMsg-amigo">
+                <span>📍</span> <span>Sesión compartida</span>
+              </div>
             </div>
-            <div class="entity-hero-status" id="statusMsg-amigo">
-              <span>📍</span> <span>Conectado a la sesión</span>
-            </div>
-            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@amigo')">@mencionar</button>
           </div>
 
           <!-- Hermes-Amigo -->
-          <div class="entity-hero-card hermes-amigo" id="cardEntity-hermes-amigo">
-            <div class="entity-hero-top">
-              <div class="entity-hero-avatar hermes-amigo">🤖</div>
-              <div class="entity-hero-meta">
-                <div class="entity-hero-name">
-                  <span>Hermes-Amigo</span>
-                  <span class="entity-hero-badge hermes-amigo">BETA</span>
-                </div>
-                <div class="entity-hero-role">IA Auditora & Crítica</div>
+          <div class="entity-hero-card hermes-amigo" id="cardEntity-hermes-amigo" onclick="insertMention('@hermes-amigo')" title="Clic para mencionar a @hermes-amigo">
+            <div class="entity-hero-avatar-ring">🤖</div>
+            <div class="entity-hero-info">
+              <div class="entity-hero-name-row">
+                <span class="entity-hero-name">Hermes-Amigo</span>
+                <span class="entity-hero-badge hermes-amigo">BETA</span>
+                <span class="status-dot gemini" id="statusDot-hermes-amigo"></span>
               </div>
-              <span class="status-dot gemini" id="statusDot-hermes-amigo"></span>
+              <div class="entity-hero-role">IA Auditora & Crítica</div>
+              <div class="entity-hero-status" id="statusMsg-hermes-amigo">
+                <span>🛡️</span> <span>Auditoría & calidad</span>
+              </div>
             </div>
-            <div class="entity-hero-status" id="statusMsg-hermes-amigo">
-              <span>🛡️</span> <span>Auditando calidad & seguridad</span>
-            </div>
-            <button type="button" class="entity-hero-mention-btn" onclick="insertMention('@hermes-amigo')">@mencionar</button>
           </div>
         </div>
 
-        <!-- Compositor de Publicaciones -->
-        <div class="social-composer-card">
-          <div class="composer-top">
-            <div class="composer-author-info">
-              <div class="composer-author-avatar" id="composerAuthorAvatar">👤</div>
+        <!-- Compositor Apple (iMessage & Notes Glass Card) -->
+        <div class="social-composer social-composer-card">
+          <div class="composer-header composer-top">
+            <div class="composer-user-pill composer-author-info">
+              <div class="composer-avatar composer-author-avatar" id="composerAuthorAvatar">👤</div>
               <div>
-                <div class="composer-author-text">
+                <div class="composer-user-text composer-author-text">
                   Publicando como: <strong id="composerAuthorName" style="color: var(--accent-daniel);">Daniel</strong>
                 </div>
-                <div class="composer-hint">Menciona a @hermes-daniel o @hermes-amigo para obtener respuestas y código autónomos</div>
+                <div class="composer-user-sub composer-hint">Menciona a @hermes-daniel o @hermes-amigo para respuestas autónomas</div>
               </div>
             </div>
-            <div class="composer-quick-actions">
-              <button type="button" class="composer-tool-btn" id="btnToggleComposerCode">
+            <div class="composer-quick-actions composer-tools-left">
+              <button type="button" class="btn-composer-tool composer-tool-btn" id="btnToggleComposerCode">
                 <span>💻</span> Adjuntar Código
               </button>
-              <button type="button" class="composer-tool-btn" id="btnAttachActiveFile">
+              <button type="button" class="btn-composer-tool composer-tool-btn" id="btnAttachActiveFile">
                 <span>📎</span> Adjuntar Archivo Abierto
               </button>
             </div>
@@ -192,39 +190,39 @@
 
           <textarea class="composer-textarea" id="socialPostInput" placeholder="¿Qué vamos a debatir o construir hoy? Escribe aquí y menciona a @hermes-daniel, @hermes-amigo o @amigo..."></textarea>
 
-          <!-- Cajón de Código Adjunto -->
+          <!-- Cajón de Código Adjunto (Xcode Window Style) -->
           <div class="composer-code-drawer" id="composerCodeDrawer" style="display: none;">
-            <div class="code-drawer-header">
-              <span>Fragmento de Código / Archivo adjunto:</span>
-              <input type="text" id="composerAttachedFileName" class="code-drawer-input" placeholder="ruta/archivo.py (opcional)">
+            <div class="composer-code-header code-drawer-header">
+              <span style="font-size: 11.5px; font-weight: 500; color: var(--text-secondary);">Fragmento de Código / Archivo adjunto:</span>
+              <input type="text" id="composerAttachedFileName" class="composer-code-input code-drawer-input" placeholder="ruta/archivo.py (opcional)" style="width: 260px;">
             </div>
-            <textarea class="code-drawer-textarea" id="socialPostCode" placeholder="// Pega el código para que las IAs y tu amigo lo revisen o debatan..."></textarea>
+            <textarea class="code-drawer-textarea composer-code-input" id="socialPostCode" style="min-height: 110px;" placeholder="// Pega el código para que las IAs y tu amigo lo revisen o debatan..."></textarea>
           </div>
 
           <!-- Barra Inferior del Compositor -->
-          <div class="composer-bottom">
-            <div class="mention-chips">
-              <span style="font-size: 11px; color: var(--text-muted); margin-right: 2px;">Mencionar:</span>
-              <button type="button" class="mention-chip green" onclick="insertMention('@hermes-daniel')">@hermes-daniel</button>
-              <button type="button" class="mention-chip purple" onclick="insertMention('@hermes-amigo')">@hermes-amigo</button>
-              <button type="button" class="mention-chip cyan" onclick="insertMention('@daniel')">@daniel</button>
-              <button type="button" class="mention-chip orange" onclick="insertMention('@amigo')">@amigo</button>
-              <button type="button" class="mention-chip blue" onclick="insertMention('@todos')">@todos</button>
+          <div class="composer-actions-bar composer-bottom">
+            <div class="composer-mentions-bar mention-chips">
+              <span class="mention-chip-label">Mencionar:</span>
+              <button type="button" class="mention-chip hermes-daniel" onclick="insertMention('@hermes-daniel')">@hermes-daniel</button>
+              <button type="button" class="mention-chip hermes-amigo" onclick="insertMention('@hermes-amigo')">@hermes-amigo</button>
+              <button type="button" class="mention-chip daniel" onclick="insertMention('@daniel')">@daniel</button>
+              <button type="button" class="mention-chip amigo" onclick="insertMention('@amigo')">@amigo</button>
+              <button type="button" class="mention-chip todos" onclick="insertMention('@todos')">@todos</button>
             </div>
-            <div class="composer-controls">
-              <label class="debate-toggle" title="Si se activa, los 2 Hermes debatirán autónomamente en el hilo del post">
-                <input type="checkbox" id="checkAutoDebate">
+            <div class="composer-controls" style="display: flex; align-items: center; gap: 14px;">
+              <label class="debate-toggle" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--apple-purple);" title="Si se activa, los 2 Hermes debatirán autónomamente en el hilo del post">
+                <input type="checkbox" id="checkAutoDebate" style="accent-color: var(--apple-purple); cursor: pointer;">
                 <span>⚡ Activar Debate Dual</span>
               </label>
               <button type="button" class="btn-publish" id="btnPublishSocialPost">
-                <span>🚀 Publicar en la Red</span>
+                <span>🚀 Publicar</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Timeline de Publicaciones -->
-        <div class="social-timeline" id="socialTimelineContainer">
+        <!-- Timeline de Publicaciones (iMessage & VisionOS Cards) -->
+        <div class="timeline-container social-timeline" id="socialTimelineContainer">
           <!-- Se llena dinámicamente -->
         </div>
 
@@ -233,20 +231,20 @@
   </section>
 
   <!-- ====================================================================
-       VISTA 2: ESTUDIO DE CÓDIGO (MONACO + EXPLORADOR + TERMINAL PTY)
+       VISTA 2: ESTUDIO DE CÓDIGO (MONACO + EXPLORADOR XCODE + TERMINAL PTY)
        ==================================================================== -->
   <section class="view-panel" id="viewEditor">
-    <div class="editor-layout">
+    <div class="editor-layout editor-viewport" style="display: flex; width: 100%; height: 100%;">
 
-      <!-- Barra Lateral: Explorador de Archivos -->
+      <!-- Barra Lateral: Explorador de Archivos Xcode Style -->
       <aside class="editor-sidebar">
         <div class="sidebar-header">
           <span>ARCHIVOS DEL PROYECTO</span>
           <div class="sidebar-actions">
-            <button type="button" class="btn-top" style="padding: 2px 6px;" onclick="fetchFileTree()" title="Actualizar árbol">🔄</button>
+            <button type="button" class="btn-top" style="padding: 2px 8px;" onclick="fetchFileTree()" title="Actualizar árbol">🔄</button>
           </div>
         </div>
-        <div class="tree-container" id="fileTreeContainer">
+        <div class="file-tree-container tree-container" id="fileTreeContainer">
           <!-- Nodos de archivo generados dinámicamente -->
         </div>
       </aside>
@@ -282,7 +280,7 @@
   </section>
 
   <!-- ====================================================================
-       VISTA 3: CENTRO DE AGENTES (HERMES DIRECT + DUAL RUNNER)
+       VISTA 3: CENTRO DE AGENTES (APPLE INTELLIGENCE & HERMES RUNNER)
        ==================================================================== -->
   <section class="view-panel" id="viewAgents">
     <div class="agents-viewport">
@@ -291,11 +289,11 @@
         <!-- Runner Directo Nous Hermes CLI -->
         <div class="agent-runner-card">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 24px;">🤖</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="entity-hero-avatar-ring" style="border-color: var(--apple-mint); box-shadow: 0 0 14px var(--glow-hermes-daniel);">🤖</div>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Nous Hermes Agent CLI</div>
-                <div style="font-size: 11.5px; color: var(--text-muted);">Ejecución de tareas autónomas en el workspace local (~/.local/bin/hermes)</div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Nous Hermes Agent CLI</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);">Apple Intelligence & Nous Hermes en workspace local (~/.local/bin/hermes)</div>
               </div>
             </div>
             <button type="button" class="btn-top" id="btnClearHermesConsole">🧹 Limpiar</button>
@@ -303,10 +301,10 @@
 
           <div class="runner-console" id="hermesLiveConsoleOutput">⚡ Consola de Hermes lista. Escribe una instrucción abajo para ejecutar herramientas locales...</div>
 
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
             <textarea id="inputHermesDirectPrompt" class="composer-textarea" style="min-height: 60px;" placeholder="Instrucción para Hermes en el workspace (ej: Revisa la seguridad del proyecto y crea tests)..."></textarea>
-            <button type="button" class="btn-publish" id="btnRunHermesDirect" style="align-self: flex-end; height: 42px; white-space: nowrap;">
-              <span>⚡ Ejecutar Hermes</span>
+            <button type="button" class="btn-publish" id="btnRunHermesDirect" style="height: 44px; white-space: nowrap;">
+              <span>⚡ Ejecutar</span>
             </button>
           </div>
         </div>
@@ -317,7 +315,7 @@
 
 </main>
 
-<!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+<!-- CONTENEDOR DE NOTIFICACIONES TOAST (visionOS Capsule) -->
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- Scripts de la Aplicación -->
