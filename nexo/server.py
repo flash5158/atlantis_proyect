@@ -14,7 +14,6 @@ Características avanzadas:
 """
 
 import asyncio
-import base64
 import fcntl
 import hmac
 import json
@@ -23,17 +22,15 @@ import platform
 import pty
 import re
 import secrets
-import shlex
 import shutil
 import signal
-import socket
 import struct
 import subprocess
 import termios
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from fastapi import FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -202,7 +199,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
 
 CONECTADOS: set[WebSocket] = set()
-SALAS: dict[str, "Sala"] = {}
+SALAS: dict[str, Sala] = {}
 
 
 # ---------------------------------------------------------------- Sala de Proyecto
@@ -299,7 +296,7 @@ async def enviar(ws: WebSocket, msg: dict):
         pass
 
 
-async def enviar_sala(sala: Sala, msg: dict, excepto: Optional[WebSocket] = None):
+async def enviar_sala(sala: Sala, msg: dict, excepto: WebSocket | None = None):
     for ws in list(sala.conectados):
         if ws is excepto:
             continue
@@ -1289,12 +1286,12 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "=" * 68)
-    print(f"🚀 NEXO 2.0 Atlantis — Servidor de Desarrollo Real & Matriz IA")
+    print("🚀 NEXO 2.0 Atlantis — Servidor de Desarrollo Real & Matriz IA")
     print("=" * 68)
     print(f"• URL Local:        http://127.0.0.1:{PORT}")
     print(f"• Workspace:        {WORKSPACE}")
-    print(f"• Terminal PTY:     Nativa (/pty)")
-    print(f"• Motor de IA:      Activo (ai_engine)")
+    print("• Terminal PTY:     Nativa (/pty)")
+    print("• Motor de IA:      Activo (ai_engine)")
     print(f"• Token:            {TOKEN}")
     print("=" * 68 + "\n")
     uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning")

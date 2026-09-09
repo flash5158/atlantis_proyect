@@ -12,11 +12,11 @@ Entidades:
 
 import asyncio
 import json
-import re
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+from collections.abc import Callable
 
 from ai_engine import consultar_gemini, detectar_hermes_bin, ejecutar_hermes, extraer_codigo
 
@@ -157,9 +157,9 @@ def guardar_feed(feed: list[dict]) -> None:
 def crear_post(
     autor: str,
     contenido: str,
-    codigo: Optional[str] = None,
-    archivo: Optional[str] = None,
-    tags: Optional[list[str]] = None,
+    codigo: str | None = None,
+    archivo: str | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
     feed = cargar_feed()
     ent = ENTIDADES.get(autor, {
@@ -192,8 +192,8 @@ def agregar_respuesta(
     post_id: str,
     autor: str,
     contenido: str,
-    codigo: Optional[str] = None,
-) -> Optional[dict]:
+    codigo: str | None = None,
+) -> dict | None:
     feed = cargar_feed()
     post = next((p for p in feed if p["id"] == post_id), None)
     if not post:
@@ -222,7 +222,7 @@ def agregar_respuesta(
     return resp
 
 
-def alternar_reaccion(post_id: str, emoji: str, usuario: str, reply_id: Optional[str] = None) -> dict:
+def alternar_reaccion(post_id: str, emoji: str, usuario: str, reply_id: str | None = None) -> dict:
     feed = cargar_feed()
     post = next((p for p in feed if p["id"] == post_id), None)
     if not post:
@@ -268,8 +268,8 @@ async def generar_respuesta_social_ia(
     contexto_hilo: str = "",
     codigo_adjunto: str = "",
     archivo_adjunto: str = "",
-    cwd: Optional[Path] = None,
-) -> tuple[str, Optional[str]]:
+    cwd: Path | None = None,
+) -> tuple[str, str | None]:
     """Genera una respuesta con la personalidad y rol específico de la IA seleccionada."""
     work_dir = cwd if (cwd and cwd.is_dir()) else REPO_ROOT
 
@@ -324,10 +324,10 @@ async def generar_respuesta_social_ia(
 async def procesar_menciones_feed(
     post_id: str,
     texto: str,
-    codigo: Optional[str] = None,
-    archivo: Optional[str] = None,
-    cwd: Optional[Path] = None,
-    on_ia_reply: Optional[Callable[[dict], Any]] = None,
+    codigo: str | None = None,
+    archivo: str | None = None,
+    cwd: Path | None = None,
+    on_ia_reply: Callable[[dict], Any] | None = None,
 ) -> None:
     """Detecta menciones en un post o comentario y genera las réplicas autónomas."""
     menciones = extraer_menciones(texto)
@@ -373,10 +373,10 @@ async def procesar_menciones_feed(
 async def ejecutar_debate_dual_feed(
     post_id: str,
     tema: str,
-    codigo: Optional[str] = None,
-    archivo: Optional[str] = None,
-    cwd: Optional[Path] = None,
-    on_evento: Optional[Callable[[dict], Any]] = None,
+    codigo: str | None = None,
+    archivo: str | None = None,
+    cwd: Path | None = None,
+    on_evento: Callable[[dict], Any] | None = None,
 ) -> None:
     """Ejecuta un debate técnico autónomo entre Hermes-Daniel y Hermes-Amigo en el feed."""
     feed = cargar_feed()
@@ -439,7 +439,7 @@ def actualizar_presencia(entidad_id: str, estado: str, actividad: str = "") -> d
     return ESTADO_PRESENCIA
 
 
-def aplicar_codigo_a_archivo(ruta_relativa: str, codigo: str, cwd: Optional[Path] = None) -> dict:
+def aplicar_codigo_a_archivo(ruta_relativa: str, codigo: str, cwd: Path | None = None) -> dict:
     """Aplica o escribe código sugerido por un agente en un archivo del workspace."""
     base_dir = (cwd if (cwd and cwd.is_dir()) else REPO_ROOT).resolve()
     limpia = ruta_relativa.strip().lstrip("/\\")

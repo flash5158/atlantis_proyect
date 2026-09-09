@@ -14,10 +14,8 @@ import asyncio
 import json
 import os
 import sys
-import time
 import urllib.parse
 import urllib.request
-from datetime import datetime
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
@@ -80,7 +78,7 @@ async def loop_monitoreo(server: str, token: str, agente: str, proyecto: str, in
                 if mid and mid not in vistos:
                     vistos.add(mid)
                     print("\n" + "!" * 60)
-                    print(f"⚡ [NUEVA TAREA/MENSAJE IA RECIBIDO]")
+                    print("⚡ [NUEVA TAREA/MENSAJE IA RECIBIDO]")
                     print(f"   ID:        {mid}")
                     print(f"   De:        {m.get('de')}")
                     print(f"   Tipo:      {m.get('tipo')}")
