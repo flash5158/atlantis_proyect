@@ -71,7 +71,9 @@ start_tunnel() {
     echo "🚀 Iniciando Quick Tunnel para http://127.0.0.1:$PORT..."
     rm -f "$LOG_FILE" "$URL_FILE"
 
-    "$CLOUDFLARED_BIN" tunnel --url "http://127.0.0.1:$PORT" > "$LOG_FILE" 2>&1 &
+    # Detach the tunnel from the launcher shell so it survives when the
+    # server is started by a desktop shortcut, systemd, or an IDE terminal.
+    nohup "$CLOUDFLARED_BIN" tunnel --url "http://127.0.0.1:$PORT" > "$LOG_FILE" 2>&1 < /dev/null &
     echo $! > "$PID_FILE"
 
     echo "⏳ Obteniendo URL pública segura..."

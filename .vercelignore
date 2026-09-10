@@ -1,0 +1,21 @@
+# Native desktop build artifacts are delivered separately from the web hub.
+desktop/native/node_modules
+desktop/native/dist
+desktop/native/release
+desktop/native/*.AppImage
+dist
+build
+*.AppImage
+*.dmg
+*.exe
+*.zip
+
+# Local runtimes, caches and private state are never part of the serverless deploy.
+nexo/.venv
+.git
+.atlantis
+.nexo
+.ruff_cache
+.vercel
+__pycache__
+*.pyc
