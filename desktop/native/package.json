@@ -20,6 +20,11 @@
         "from": "../../nexo",
         "to": "atlantis/nexo",
         "filter": ["**/*", "!**/.venv{,/**/*}", "!**/__pycache__{,/**/*}", "!**/*.pyc", "!**/config.json"]
+      },
+      {
+        "from": "../../nexo/.venv",
+        "to": "atlantis/nexo/.venv",
+        "filter": ["**/*", "!**/__pycache__{,/**/*}", "!**/*.pyc"]
       }
     ],
     "asar": true,
@@ -27,7 +32,8 @@
       "target": [
         "AppImage",
         "deb"
-      ]
+      ],
+      "category": "Development"
     },
     "mac": {
       "target": [
