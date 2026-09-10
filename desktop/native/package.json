@@ -1,0 +1,51 @@
+{
+  "name": "atlantis-studio-native",
+  "version": "0.1.0",
+  "description": "Atlantis Studio: IDE nativo para colaboración entre humanos y Hermes.",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package:linux": "electron-builder --linux AppImage",
+    "package:mac": "electron-builder --mac dmg",
+    "package:windows": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "studio.atlantis.collaboration",
+    "productName": "Atlantis Studio",
+    "files": ["main.js"],
+    "extraResources": [
+      { "from": "../../web", "to": "atlantis/web" },
+      {
+        "from": "../../nexo",
+        "to": "atlantis/nexo",
+        "filter": ["**/*", "!**/.venv{,/**/*}", "!**/__pycache__{,/**/*}", "!**/*.pyc", "!**/config.json"]
+      }
+    ],
+    "asar": true,
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "allowScripts": {
+    "electron@38.8.6": true
+  }
+}

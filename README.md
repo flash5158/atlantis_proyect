@@ -122,3 +122,19 @@ espacio`. Cada uno registra su worker local con `Atlantis: Conectar mi Hermes`.
 Para crear el ejecutable nativo del sistema actual ejecuta
 `python3 scripts/build_runtime.py`; el flujo de CI debe producir un artefacto
 por cada plataforma (Linux, macOS y Windows).
+
+## Aplicación nativa
+
+`desktop/native` contiene el shell Electron de Atlantis Studio. Usa una
+ventana propia sin los controles de tráfico de macOS, levanta el hub local en
+un puerto libre y carga la interfaz incluso sin conexión externa.
+
+```bash
+cd desktop/native
+npm install
+npm start
+```
+
+Los scripts `package:linux`, `package:mac` y `package:windows` preparan el
+instalador correspondiente. En desarrollo se usa el Python del workspace;
+para distribuirlo hay que adjuntar el runtime congelado de cada plataforma.

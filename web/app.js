@@ -53,6 +53,8 @@ Trabajo simultáneo para dos personas y sus agentes Hermes.
 };
 
 const state = { token: "", socket: null, channel: "team", connected: false, messages: [], tasks: [] };
+const query = new URLSearchParams(location.search);
+const HUB_BASE = (query.get("hub") || "").replace(/\/$/, "");
 const $ = (id) => document.getElementById(id);
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
 const timeNow = () => new Date().toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
@@ -108,7 +110,7 @@ function setChannel(channel) {
 
 async function api(path, options = {}) {
   const joiner = path.includes("?") ? "&" : "?";
-  const response = await fetch(`${path}${joiner}token=${encodeURIComponent(state.token)}`, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
+  const response = await fetch(`${HUB_BASE}${path}${joiner}token=${encodeURIComponent(state.token)}`, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || data.detail || `HTTP ${response.status}`);
   return data;
@@ -116,14 +118,15 @@ async function api(path, options = {}) {
 
 async function connect() {
   try {
-    if (!state.token) state.token = localStorage.getItem("atlantis_token") || (await fetch("/api/token_local").then(response => response.json())).token || "";
+    if (!state.token) state.token = localStorage.getItem("atlantis_token") || (await fetch(`${HUB_BASE}/api/token_local`).then(response => response.json())).token || "";
     localStorage.setItem("atlantis_token", state.token);
     await api("/api/status");
     state.connected = true; $("connectionStatus").textContent = "● En línea"; $("connectionStatus").className = "status-online"; toast("Atlantis conectado al workspace");
   } catch (error) { state.connected = false; $("connectionStatus").textContent = "● Modo demo"; $("connectionStatus").className = "status-online"; toast("Modo demo activo · configura el hub para sincronizar"); }
-  const protocol = location.protocol === "https:" ? "wss" : "ws";
+  const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
+  const socketOrigin = HUB_BASE || `${protocol}://${location.host}`;
   try {
-    state.socket = new WebSocket(`${protocol}://${location.host}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`);
+    state.socket = new WebSocket(`${socketOrigin}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`);
     state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; state.socket.send(JSON.stringify({ tipo: "join", proyecto: "general" })); };
     state.socket.onmessage = event => handleEvent(JSON.parse(event.data));
     state.socket.onclose = () => { state.connected = false; $("connectionStatus").textContent = "● Reconectando"; setTimeout(connectSocket, 3000); };
@@ -132,8 +135,9 @@ async function connect() {
 
 function connectSocket() {
   if (state.socket && state.socket.readyState < 2) return;
-  const protocol = location.protocol === "https:" ? "wss" : "ws";
-  try { state.socket = new WebSocket(`${protocol}://${location.host}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`); state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; }; state.socket.onmessage = event => handleEvent(JSON.parse(event.data)); state.socket.onclose = () => setTimeout(connectSocket, 4000); } catch (_) {}
+  const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
+  const socketOrigin = HUB_BASE || `${protocol}://${location.host}`;
+  try { state.socket = new WebSocket(`${socketOrigin}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`); state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; }; state.socket.onmessage = event => handleEvent(JSON.parse(event.data)); state.socket.onclose = () => setTimeout(connectSocket, 4000); } catch (_) {}
 }
 
 function handleEvent(event) {

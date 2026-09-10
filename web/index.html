@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111318">
   <title>Atlantis Studio · Collaborative IDE</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <script>document.write(`<link rel="stylesheet" href="${location.protocol === "file:" ? "./" : "/static/"}styles.css">`);</script>
 </head>
 <body>
   <div class="app-shell">
@@ -71,6 +71,6 @@
     <dialog id="taskDialog"><form method="dialog" id="taskForm"><div class="dialog-heading"><div><span class="eyebrow">ORQUESTACIÓN</span><h2>Nueva tarea para un agente</h2></div><button value="cancel" class="icon-btn">×</button></div><label>Título<input id="taskTitle" required placeholder="Ej. Auditar protocolo de sincronización"></label><label>Contexto<textarea id="taskDescription" rows="3" placeholder="Describe el resultado esperado…"></textarea></label><label>Asignar a<select id="taskAssignee"><option value="Hermes-Daniel">Hermes-Daniel · Creador</option><option value="Hermes-Amigo">Hermes-Amigo · Auditor</option><option value="ambos">Ambos agentes · Debate</option></select></label><div class="dialog-actions"><button value="cancel" class="ghost-btn">Cancelar</button><button value="default" class="primary-btn">Crear tarea</button></div></form></dialog>
     <div class="toast" id="toast" role="status"></div>
   </div>
-  <script src="/static/app.js"></script>
+  <script>document.write(`<script src="${location.protocol === "file:" ? "./" : "/static/"}app.js"><\/script>`);</script>
 </body>
 </html>
