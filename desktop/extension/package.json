@@ -1,0 +1,142 @@
+{
+  "name": "atlantis-collaboration",
+  "displayName": "Atlantis",
+  "description": "Un espacio de desarrollo compartido para tu equipo y sus agentes Hermes.",
+  "version": "0.1.0",
+  "publisher": "atlantis-studio",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onFileSystem:atlantis"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Los agentes requieren autorización local."
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "atlantis",
+          "title": "Atlantis",
+          "icon": "resources/atlantis.svg"
+        }
+      ]
+    },
+    "views": {
+      "atlantis": [
+        {
+          "type": "webview",
+          "id": "atlantis.collaboration",
+          "name": "Espacio compartido"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "atlantis.open",
+        "title": "Atlantis: Abrir colaboración"
+      },
+      {
+        "command": "atlantis.connect",
+        "title": "Atlantis: Conectarse a un espacio"
+      },
+      {
+        "command": "atlantis.startHub",
+        "title": "Atlantis: Crear espacio compartido"
+      },
+      {
+        "command": "atlantis.invite",
+        "title": "Atlantis: Invitar compañero"
+      },
+      {
+        "command": "atlantis.startWorker",
+        "title": "Atlantis: Conectar mi Hermes"
+      },
+      {
+        "command": "atlantis.createTask",
+        "title": "Atlantis: Asignar tarea"
+      },
+      {
+        "command": "atlantis.openWorkspace",
+        "title": "Atlantis: Abrir archivos compartidos"
+      }
+    ],
+    "configuration": {
+      "title": "Atlantis",
+      "properties": {
+        "atlantis.server": {
+          "type": "string",
+          "default": "http://127.0.0.1:8790",
+          "description": "Dirección del hub compartido."
+        },
+        "atlantis.runtimePath": {
+          "type": "string",
+          "default": "",
+          "description": "Ejecutable Atlantis Runtime. Se detecta automáticamente en la aplicación."
+        },
+        "atlantis.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Python para ejecutar el runtime desde el código fuente."
+        },
+        "atlantis.runtimeCwd": {
+          "type": "string",
+          "default": "",
+          "description": "Repositorio Atlantis al ejecutar desde el código fuente."
+        },
+        "atlantis.hermesPath": {
+          "type": "string",
+          "default": "hermes",
+          "description": "Ejecutable de tu Hermes local."
+        },
+        "atlantis.workspace": {
+          "type": "string",
+          "default": "",
+          "description": "Clon Git local para las tareas de tu Hermes."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "atlantis.open",
+        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+a"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "package": "npm run build && mkdir -p ../../build && vsce package --no-dependencies --allow-missing-repository --out ../../build/atlantis-collaboration.vsix"
+  },
+  "dependencies": {
+    "ws": "8.18.3",
+    "yjs": "13.6.27"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.0",
+    "@types/vscode": "1.95.0",
+    "@types/ws": "8.18.1",
+    "@vscode/vsce": "3.6.0",
+    "esbuild": "0.25.9",
+    "tsx": "4.20.5",
+    "typescript": "5.9.2"
+  }
+}

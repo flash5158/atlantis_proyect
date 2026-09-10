@@ -53,6 +53,9 @@ BASE = Path(__file__).resolve().parent
 REPO_ROOT = BASE.parent
 
 IS_VERCEL = bool(os.environ.get("VERCEL"))
+# Public deployments are intentionally usable without a shared owner token.
+# Local installations keep the bearer-token guard by default.
+PUBLIC_MODE = IS_VERCEL or bool(os.environ.get("NEXO_PUBLIC"))
 if IS_VERCEL:
     WORKSPACE = Path("/tmp/atlantis_proyect").resolve()
     PROYECTOS = WORKSPACE / "proyectos"
@@ -73,7 +76,10 @@ else:
     PROYECTOS = WORKSPACE / "proyectos"
     NEXO_DATA_DIR = WORKSPACE / ".nexo"
 
-STATIC_DIR = BASE / "static"
+# The web shell lives at the repository root so the deployed experience can
+# evolve independently from the legacy NEXO assets.  Keep the old directory as
+# a fallback for existing local installs and API smoke tests.
+STATIC_DIR = REPO_ROOT / "web" if (REPO_ROOT / "web" / "index.html").is_file() else BASE / "static"
 if not STATIC_DIR.is_dir() and (REPO_ROOT / "nexo" / "static").is_dir():
     STATIC_DIR = REPO_ROOT / "nexo" / "static"
 
@@ -196,6 +202,8 @@ def entorno_limpio(proyecto_path: Path) -> dict:
 
 
 def token_ok(token: str) -> bool:
+    if PUBLIC_MODE:
+        return True
     return hmac.compare_digest(token or "", TOKEN)
 
 
@@ -348,8 +356,10 @@ async def raiz():
 
 @app.get("/api/token_local")
 async def api_token_local(request: Request):
-    """Devuelve el token automáticamente a conexiones locales o Vercel para acceso instantáneo."""
-    if es_local(request) or IS_VERCEL or os.environ.get("NEXO_PUBLIC"):
+    """Bootstrap for local sessions and anonymous public deployments."""
+    if PUBLIC_MODE:
+        return {"token": "public", "local": False}
+    if es_local(request):
         return {"token": TOKEN, "local": True}
     return JSONResponse({"error": "No permitido"}, status_code=403)
 

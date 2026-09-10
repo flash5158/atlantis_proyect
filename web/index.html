@@ -1,26 +1,76 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEXO — atlantis_proyect</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#1a1a2e;color:#e4e4e7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.card{background:#16213e;max-width:600px;width:100%;padding:2.5rem;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
-h1{color:#64BE47;font-size:2.5rem;margin-bottom:.5rem}
-.sub{color:#888;margin-bottom:2rem}
-.code{background:#0f0f23;padding:.5rem 1rem;border-radius:6px;font-family:monospace;color:#64BE47;display:inline-block;margin:.5rem 0}
-a{color:#64BE47}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111318">
+  <title>Atlantis Studio · Collaborative IDE</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-<div class="card">
-  <h1>NEXO</h1>
-  <p class="sub">Web pública del proyecto <strong>atlantis_proyect</strong></p>
-  <p>Esta web se despliega automáticamente desde <code>web/</code> vía GitHub Pages.</p>
-  <p>Editá <code class="code">web/index.html</code> y hacé <code class="code">git push</code> para actualizar.</p>
-  <hr style="margin:1.5rem 0;border-color:#2a2a4a">
-  <p style="font-size:.9rem;color:#666">Repositorio: <a href="https://github.com/flash5158/atlantis_proyect">github.com/flash5158/atlantis_proyect</a></p>
-</div>
+  <div class="app-shell">
+    <header class="titlebar">
+      <div class="brand"><span class="brand-mark">✦</span><strong>Atlantis</strong><span class="brand-divider">/</span><span class="workspace-name">nexo-studio</span></div>
+      <button class="command-bar" id="commandBar" aria-label="Abrir paleta de comandos"><span>⌕</span> Buscar archivos, comandos y agentes <kbd>⌘ K</kbd></button>
+      <div class="title-actions"><button class="icon-btn" title="Control de versión">⑂</button><button class="icon-btn" title="Compartir espacio">♧</button><button class="avatar" title="Cuenta de Daniel">DS</button></div>
+    </header>
+
+    <div class="workspace-grid">
+      <nav class="activitybar" aria-label="Navegación principal">
+        <button class="activity active" data-view="explorer" title="Explorador">▤</button>
+        <button class="activity" data-view="search" title="Buscar">⌕</button>
+        <button class="activity" data-view="source" title="Control de código">⑂<b>3</b></button>
+        <button class="activity" data-view="run" title="Ejecutar y depurar">▷</button>
+        <span class="activity-spacer"></span>
+        <button class="activity" data-view="collab" title="Atlantis colaboración">✦</button>
+        <button class="activity" data-view="settings" title="Configuración">⚙</button>
+      </nav>
+
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-heading"><span id="sidebarTitle">EXPLORADOR</span><button class="small-icon" title="Más acciones">…</button></div>
+        <div class="sidebar-content" id="sidebarContent">
+          <div class="section-label">NEXO-STUDIO <span>⌄</span></div>
+          <div class="tree">
+            <button class="tree-row folder open"><span class="chevron">⌄</span><span class="tree-icon folder-icon">▾</span><span>src</span></button>
+            <button class="tree-row file selected" data-file="src/orchestrator.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>orchestrator.ts</span></button>
+            <button class="tree-row file" data-file="src/agents/hermes.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>hermes.ts</span></button>
+            <button class="tree-row file" data-file="src/agents/protocol.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>protocol.ts</span></button>
+            <button class="tree-row folder"><span class="chevron">›</span><span class="tree-icon folder-icon">▾</span><span>web</span></button>
+            <button class="tree-row file" data-file="README.md"><span class="indent"></span><span class="tree-icon md">M</span><span>README.md</span></button>
+            <button class="tree-row file" data-file="package.json"><span class="indent"></span><span class="tree-icon json">{ }</span><span>package.json</span></button>
+            <button class="tree-row file" data-file=".env.example"><span class="indent"></span><span class="tree-icon env">•</span><span>.env.example</span></button>
+          </div>
+          <div class="sidebar-block"><div class="section-label">OUTLINE <span>›</span></div></div>
+          <div class="sidebar-block"><div class="section-label">TIMELINE <span>›</span></div></div>
+        </div>
+      </aside>
+
+      <main class="editor-area">
+        <div class="editor-tabs"><div class="editor-tab active"><span class="tree-icon ts">TS</span> orchestrator.ts <button>×</button></div><div class="editor-tab"><span class="tree-icon ts">TS</span> hermes.ts <button>×</button></div><div class="editor-tab-add">+</div></div>
+        <div class="breadcrumbs"><span>src</span><b>›</b><span>agents</span><b>›</b><strong>orchestrator.ts</strong><span class="editor-actions">⌘ S&nbsp;&nbsp; ⋯</span></div>
+        <section class="code-editor" id="codeEditor" aria-label="Editor de código"><div class="line-numbers" id="lineNumbers"></div><pre id="codeContent" tabindex="0"></pre></section>
+        <div class="editor-empty" id="editorEmpty" hidden>Selecciona un archivo del explorador para abrirlo.</div>
+        <section class="terminal-panel" id="terminalPanel">
+          <div class="panel-tabs"><button class="panel-tab active">TERMINAL</button><button class="panel-tab">PROBLEMAS <b>0</b></button><button class="panel-tab">SALIDA</button><span class="panel-spacer"></span><button class="small-icon">⌃</button><button class="small-icon">×</button></div>
+          <div class="terminal-output" id="terminalOutput"><div><span class="prompt">daniel@nexo</span><span class="path"> ~/nexo-studio</span><span> $ </span><span class="cmd">atlantis status</span></div><div class="success">✓ Hub local conectado · 2 agentes disponibles</div><div><span class="prompt">daniel@nexo</span><span class="path"> ~/nexo-studio</span><span> $ </span><span class="cursor"></span></div></div>
+        </section>
+        <footer class="statusbar"><span>⎇ main*</span><span>↻ Sincronizado</span><span class="status-spacer"></span><span id="connectionStatus" class="status-online">● Conectando</span><span>UTF-8</span><span>Spaces: 2</span><span>Ln 1, Col 1</span></footer>
+      </main>
+
+      <aside class="assistant-panel">
+        <div class="assistant-header"><div><span class="eyebrow">ATLANTIS</span><strong>Espacio compartido</strong></div><button class="icon-btn" id="collapseAssistant" title="Contraer panel">›</button></div>
+        <div class="presence-strip"><div class="presence-avatar daniel">DS</div><div><strong>Daniel</strong><span>Lead developer · ahora</span></div><span class="presence-dot"></span><button class="invite-btn" id="inviteBtn">Invitar</button></div>
+        <div class="assistant-tabs"><button class="assistant-tab active" data-channel="team">Equipo <span id="teamBadge">2</span></button><button class="assistant-tab" data-channel="agents">Agentes <span id="agentBadge">1</span></button></div>
+        <div class="channel-title"><span id="channelIcon">#</span><div><strong id="channelName">team-chat</strong><span id="channelHint">Daniel y tu compañero</span></div><button class="small-icon" title="Opciones del canal">…</button></div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+        <div class="task-stack"><div class="task-stack-head"><span>TRABAJO ACTIVO</span><span class="task-count">0</span></div><div id="taskStackItems"><div class="task-empty">Sin tareas activas. Crea una desde el canal de agentes.</div></div></div>
+        <form class="composer" id="messageForm"><div class="composer-tools"><button type="button" class="tool-btn" title="Adjuntar contexto">⌘</button><button type="button" class="tool-btn" title="Mencionar agente">@</button><span class="composer-hint">Enter para enviar · Shift+Enter para nueva línea</span></div><textarea id="messageInput" rows="2" placeholder="Escribe un mensaje al equipo…"></textarea><div class="composer-bottom"><span class="secure">⌁ cifrado en tránsito</span><button class="send-btn" type="submit">Enviar <kbd>↵</kbd></button></div></form>
+      </aside>
+    </div>
+
+    <dialog id="taskDialog"><form method="dialog" id="taskForm"><div class="dialog-heading"><div><span class="eyebrow">ORQUESTACIÓN</span><h2>Nueva tarea para un agente</h2></div><button value="cancel" class="icon-btn">×</button></div><label>Título<input id="taskTitle" required placeholder="Ej. Auditar protocolo de sincronización"></label><label>Contexto<textarea id="taskDescription" rows="3" placeholder="Describe el resultado esperado…"></textarea></label><label>Asignar a<select id="taskAssignee"><option value="Hermes-Daniel">Hermes-Daniel · Creador</option><option value="Hermes-Amigo">Hermes-Amigo · Auditor</option><option value="ambos">Ambos agentes · Debate</option></select></label><div class="dialog-actions"><button value="cancel" class="ghost-btn">Cancelar</button><button value="default" class="primary-btn">Crear tarea</button></div></form></dialog>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script src="/static/app.js"></script>
 </body>
 </html>

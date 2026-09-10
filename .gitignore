@@ -6,5 +6,15 @@ nexo/.venv/
 nexo/config.json
 proyectos/*/.nexo-chat.md
 .nexo/
+.atlantis/
+
+# Local build output; the VSIX is distributed from the release workspace.
+dist/
+build/atlantis-runtime/
+build/*.vsix
+atlantis-runtime.spec
+desktop/extension/node_modules/
+desktop/extension/runtime/
+desktop/extension/package-lock.json
 
 .vercel
