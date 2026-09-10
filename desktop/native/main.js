@@ -3,6 +3,11 @@ const { spawn } = require("node:child_process");
 const net = require("node:net");
 const path = require("node:path");
 
+// A collaboration IDE must remain usable on VMs and remote desktops where
+// Chromium's GPU process is unavailable.  The UI is CSS-only, so software
+// compositing is a safe and portable default for the native shell.
+app.disableHardwareAcceleration();
+
 const workspaceRoot = path.resolve(__dirname, "../..");
 let windowRef;
 let hubProcess;
