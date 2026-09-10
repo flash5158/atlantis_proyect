@@ -103,3 +103,22 @@ atlantis_proyect/
 ## 📜 Licencia
 
 MIT License — Desarrollado para colaboración simultánea entre humanos e inteligencias artificiales en tiempo real.
+
+## Atlantis Runtime (colaboración persistente)
+
+La implementación nueva y aislada para uso diario vive en `nexo/atlantis_hub/`.
+Usa SQLite, autenticación Bearer, eventos con secuencia/replay, leases para
+workers Hermes y edición de documentos con CRDT. El servidor antiguo en el
+puerto 8787 se conserva para compatibilidad con la demo anterior.
+
+```bash
+nexo/.venv/bin/pip install -r nexo/requirements-atlantis.txt
+./start-atlantis.sh /ruta/a/tu/workspace
+```
+
+Instala `desktop/extension` en Code-OSS/VSCodium. En el primer ordenador usa
+`Atlantis: Crear espacio compartido`; el segundo usa `Atlantis: Conectarse a un
+espacio`. Cada uno registra su worker local con `Atlantis: Conectar mi Hermes`.
+Para crear el ejecutable nativo del sistema actual ejecuta
+`python3 scripts/build_runtime.py`; el flujo de CI debe producir un artefacto
+por cada plataforma (Linux, macOS y Windows).
