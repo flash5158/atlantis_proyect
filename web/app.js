@@ -52,7 +52,7 @@ Trabajo simultáneo para dos personas y sus agentes Hermes.
   ".env.example": `ATLANTIS_HUB_URL=http://127.0.0.1:8790\nATLANTIS_OWNER_TOKEN=\n`
 };
 
-const state = { token: "", socket: null, channel: "team", connected: false, messages: [], tasks: [] };
+const state = { token: "", socket: null, channel: "team", connected: false, messages: [], tasks: [], remoteSyncTimer: null, agentSeen: new Set(), localChatKeys: new Set() };
 const query = new URLSearchParams(location.search);
 const HUB_BASE = (query.get("hub") || "").replace(/\/$/, "");
 const $ = (id) => document.getElementById(id);
@@ -128,9 +128,16 @@ async function connect() {
       localStorage.setItem("atlantis_token", state.token);
       await api("/api/status");
       state.connected = true; $("connectionStatus").textContent = "● En línea"; $("connectionStatus").className = "status-online"; toast("Atlantis reconectado al workspace");
-    } catch (_) {
+  } catch (_) {
       state.connected = false; $("connectionStatus").textContent = "● Modo demo"; $("connectionStatus").className = "status-online"; toast("Modo demo activo · configura el hub para sincronizar");
     }
+  }
+  // Vercel's serverless runtime cannot keep a WebSocket open. Use the REST
+  // fallback there instead of showing a false reconnecting state forever.
+  if (!HUB_BASE) {
+    $("connectionStatus").textContent = state.connected ? "● API en línea" : "● Modo demo";
+    startRemoteSync();
+    return;
   }
   const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
   const socketOrigin = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : `${protocol}://${location.host}`;
@@ -149,9 +156,56 @@ function connectSocket() {
   try { state.socket = new WebSocket(`${socketOrigin}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`); state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; }; state.socket.onmessage = event => handleEvent(JSON.parse(event.data)); state.socket.onclose = () => setTimeout(connectSocket, 4000); } catch (_) {}
 }
 
+function messageKey(message) {
+  return `${message.fecha || message.time || ""}|${message.de || message.author || ""}|${message.texto || message.text || ""}`;
+}
+
+async function syncRemote() {
+  if (HUB_BASE) return;
+  try {
+    const history = await api("/api/historial?proyecto=general");
+    const existing = new Set([...state.localChatKeys, ...state.messages.filter(message => message.channel === "team").map(messageKey)]);
+    for (const item of history.historial || []) {
+      if (!item.texto || item.de === "sistema") continue;
+      const key = messageKey(item);
+      if (existing.has(key)) continue;
+      existing.add(key);
+      addMessage({ author: item.de || "Compañero", initials: item.de === "Daniel" ? "DS" : "AM", time: item.fecha || timeNow(), text: item.texto }, "team");
+    }
+  } catch (_) { /* keep the optimistic UI while the API reconnects */ }
+
+  try {
+    const inbox = await api("/api/ai/inbox?proyecto=general");
+    for (const message of inbox.mensajes || []) {
+      if (!message.id || state.agentSeen.has(message.id)) continue;
+      state.agentSeen.add(message.id);
+      handleEvent({ tipo: "ai_msg", mensaje: message });
+    }
+  } catch (_) { /* agent polling is best effort */ }
+
+  try {
+    const remoteTasks = await api("/api/ai/tasks?proyecto=general");
+    if (Array.isArray(remoteTasks.tareas)) {
+      state.tasks = remoteTasks.tareas;
+      renderTasks();
+    }
+  } catch (_) { /* task polling is best effort */ }
+}
+
+function startRemoteSync() {
+  if (HUB_BASE || state.remoteSyncTimer) return;
+  syncRemote();
+  state.remoteSyncTimer = setInterval(syncRemote, 2500);
+}
+
 function handleEvent(event) {
   if (event.tipo === "chat" && event.de !== "Daniel") addMessage({ author: event.de || "Compañero", initials: "AM", time: event.fecha || timeNow(), text: event.texto }, "team");
-  if (event.tipo === "ai_msg") { const message = event.mensaje || {}; addMessage({ author: message.de || "Hermes", initials: String(message.de || "HA").slice(0, 2).toUpperCase(), agent: true, time: message.fecha || timeNow(), text: message.contenido || "", tag: message.tipo?.toUpperCase() }, "agents"); }
+  if (event.tipo === "ai_msg") {
+    const message = event.mensaje || {};
+    if (message.id && state.agentSeen.has(message.id)) return;
+    if (message.id) state.agentSeen.add(message.id);
+    addMessage({ author: message.de || "Hermes", initials: String(message.de || "HA").slice(0, 2).toUpperCase(), agent: true, time: message.fecha || timeNow(), text: message.contenido || "", tag: message.tipo?.toUpperCase() }, "agents");
+  }
   if (event.tipo === "ai_task_update") { state.tasks.push(event.tarea); renderTasks(); }
   if (event.tipo === "presencia") $("connectionStatus").textContent = `● ${event.conectados || 1} conectado(s)`;
 }
@@ -161,8 +215,18 @@ async function sendMessage(event) {
   const channel = state.channel; addMessage({ author: "Daniel", initials: "DS", time: timeNow(), text }, channel);
   if (channel === "team") {
     if (state.socket?.readyState === 1) state.socket.send(JSON.stringify({ tipo: "chat", proyecto: "general", texto }));
+    else if (!HUB_BASE) {
+      try {
+        const result = await api("/api/chat?proyecto=general", { method: "POST", body: JSON.stringify({ de: "Daniel", texto }) });
+        if (result.mensaje) state.localChatKeys.add(messageKey(result.mensaje));
+      }
+      catch (_) { toast("No se pudo sincronizar el mensaje; reintentando…"); }
+    }
   } else {
-    try { await api("/api/ai/msg", { method: "POST", body: JSON.stringify({ de: "Hermes-Daniel", para: "Hermes-Amigo", proyecto: "general", tipo: "tarea", titulo: "Coordinación Hermes", contenido: text }) }); }
+    try {
+      const result = await api("/api/ai/msg", { method: "POST", body: JSON.stringify({ de: "Hermes-Daniel", para: "Hermes-Amigo", proyecto: "general", tipo: "tarea", titulo: "Coordinación Hermes", contenido: text }) });
+      if (result.mensaje?.id) state.agentSeen.add(result.mensaje.id);
+    }
     catch (_) { setTimeout(() => addMessage({ author: "Hermes-Amigo", initials: "HA", agent: true, time: timeNow(), text: "Mensaje recibido. Lo revisaré y devolveré una validación en este hilo.", tag: "ACK" }, "agents"), 650); }
   }
 }

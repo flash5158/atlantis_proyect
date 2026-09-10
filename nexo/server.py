@@ -417,6 +417,33 @@ async def api_historial(proyecto: str, request: Request, token: str = Query(""))
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
+@app.post("/api/chat")
+async def api_chat(req: Request, proyecto: str = Query("general"), token: str = Query("")):
+    """Persist a chat message when a deployment cannot keep WebSockets alive.
+
+    Vercel's Python runtime does not provide a durable WebSocket connection.
+    The web client uses this endpoint as a small REST fallback and polls
+    ``/api/historial`` to pick up messages from the other participant.
+    Local native sessions continue to use the WebSocket path.
+    """
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    texto = str(body.get("texto", "")).strip()
+    if not texto:
+        return JSONResponse({"error": "el mensaje está vacío"}, status_code=400)
+    if len(texto) > MAX_CHAT:
+        return JSONResponse({"error": f"el mensaje supera {MAX_CHAT} caracteres"}, status_code=413)
+
+    nombre = str(body.get("de") or CFG.get("nombre", "dev")).strip()[:120] or "dev"
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sala = sala_de(proyecto)
+    sala.guardar_chat(nombre, texto, fecha)
+    evento = {"tipo": "chat", "proyecto": sala.nombre, "de": nombre, "texto": texto, "fecha": fecha}
+    await enviar_sala(sala, evento)
+    return {"ok": True, "mensaje": evento}
+
+
 @app.get("/api/archivo")
 async def api_archivo(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
     if not es_local(request) and not token_ok(token):
