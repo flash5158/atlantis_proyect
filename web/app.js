@@ -133,7 +133,7 @@ async function connect() {
     }
   }
   const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
-  const socketOrigin = HUB_BASE || `${protocol}://${location.host}`;
+  const socketOrigin = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : `${protocol}://${location.host}`;
   try {
     state.socket = new WebSocket(`${socketOrigin}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`);
     state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; state.socket.send(JSON.stringify({ tipo: "join", proyecto: "general" })); };
@@ -145,7 +145,7 @@ async function connect() {
 function connectSocket() {
   if (state.socket && state.socket.readyState < 2) return;
   const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
-  const socketOrigin = HUB_BASE || `${protocol}://${location.host}`;
+  const socketOrigin = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : `${protocol}://${location.host}`;
   try { state.socket = new WebSocket(`${socketOrigin}/ws?token=${encodeURIComponent(state.token)}&nombre=Daniel`); state.socket.onopen = () => { state.connected = true; $("connectionStatus").textContent = "● En línea"; }; state.socket.onmessage = event => handleEvent(JSON.parse(event.data)); state.socket.onclose = () => setTimeout(connectSocket, 4000); } catch (_) {}
 }
 
