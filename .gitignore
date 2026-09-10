@@ -16,5 +16,8 @@ atlantis-runtime.spec
 desktop/extension/node_modules/
 desktop/extension/runtime/
 desktop/extension/package-lock.json
+desktop/native/node_modules/
+desktop/native/package-lock.json
+desktop/native/release/
 
 .vercel

@@ -11,7 +11,8 @@ button { border: 0; background: none; cursor: pointer; }
 button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible { outline: 1px solid var(--blue); outline-offset: -1px; }
 kbd { color: var(--muted); font-size: 10px; border: 1px solid var(--line); border-radius: 4px; padding: 2px 5px; }
 .app-shell { height: 100vh; display: flex; flex-direction: column; background: #111318; }
-.titlebar { height: 40px; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: #15171c; border-bottom: 1px solid var(--line); user-select: none; }
+.titlebar { height: 40px; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: #15171c; border-bottom: 1px solid var(--line); user-select: none; -webkit-app-region: drag; }
+.titlebar button, .titlebar a, .titlebar input { -webkit-app-region: no-drag; }
 .brand { display: flex; gap: 8px; align-items: center; min-width: 185px; color: #f4f5f6; }
 .brand-mark { width: 21px; height: 21px; display: grid; place-items: center; color: var(--blue); border: 1px solid #38577a; border-radius: 5px; font-size: 13px; }
 .brand-divider { color: var(--dim); }.workspace-name { color: var(--muted); }
