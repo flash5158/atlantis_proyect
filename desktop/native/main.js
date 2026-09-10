@@ -1,5 +1,6 @@
 const { app, BrowserWindow, globalShortcut, shell } = require("electron");
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
 
@@ -17,6 +18,13 @@ function appRoot() {
   return app.isPackaged ? path.join(process.resourcesPath, "atlantis") : workspaceRoot;
 }
 
+function workspacePath() {
+  const configured = String(process.env.ATLANTIS_WORKSPACE || "").trim();
+  if (configured) return path.resolve(configured);
+  if (app.isPackaged) return path.join(app.getPath("documents"), "AtlantisWorkspace");
+  return workspaceRoot;
+}
+
 function findFreePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -31,10 +39,12 @@ function findFreePort() {
 function runtimeCommand(port) {
   const root = appRoot();
   const python = process.env.ATLANTIS_PYTHON || path.join(root, "nexo", ".venv", "bin", "python");
+  const workspace = workspacePath();
+  fs.mkdirSync(workspace, { recursive: true });
   return {
     command: python,
     args: [path.join(root, "nexo", "server.py")],
-    env: { ...process.env, PORT: String(port), NEXO_WORKSPACE: root }
+    env: { ...process.env, PORT: String(port), NEXO_WORKSPACE: workspace }
   };
 }
 
