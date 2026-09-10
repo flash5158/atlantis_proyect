@@ -122,7 +122,16 @@ async function connect() {
     localStorage.setItem("atlantis_token", state.token);
     await api("/api/status");
     state.connected = true; $("connectionStatus").textContent = "● En línea"; $("connectionStatus").className = "status-online"; toast("Atlantis conectado al workspace");
-  } catch (error) { state.connected = false; $("connectionStatus").textContent = "● Modo demo"; $("connectionStatus").className = "status-online"; toast("Modo demo activo · configura el hub para sincronizar"); }
+  } catch (_) {
+    try {
+      state.token = (await fetch(`${HUB_BASE}/api/token_local`).then(response => response.json())).token || "";
+      localStorage.setItem("atlantis_token", state.token);
+      await api("/api/status");
+      state.connected = true; $("connectionStatus").textContent = "● En línea"; $("connectionStatus").className = "status-online"; toast("Atlantis reconectado al workspace");
+    } catch (_) {
+      state.connected = false; $("connectionStatus").textContent = "● Modo demo"; $("connectionStatus").className = "status-online"; toast("Modo demo activo · configura el hub para sincronizar");
+    }
+  }
   const protocol = HUB_BASE ? HUB_BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss" : "ws");
   const socketOrigin = HUB_BASE || `${protocol}://${location.host}`;
   try {
