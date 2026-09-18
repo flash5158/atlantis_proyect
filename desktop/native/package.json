@@ -13,18 +13,34 @@
   "build": {
     "appId": "studio.atlantis.collaboration",
     "productName": "Atlantis Studio",
-    "files": ["main.js"],
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
     "extraResources": [
-      { "from": "../../web", "to": "atlantis/web" },
+      {
+        "from": "../../web",
+        "to": "atlantis/web"
+      },
       {
         "from": "../../nexo",
         "to": "atlantis/nexo",
-        "filter": ["**/*", "!**/.venv{,/**/*}", "!**/__pycache__{,/**/*}", "!**/*.pyc", "!**/config.json"]
+        "filter": [
+          "**/*",
+          "!**/.venv{,/**/*}",
+          "!**/__pycache__{,/**/*}",
+          "!**/*.pyc",
+          "!**/config.json"
+        ]
       },
       {
         "from": "../../nexo/.venv",
         "to": "atlantis/nexo/.venv",
-        "filter": ["**/*", "!**/__pycache__{,/**/*}", "!**/*.pyc"]
+        "filter": [
+          "**/*",
+          "!**/__pycache__{,/**/*}",
+          "!**/*.pyc"
+        ]
       }
     ],
     "asar": true,
@@ -49,7 +65,8 @@
   },
   "devDependencies": {
     "electron": "^38.1.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "monaco-editor": "^0.56.0"
   },
   "allowScripts": {
     "electron@38.8.6": true

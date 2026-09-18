@@ -34,24 +34,42 @@ import httpx
 
 BASE = Path(__file__).resolve().parent
 REPO_ROOT = BASE.parent
-CONFIG_FILE = BASE / "config.json"
+ATLANTIS_USER_DIR = Path.home() / ".atlantis"
+try:
+    ATLANTIS_USER_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
+CONFIG_FILE = ATLANTIS_USER_DIR / "config.json"
+BASE_CONFIG_FILE = BASE / "config.json"
 HERMES_DIR = Path.home() / ".hermes"
 HERMES_ENV_FILE = HERMES_DIR / ".env"
 HERMES_BIN_DEFAULT = Path.home() / ".local" / "bin" / "hermes"
 
 
 def detectar_hermes_bin() -> Path | None:
-    """Localiza el binario ejecutable real de Hermes Agent."""
-    if HERMES_BIN_DEFAULT.is_file() and os.access(HERMES_BIN_DEFAULT, os.X_OK):
-        return HERMES_BIN_DEFAULT
+    """Localiza el binario ejecutable real de Hermes Agent en cualquier ruta estándar o personalizada."""
+    posibles = [
+        HERMES_BIN_DEFAULT,
+        Path.home() / ".local" / "bin" / "hermes",
+        Path.home() / "bin" / "hermes",
+        Path.home() / ".cargo" / "bin" / "hermes",
+        HERMES_DIR / "venv" / "bin" / "hermes",
+        HERMES_DIR / "hermes-agent" / "venv" / "bin" / "hermes",
+        Path("/usr/local/bin/hermes"),
+        Path("/usr/bin/hermes"),
+        Path("/opt/hermes/bin/hermes"),
+    ]
+    for p in posibles:
+        try:
+            if p.is_file() and os.access(p, os.X_OK):
+                return p
+        except Exception:
+            pass
     which_path = shutil.which("hermes")
     if which_path:
         p = Path(which_path)
-        if p.is_file():
+        if p.is_file() and os.access(p, os.X_OK):
             return p
-    hermes_agent_venv = HERMES_DIR / "hermes-agent" / "venv" / "bin" / "hermes"
-    if hermes_agent_venv.is_file():
-        return hermes_agent_venv
     return None
 
 
@@ -80,6 +98,11 @@ def obtener_config_ia() -> dict[str, Any]:
     if CONFIG_FILE.exists():
         try:
             cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    elif BASE_CONFIG_FILE.exists():
+        try:
+            cfg = json.loads(BASE_CONFIG_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
 
@@ -114,12 +137,24 @@ def guardar_config_ia(proveedor: str, api_key: str, modelo: str = "gemini-3.6-fl
             cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
+    elif BASE_CONFIG_FILE.exists():
+        try:
+            cfg = json.loads(BASE_CONFIG_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
     cfg["ai_proveedor"] = proveedor
     if api_key:
         cfg["ai_api_key"] = api_key.strip()
     if modelo:
         cfg["ai_modelo"] = modelo.strip()
-    CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    try:
+        CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception as e:
+        print(f"[AIEngine] Aviso: No se pudo escribir en {CONFIG_FILE}: {e}")
+
     return cfg
 
 
@@ -142,6 +177,14 @@ async def consultar_gemini(
         "Sé ultra técnico, conciso, limpio y preciso. Proporciona soluciones completas listas para producción. "
         "Si generas código, incluye el bloque de código markdown con el lenguaje correspondiente."
     )
+
+    try:
+        from antigravity_engine import get_antigravity_engine
+        agy_ctx = get_antigravity_engine().consolidated_context_for_hermes()
+        if agy_ctx:
+            system_text += f"\n\n{agy_ctx}"
+    except Exception:
+        pass
 
     full_text = prompt
     if nombre_archivo and contexto_archivo:
@@ -332,8 +375,16 @@ async def colaboracion_dual(
 
     # Fase 1: Arquitectura con Gemini
     emitir("planificacion", "Gemini", f"Analizando requerimiento: '{objetivo}' y generando plan de ejecución...")
+    agy_extra = ""
+    try:
+        from antigravity_engine import get_antigravity_engine
+        agy_extra = get_antigravity_engine(work_dir).consolidated_context_for_hermes()
+    except Exception:
+        pass
+
     plan_prompt = (
         f"OBJETIVO DE DESARROLLO:\n{objetivo}\n\n"
+        f"{agy_extra}\n\n"
         "Eres el Arquitecto de Software (Gemini 3.6). Tu colega Hermes Agent ejecutará las modificaciones de código "
         "en los archivos locales. Genera:\n"
         "1. Diagnóstico breve y arquitectura propuesta.\n"

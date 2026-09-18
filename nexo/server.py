@@ -15,6 +15,7 @@ Características avanzadas:
 
 import asyncio
 import fcntl
+import hashlib
 import hmac
 import json
 import os
@@ -45,6 +46,7 @@ from fastapi.staticfiles import StaticFiles
 
 # Importar motor de IA real y Red Social
 import ai_engine
+import antigravity_engine
 import social_matrix
 
 # ---------------------------------------------------------------- Rutas y Workspace
@@ -76,6 +78,102 @@ else:
     PROYECTOS = WORKSPACE / "proyectos"
     NEXO_DATA_DIR = WORKSPACE / ".nexo"
 
+    ATLANTIS_USER_DIR = HOME / ".atlantis"
+    ATLANTIS_USER_DIR.mkdir(parents=True, exist_ok=True)
+    ACCOUNTS_FILE = ATLANTIS_USER_DIR / "accounts.json"
+
+CURRENT_TERMINAL_CWD: Path = WORKSPACE
+
+
+def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
+    if not salt:
+        salt = secrets.token_hex(16)
+    hashed = hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
+    return hashed, salt
+
+
+def verify_password(password: str, hashed: str, salt: str) -> bool:
+    return hashlib.sha256((salt + password).encode("utf-8")).hexdigest() == hashed
+
+
+def cargar_cuentas() -> list[dict[str, Any]]:
+    if not ACCOUNTS_FILE.exists():
+        # Crear cuenta inicial para desarrollo inmediato si no existe ninguna
+        default_hash, default_salt = hash_password("atlantis123")
+        initial = [
+            {
+                "id": "usr_daniel_01",
+                "username": "daniel",
+                "email": "daniel@atlantis.local",
+                "name": "Daniel",
+                "role": "Lead Developer / Arquitecto",
+                "password_hash": default_hash,
+                "salt": default_salt,
+                "created_at": datetime.now().isoformat(),
+                "avatar": "DS",
+            }
+        ]
+        try:
+            ACCOUNTS_FILE.write_text(json.dumps(initial, indent=2, ensure_ascii=False), encoding="utf-8")
+        except Exception as e:
+            print(f"[Cuentas] Error creando archivo inicial: {e}")
+        return initial
+
+    try:
+        return json.loads(ACCOUNTS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def guardar_cuentas(cuentas: list[dict[str, Any]]):
+    try:
+        ACCOUNTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        ACCOUNTS_FILE.write_text(json.dumps(cuentas, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception as e:
+        print(f"[Cuentas] Error guardando cuentas: {e}")
+
+
+ACTIVE_SESSIONS: dict[str, dict[str, Any]] = {}
+LAST_AUTHENTICATED_USER: dict[str, Any] | None = None
+
+HERMES_STATE = {
+    "my_agent": {
+        "name": "Hermes-Daniel",
+        "role": "Creador Autónomo",
+        "engine": "local",
+        "provider": "gemini",
+        "model": "gemini-3.6-flash",
+        "endpoint": "",
+        "status": "connected",
+        "model_agnostic": True,
+        "capabilities": ["terminal_pty", "bash", "filesystem", "git", "antigravity_skills", "dual_pairing"],
+    },
+    "friend_agent": {
+        "name": "Hermes-Amigo",
+        "role": "Auditor & Co-piloto",
+        "engine": "dual_local",
+        "provider": "agnostic",
+        "model": "claude-3.5-sonnet",
+        "endpoint": "",
+        "status": "connected",
+        "model_agnostic": True,
+    },
+    "paired": True,
+    "pair_code": "HERMES-" + secrets.token_hex(3).upper(),
+    "pair_timestamp": datetime.now().isoformat(),
+}
+
+
+def set_active_workspace(new_path: Path):
+    global WORKSPACE, PROYECTOS, NEXO_DATA_DIR, CURRENT_TERMINAL_CWD
+    WORKSPACE = Path(new_path).resolve()
+    WORKSPACE.mkdir(parents=True, exist_ok=True)
+    PROYECTOS = WORKSPACE / "proyectos"
+    NEXO_DATA_DIR = WORKSPACE / ".nexo"
+    NEXO_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    CURRENT_TERMINAL_CWD = WORKSPACE
+    os.environ["NEXO_WORKSPACE"] = str(WORKSPACE)
+
 # The web shell lives at the repository root so the deployed experience can
 # evolve independently from the legacy NEXO assets.  Keep the old directory as
 # a fallback for existing local installs and API smoke tests.
@@ -84,7 +182,8 @@ if not STATIC_DIR.is_dir() and (REPO_ROOT / "nexo" / "static").is_dir():
     STATIC_DIR = REPO_ROOT / "nexo" / "static"
 
 AI_DATA_FILE = NEXO_DATA_DIR / "ai_colab.json"
-CONFIG = BASE / "config.json"
+CONFIG = ATLANTIS_USER_DIR / "config.json"
+BASE_CONFIG = BASE / "config.json"
 PORT = int(os.environ.get("PORT", "8787"))
 
 MAX_LECTURA = 10 * 1024 * 1024     # 10 MB
@@ -102,6 +201,12 @@ def cargar_config() -> dict:
             cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
         except Exception:
             cfg = {}
+    elif BASE_CONFIG.exists():
+        try:
+            cfg = json.loads(BASE_CONFIG.read_text(encoding="utf-8"))
+        except Exception:
+            cfg = {}
+
     cfg.setdefault("token", secrets.token_hex(16))
     cfg.setdefault("nombre", "jaime")
     cfg.setdefault("companero", "amigo")
@@ -112,9 +217,10 @@ def cargar_config() -> dict:
     cfg.setdefault("ai_api_key", os.environ.get("GEMINI_API_KEY") or os.environ.get("GROQ_API_KEY") or "")
     cfg.setdefault("ai_modelo", "auto")
     try:
+        CONFIG.parent.mkdir(parents=True, exist_ok=True)
         CONFIG.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[Server] Aviso guardando config: {e}")
     return cfg
 
 
@@ -192,8 +298,8 @@ def entorno_limpio(proyecto_path: Path) -> dict:
         "HOME": str(HOME),
         "WORKSPACE": str(WORKSPACE),
         "PROYECTO": str(proyecto_path),
-        "LANG": "en_US.UTF-8",
-        "LC_ALL": "en_US.UTF-8",
+        "LANG": os.environ.get("LANG", "C.UTF-8"),
+        "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
         "TERM": "xterm-256color",
         "COLORTERM": "truecolor",
         "PYTHONUNBUFFERED": "1",
@@ -212,7 +318,7 @@ def es_local(req_or_ws) -> bool:
     if not client:
         return True
     host = client.host
-    return host in ("127.0.0.1", "::1", "localhost", "0.0.0.0")
+    return host in ("127.0.0.1", "::1", "localhost", "0.0.0.0", "testclient")
 
 
 # ---------------------------------------------------------------- FastAPI App
@@ -306,16 +412,33 @@ def ruta_segura(sala: Sala, ruta: str) -> Path:
 
 def _arbol() -> list[dict]:
     arbol = []
-    if not PROYECTOS.exists():
-        return arbol
-    for p in sorted(PROYECTOS.iterdir()):
-        if not p.is_dir() or p.name.startswith("."):
-            continue
-        archivos = []
-        for f in sorted(p.rglob("*")):
-            if f.is_file() and ".git" not in f.parts and f.name != ".nexo-chat.md":
-                archivos.append(str(f.relative_to(p)))
-        arbol.append({"nombre": p.name, "archivos": archivos})
+    # 1. Proyectos si existen
+    if PROYECTOS.exists():
+        for p in sorted(PROYECTOS.iterdir()):
+            if not p.is_dir() or p.name.startswith("."):
+                continue
+            archivos = []
+            for f in sorted(p.rglob("*")):
+                if f.is_file() and not any(part.startswith(".") for part in f.parts) and f.name != ".nexo-chat.md":
+                    archivos.append(str(f.relative_to(p)))
+            arbol.append({"nombre": p.name, "archivos": archivos})
+
+    # 2. Archivos del workspace principal si no están en proyectos
+    if WORKSPACE.exists():
+        archivos_raiz = []
+        ignorar = {".git", ".venv", "node_modules", "__pycache__", "dist", ".ruff_cache", ".vercel"}
+        for f in sorted(WORKSPACE.iterdir()):
+            if f.name.startswith(".") or f.name in ignorar:
+                continue
+            if f.is_file():
+                archivos_raiz.append(f.name)
+            elif f.is_dir() and f.name != "proyectos":
+                for subf in sorted(f.rglob("*")):
+                    if subf.is_file() and not any(part.startswith(".") or part in ignorar for part in subf.parts):
+                        archivos_raiz.append(str(subf.relative_to(WORKSPACE)))
+        if archivos_raiz:
+            arbol.insert(0, {"nombre": WORKSPACE.name or "workspace", "archivos": archivos_raiz, "es_raiz": True})
+
     return arbol
 
 
@@ -374,6 +497,7 @@ async def api_status(request: Request, token: str = Query("")):
         "os": platform.system(),
         "arch": platform.machine(),
         "workspace": str(WORKSPACE),
+        "terminal_cwd": str(CURRENT_TERMINAL_CWD),
         "proyectos": len(_arbol()),
         "conectados": len(CONECTADOS),
         "ai_engine": {
@@ -444,13 +568,29 @@ async def api_chat(req: Request, proyecto: str = Query("general"), token: str = 
     return {"ok": True, "mensaje": evento}
 
 
+def resolver_archivo(proyecto: str, ruta: str) -> Path:
+    p_direct = Path(ruta)
+    if p_direct.is_absolute():
+        return p_direct.resolve()
+    sala = sala_de(proyecto)
+    try:
+        p = ruta_segura(sala, ruta)
+        if p.is_file():
+            return p
+    except Exception:
+        pass
+    p_ws = (WORKSPACE / ruta).resolve()
+    if p_ws == WORKSPACE or WORKSPACE in p_ws.parents:
+        return p_ws
+    return sala.directorio / ruta
+
+
 @app.get("/api/archivo")
 async def api_archivo(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
     if not es_local(request) and not token_ok(token):
         return JSONResponse({"error": "token inválido"}, status_code=401)
     try:
-        sala = sala_de(proyecto)
-        p = ruta_segura(sala, ruta)
+        p = resolver_archivo(proyecto, ruta)
         if not p.is_file():
             return JSONResponse({"error": "no es un archivo"}, status_code=404)
         texto = p.read_text(encoding="utf-8", errors="replace")
@@ -466,12 +606,233 @@ async def api_archivo_guardar(ruta: str, request: Request, proyecto: str = Query
     try:
         body = await request.json()
         contenido = body.get("contenido", "")
-        sala = sala_de(proyecto)
-        p = ruta_segura(sala, ruta)
+        p = resolver_archivo(proyecto, ruta)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(contenido, encoding="utf-8")
         await difundir_arbol()
         return {"ok": True, "ruta": ruta, "bytes": len(contenido)}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.delete("/api/archivo")
+async def api_archivo_eliminar(ruta: str, request: Request, proyecto: str = Query("general"), token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        p = resolver_archivo(proyecto, ruta)
+        if p.is_file():
+            p.unlink()
+        elif p.is_dir():
+            shutil.rmtree(p)
+        else:
+            return JSONResponse({"error": "archivo o carpeta no existe"}, status_code=404)
+        await difundir_arbol()
+        return {"ok": True, "ruta": ruta}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/archivo/renombrar")
+async def api_archivo_renombrar(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        origen = body.get("origen", "").strip()
+        destino = body.get("destino", "").strip()
+        proyecto = body.get("proyecto", "general")
+        if not origen or not destino:
+            return JSONResponse({"error": "rutas requeridas"}, status_code=400)
+        p_origen = resolver_archivo(proyecto, origen)
+        p_destino = resolver_archivo(proyecto, destino)
+        if not p_origen.exists():
+            return JSONResponse({"error": f"no existe {origen}"}, status_code=404)
+        p_destino.parent.mkdir(parents=True, exist_ok=True)
+        p_origen.rename(p_destino)
+        await difundir_arbol()
+        return {"ok": True, "origen": origen, "destino": destino}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/terminal/exec")
+async def api_terminal_exec(request: Request, token: str = Query("")):
+    global CURRENT_TERMINAL_CWD
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        cmd = body.get("cmd", "").strip()
+        if not cmd:
+            return JSONResponse({"error": "comando vacío"}, status_code=400)
+        
+        # Verify that CURRENT_TERMINAL_CWD exists, fallback to WORKSPACE
+        if not CURRENT_TERMINAL_CWD.is_dir():
+            CURRENT_TERMINAL_CWD = WORKSPACE
+        
+        if body.get("reset_cwd"):
+            CURRENT_TERMINAL_CWD = WORKSPACE
+        elif body.get("target_cwd"):
+            cand = Path(body["target_cwd"]).resolve()
+            if cand.is_dir():
+                CURRENT_TERMINAL_CWD = cand
+
+        start_cwd = CURRENT_TERMINAL_CWD
+
+        # Execute command in bash with CWD tracking sentinel
+        # Subshell captures command exit code and prints final $PWD
+        script = f'''
+cd "{start_cwd}"
+{cmd}
+__ATL_RET__=$?
+printf "\\n__ATL_CWD__:%s\\n" "$PWD"
+exit $__ATL_RET__
+'''
+        proc = await asyncio.create_subprocess_exec(
+            "/bin/bash", "-c", script,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(start_cwd),
+            env=entorno_limpio(start_cwd),
+        )
+        try:
+            stdout_bytes, stderr_bytes = await asyncio.wait_for(proc.communicate(), timeout=40.0)
+            stdout_raw = stdout_bytes.decode("utf-8", errors="replace")
+            stderr_raw = stderr_bytes.decode("utf-8", errors="replace")
+
+            clean_stdout = stdout_raw
+            new_cwd = str(CURRENT_TERMINAL_CWD)
+
+            if "\n__ATL_CWD__:" in stdout_raw:
+                parts = stdout_raw.rsplit("\n__ATL_CWD__:", 1)
+                clean_stdout = parts[0]
+                extracted_path = parts[1].splitlines()[0].strip()
+                if extracted_path:
+                    cand = Path(extracted_path).resolve()
+                    if cand.is_dir():
+                        CURRENT_TERMINAL_CWD = cand
+                        new_cwd = str(CURRENT_TERMINAL_CWD)
+            elif stdout_raw.startswith("__ATL_CWD__:"):
+                parts = stdout_raw.split("__ATL_CWD__:", 1)
+                clean_stdout = ""
+                extracted_path = parts[1].splitlines()[0].strip()
+                if extracted_path:
+                    cand = Path(extracted_path).resolve()
+                    if cand.is_dir():
+                        CURRENT_TERMINAL_CWD = cand
+                        new_cwd = str(CURRENT_TERMINAL_CWD)
+
+            clean_stderr = "\n".join(
+                line for line in stderr_raw.splitlines()
+                if "warning: setlocale:" not in line
+            ).strip()
+            if clean_stderr:
+                clean_stderr += "\n"
+
+            return {
+                "ok": proc.returncode == 0,
+                "cmd": cmd,
+                "exit_code": proc.returncode,
+                "stdout": clean_stdout,
+                "stderr": clean_stderr,
+                "cwd": new_cwd,
+            }
+        except asyncio.TimeoutError:
+            proc.kill()
+            return {"ok": False, "error": "Tiempo de espera agotado (40s)", "exit_code": -1, "cwd": str(CURRENT_TERMINAL_CWD)}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/terminal/complete")
+async def api_terminal_complete(request: Request, token: str = Query("")):
+    global CURRENT_TERMINAL_CWD
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        query = body.get("query", "").strip()
+        base_dir = CURRENT_TERMINAL_CWD if CURRENT_TERMINAL_CWD.is_dir() else WORKSPACE
+        matches = []
+        try:
+            for item in base_dir.iterdir():
+                suffix = "/" if item.is_dir() else ""
+                name = item.name + suffix
+                if not query or name.lower().startswith(query.lower()):
+                    matches.append(name)
+        except Exception:
+            pass
+        return {"ok": True, "matches": sorted(matches)[:30], "cwd": str(base_dir)}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+
+@app.get("/api/buscar")
+async def api_buscar(q: str, request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    if not q or len(q) < 2:
+        return {"resultados": []}
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "grep", "-n", "-I", "-i", q,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(WORKSPACE)
+        )
+        out, _ = await proc.communicate()
+        resultados = []
+        for line in out.decode("utf-8", errors="replace").splitlines()[:50]:
+            parts = line.split(":", 2)
+            if len(parts) == 3:
+                resultados.append({"archivo": parts[0], "linea": int(parts[1]), "texto": parts[2].strip()})
+        return {"ok": True, "resultados": resultados}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/git/status")
+async def api_git_status(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "status", "--porcelain", "-b",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(WORKSPACE)
+        )
+        out, _ = await proc.communicate()
+        lines = out.decode("utf-8", errors="replace").splitlines()
+        branch = lines[0].replace("##", "").strip() if lines else "main"
+        archivos = []
+        for line in lines[1:]:
+            if line.strip():
+                archivos.append({"estado": line[:2].strip(), "archivo": line[3:].strip()})
+        return {"ok": True, "branch": branch, "archivos": archivos}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/git/commit")
+async def api_git_commit(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        msg = body.get("mensaje", "chore: actualizacion desde Atlantis Studio").strip()
+        p1 = await asyncio.create_subprocess_exec("git", "add", "-A", cwd=str(WORKSPACE))
+        await p1.wait()
+        p2 = await asyncio.create_subprocess_exec(
+            "git", "commit", "-m", msg,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(WORKSPACE)
+        )
+        out, err = await p2.communicate()
+        return {"ok": p2.returncode == 0, "salida": (out or err).decode("utf-8", errors="replace")}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -481,8 +842,7 @@ async def api_descargar(ruta: str, request: Request, proyecto: str = Query("gene
     if not es_local(request) and not token_ok(token):
         return JSONResponse({"error": "token inválido"}, status_code=401)
     try:
-        sala = sala_de(proyecto)
-        p = ruta_segura(sala, ruta)
+        p = resolver_archivo(proyecto, ruta)
         if not p.is_file():
             return JSONResponse({"error": "no es un archivo"}, status_code=404)
         return FileResponse(p, filename=Path(ruta).name)
@@ -741,6 +1101,571 @@ async def api_ai_dual_run(req: Request, token: str = Query("")):
     resultado = await ai_engine.colaboracion_dual(objetivo, cwd=cwd_dir, on_event=on_event)
     await difundir_arbol()
     return resultado
+
+
+# ---------------------------------------------------------------- Endpoints de Autenticación de Cuentas Atlantis
+@app.post("/api/auth/register")
+async def api_auth_register(request: Request):
+    body = await request.json()
+    username = str(body.get("username", "")).strip().lower()
+    email = str(body.get("email", "")).strip().lower()
+    password = str(body.get("password", "")).strip()
+    name = str(body.get("name", "")).strip() or username.capitalize()
+    role = str(body.get("role", "Lead Developer / Arquitecto")).strip()
+
+    if not username or len(username) < 3:
+        return JSONResponse({"error": "El nombre de usuario debe tener al menos 3 caracteres."}, status_code=400)
+    if not email or "@" not in email:
+        return JSONResponse({"error": "Introduce un correo electrónico válido."}, status_code=400)
+    if not password or len(password) < 4:
+        return JSONResponse({"error": "La contraseña debe tener al menos 4 caracteres."}, status_code=400)
+
+    cuentas = cargar_cuentas()
+    for c in cuentas:
+        if c.get("username", "").lower() == username:
+            return JSONResponse({"error": f"El usuario '{username}' ya está registrado."}, status_code=400)
+        if c.get("email", "").lower() == email:
+            return JSONResponse({"error": f"El correo '{email}' ya está registrado."}, status_code=400)
+
+    p_hash, salt = hash_password(password)
+    initials = "".join([part[0] for part in name.split()[:2]]).upper() or username[:2].upper()
+    user_id = f"usr_{secrets.token_hex(6)}"
+
+    new_user = {
+        "id": user_id,
+        "username": username,
+        "email": email,
+        "name": name,
+        "role": role,
+        "password_hash": p_hash,
+        "salt": salt,
+        "created_at": datetime.now().isoformat(),
+        "avatar": initials,
+    }
+    cuentas.append(new_user)
+    guardar_cuentas(cuentas)
+
+    session_token = secrets.token_hex(24)
+    user_public = {k: v for k, v in new_user.items() if k not in ("password_hash", "salt")}
+    ACTIVE_SESSIONS[session_token] = user_public
+    global LAST_AUTHENTICATED_USER
+    LAST_AUTHENTICATED_USER = user_public
+
+    return {
+        "ok": True,
+        "message": f"Cuenta '{username}' creada exitosamente.",
+        "token": session_token,
+        "user": user_public,
+    }
+
+
+@app.post("/api/auth/login")
+async def api_auth_login(request: Request):
+    body = await request.json()
+    identifier = str(body.get("identifier", "")).strip().lower()
+    password = str(body.get("password", "")).strip()
+
+    if not identifier or not password:
+        return JSONResponse({"error": "Introduce usuario/correo y contraseña."}, status_code=400)
+
+    cuentas = cargar_cuentas()
+    matched_user = None
+    for c in cuentas:
+        if c.get("username", "").lower() == identifier or c.get("email", "").lower() == identifier:
+            matched_user = c
+            break
+
+    if not matched_user:
+        return JSONResponse({"error": "Usuario o correo no encontrado."}, status_code=404)
+
+    salt = matched_user.get("salt", "")
+    p_hash = matched_user.get("password_hash", "")
+    if not verify_password(password, p_hash, salt):
+        return JSONResponse({"error": "Contraseña incorrecta."}, status_code=401)
+
+    session_token = secrets.token_hex(24)
+    user_public = {k: v for k, v in matched_user.items() if k not in ("password_hash", "salt")}
+    ACTIVE_SESSIONS[session_token] = user_public
+    global LAST_AUTHENTICATED_USER
+    LAST_AUTHENTICATED_USER = user_public
+
+    return {
+        "ok": True,
+        "message": f"Bienvenido, {user_public.get('name')}.",
+        "token": session_token,
+        "user": user_public,
+    }
+
+
+@app.get("/api/auth/me")
+async def api_auth_me(request: Request, token: str = Query("")):
+    # 1. Comprobar sesión por token
+    auth_header = request.headers.get("Authorization", "")
+    tok = token or (auth_header.split(" ")[1] if "Bearer " in auth_header else "")
+    if tok and tok in ACTIVE_SESSIONS:
+        return {"ok": True, "user": ACTIVE_SESSIONS[tok]}
+
+    # 2. Si no hay token explícito pero hay última sesión autenticada
+    if LAST_AUTHENTICATED_USER:
+        return {"ok": True, "user": LAST_AUTHENTICATED_USER}
+
+    # 3. Retornar cuenta por defecto en local si existe
+    cuentas = cargar_cuentas()
+    if cuentas:
+        default_user = {k: v for k, v in cuentas[0].items() if k not in ("password_hash", "salt")}
+        return {"ok": True, "user": default_user}
+
+    return JSONResponse({"error": "No autenticado"}, status_code=401)
+
+
+@app.post("/api/auth/logout")
+async def api_auth_logout(request: Request, token: str = Query("")):
+    auth_header = request.headers.get("Authorization", "")
+    tok = token or (auth_header.split(" ")[1] if "Bearer " in auth_header else "")
+    if tok and tok in ACTIVE_SESSIONS:
+        ACTIVE_SESSIONS.pop(tok, None)
+    global LAST_AUTHENTICATED_USER
+    LAST_AUTHENTICATED_USER = None
+    return {"ok": True, "message": "Sesión cerrada correctamente."}
+
+
+# ---------------------------------------------------------------- Endpoints de Hermes Agent y Vinculación Dual
+@app.get("/api/hermes/detect")
+async def api_hermes_detect(request: Request):
+    hermes_dir = HOME / ".hermes"
+    hermes_bin = ai_engine.detectar_hermes_bin()
+    cfg_yaml = hermes_dir / "config.yaml"
+
+    agent_name = "Koko"
+    model_name = "nemotron-3-ultra-free"
+    provider_name = "opencode-free"
+    gateway_running = False
+
+    cfg_json = hermes_dir / "config.json"
+    cfg_data = None
+
+    if cfg_yaml.exists():
+        try:
+            import yaml
+            cfg_data = yaml.safe_load(cfg_yaml.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    elif cfg_json.exists():
+        try:
+            cfg_data = json.loads(cfg_json.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    if isinstance(cfg_data, dict):
+        # 1. Modelo y proveedor
+        m = cfg_data.get("model", {})
+        if isinstance(m, dict):
+            model_name = m.get("default", m.get("name", model_name))
+            provider_name = m.get("provider", provider_name)
+        elif isinstance(m, str):
+            model_name = m
+
+        # 2. Nombre del agente
+        agent_cfg = cfg_data.get("agent", {})
+        if isinstance(agent_cfg, dict):
+            if agent_cfg.get("name"):
+                agent_name = str(agent_cfg["name"]).strip()
+            sys_prompt = agent_cfg.get("system_prompt", "")
+            if "Tu nombre es " in sys_prompt:
+                match = re.search(r"Tu nombre es\s+([A-Za-z0-9_\-]+)", sys_prompt)
+                if match:
+                    agent_name = match.group(1)
+        elif cfg_data.get("name"):
+            agent_name = str(cfg_data["name"]).strip()
+
+    if os.environ.get("HERMES_AGENT_NAME"):
+        agent_name = os.environ["HERMES_AGENT_NAME"].strip()
+
+    gw_sock = hermes_dir / "gateway.sock"
+    gw_state_file = hermes_dir / "gateway_state.json"
+    if gw_sock.exists() or gw_state_file.exists():
+        gateway_running = True
+
+    return {
+        "ok": True,
+        "installed": hermes_bin is not None,
+        "hermes_bin": str(hermes_bin) if hermes_bin else "",
+        "hermes_dir": str(hermes_dir),
+        "agent_name": agent_name,
+        "model": model_name,
+        "provider": provider_name,
+        "gateway_running": gateway_running,
+    }
+
+
+@app.get("/api/hermes/status")
+async def api_hermes_status(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    return {
+        "ok": True,
+        "state": HERMES_STATE,
+        "workspace": str(WORKSPACE),
+        "workspace_name": WORKSPACE.name,
+    }
+
+
+@app.post("/api/hermes/connect")
+async def api_hermes_connect(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        name = str(body.get("name", "Hermes-Daniel")).strip() or "Hermes-Daniel"
+        role = str(body.get("role", "Creador Autónomo")).strip()
+        engine = str(body.get("engine", "local"))
+        provider = str(body.get("provider", "gemini")).strip().lower()
+        model = str(body.get("model", "gemini-3.6-flash")).strip()
+        endpoint = str(body.get("endpoint", ""))
+        api_key = str(body.get("api_key", "")).strip()
+
+        # Guardar configuración en ai_engine de forma persistente
+        try:
+            ai_engine.guardar_config_ia(provider, api_key, model)
+        except Exception as e:
+            print(f"[HermesConnect] Aviso guardando config IA: {e}")
+
+        HERMES_STATE["my_agent"].update({
+            "name": name,
+            "role": role,
+            "engine": engine,
+            "provider": provider,
+            "model": model,
+            "endpoint": endpoint,
+            "status": "connected",
+            "model_agnostic": True,
+            "capabilities": ["terminal_pty", "bash", "filesystem", "git", "antigravity_skills", "dual_pairing"],
+        })
+
+        try:
+            await enviar_todos({
+                "tipo": "hermes_status",
+                "state": HERMES_STATE,
+            })
+        except Exception as e:
+            print(f"[HermesConnect] Aviso en broadcast: {e}")
+
+        return {
+            "ok": True,
+            "message": f"Agente {name} activo con modelo '{model}' ({provider}). La arquitectura modelo-agnóstica mantiene todas sus herramientas y enlace dual sincronizados.",
+            "agent": HERMES_STATE["my_agent"],
+            "state": HERMES_STATE,
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": f"Error conectando agente: {e}"}, status_code=500)
+
+
+@app.post("/api/hermes/pair")
+async def api_hermes_pair(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        pair_code = str(body.get("pair_code", "")).strip()
+        friend_name = str(body.get("friend_name", "Hermes-Amigo")).strip() or "Hermes-Amigo"
+        mode = str(body.get("mode", "dual_local"))
+        endpoint = str(body.get("endpoint", ""))
+
+        HERMES_STATE["friend_agent"].update({
+            "name": friend_name,
+            "role": "Auditor & Co-piloto",
+            "engine": mode,
+            "endpoint": endpoint,
+            "status": "connected",
+        })
+        HERMES_STATE["paired"] = True
+        HERMES_STATE["pair_timestamp"] = datetime.now().isoformat()
+        if pair_code:
+            HERMES_STATE["pair_code"] = pair_code
+
+        my_name = HERMES_STATE["my_agent"]["name"]
+        try:
+            social_matrix.crear_post(
+                autor=my_name,
+                contenido=f"⚡ Red Hermes Dual enlazada: {my_name} y {friend_name} ahora colaboran de forma sincronizada en el workspace.",
+                tags=["hermes", "enlace", "colaboracion"],
+            )
+        except Exception as e:
+            print(f"[HermesPair] Nota social omitida: {e}")
+
+        try:
+            await enviar_todos({
+                "tipo": "hermes_paired",
+                "state": HERMES_STATE,
+            })
+        except Exception as e:
+            print(f"[HermesPair] Aviso en broadcast: {e}")
+
+        return {
+            "ok": True,
+            "message": f"Enlace dual establecido entre {my_name} y {friend_name}.",
+            "state": HERMES_STATE,
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": f"Error vinculando agentes: {e}"}, status_code=500)
+
+
+@app.post("/api/workspace/select")
+async def api_workspace_select(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    try:
+        body = await request.json()
+        mode = str(body.get("mode", "clean"))
+        target_path = str(body.get("path", "")).strip()
+        project_name = str(body.get("name", "")).strip()
+
+        if mode == "new" and project_name:
+            clean_dir = HOME / "AtlantisProjects" / project_name
+        elif mode == "existing" and target_path:
+            clean_dir = Path(target_path).expanduser().resolve()
+        else:
+            clean_dir = HOME / "AtlantisProjects" / "sandbox"
+
+        clean_dir.mkdir(parents=True, exist_ok=True)
+        set_active_workspace(clean_dir)
+        try:
+            await difundir_arbol()
+        except Exception as e:
+            print(f"[WorkspaceSelect] Aviso difundiendo arbol: {e}")
+
+        return {
+            "ok": True,
+            "workspace": str(clean_dir),
+            "name": clean_dir.name,
+            "arbol": _arbol(),
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"ok": False, "error": f"Error seleccionando workspace: {e}"}, status_code=500)
+
+
+# ---------------------------------------------------------------- Endpoints de Compatibilidad Antigravity (Plugins, Skills, Reglas, MCP)
+@app.get("/api/antigravity/overview")
+async def api_antigravity_overview(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    sources = engine.discover_sources()
+    plugins = engine.discover_plugins()
+    skills = engine.discover_skills()
+    rules = engine.discover_rules()
+    mcp = engine.discover_mcp()
+    return {
+        "ok": True,
+        "counts": {
+            "sources": len(sources),
+            "plugins": len(plugins),
+            "skills": len(skills),
+            "rules": len(rules),
+            "mcp": len(mcp),
+        },
+        "sources": sources,
+    }
+
+
+@app.get("/api/antigravity/sources")
+async def api_antigravity_sources(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    return {"ok": True, "sources": engine.discover_sources()}
+
+
+@app.post("/api/antigravity/sources/add")
+async def api_antigravity_sources_add(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    path_str = body.get("path", "").strip()
+    if not path_str:
+        return JSONResponse({"error": "ruta requerida"}, status_code=400)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    ok = engine.add_custom_source(path_str)
+    if not ok:
+        return JSONResponse({"error": f"La ruta '{path_str}' no existe"}, status_code=400)
+    return {"ok": True, "sources": engine.discover_sources()}
+
+
+@app.post("/api/antigravity/sources/remove")
+async def api_antigravity_sources_remove(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    path_str = body.get("path", "").strip()
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    engine.remove_custom_source(path_str)
+    return {"ok": True, "sources": engine.discover_sources()}
+
+
+@app.get("/api/antigravity/plugins")
+async def api_antigravity_plugins(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    return {"ok": True, "plugins": engine.discover_plugins()}
+
+
+@app.post("/api/antigravity/plugins/toggle")
+async def api_antigravity_plugin_toggle(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    plug_id = body.get("id")
+    enabled = body.get("enabled", True)
+    if not plug_id:
+        return JSONResponse({"error": "id requerido"}, status_code=400)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    engine.toggle_item(plug_id, enabled)
+    return {"ok": True, "id": plug_id, "enabled": enabled}
+
+
+@app.post("/api/antigravity/plugins/create")
+async def api_antigravity_plugin_create(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    plug_id = body.get("id", "").strip()
+    name = body.get("name", "").strip() or plug_id
+    desc = body.get("description", "").strip() or "Plugin de Antigravity"
+    version = body.get("version", "1.0.0")
+    if not plug_id:
+        return JSONResponse({"error": "id requerido"}, status_code=400)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    res = engine.install_plugin(plug_id, name, desc, version)
+    await difundir_arbol()
+    return {"ok": True, "plugin": res}
+
+
+@app.get("/api/antigravity/skills")
+async def api_antigravity_skills(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    return {"ok": True, "skills": engine.discover_skills()}
+
+
+@app.get("/api/antigravity/skills/content")
+async def api_antigravity_skill_content(request: Request, id: str = Query(""), token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    skills = engine.discover_skills()
+    found = next((s for s in skills if s["id"] == id), None)
+    if not found:
+        return JSONResponse({"error": "Skill no encontrado"}, status_code=404)
+    skill_file = Path(found["skill_file"])
+    content = skill_file.read_text(encoding="utf-8", errors="replace") if skill_file.is_file() else ""
+    return {"ok": True, "skill": found, "content": content}
+
+
+@app.post("/api/antigravity/skills/toggle")
+async def api_antigravity_skill_toggle(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    skill_id = body.get("id")
+    enabled = body.get("enabled", True)
+    if not skill_id:
+        return JSONResponse({"error": "id requerido"}, status_code=400)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    engine.toggle_item(skill_id, enabled)
+    return {"ok": True, "id": skill_id, "enabled": enabled}
+
+
+@app.post("/api/antigravity/skills/create")
+async def api_antigravity_skill_create(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    skill_id = body.get("id", "").strip()
+    name = body.get("name", "").strip() or skill_id
+    desc = body.get("description", "").strip() or "Habilidad Antigravity"
+    instructions = body.get("instructions", "").strip() or "Instrucciones de la habilidad..."
+    if not skill_id:
+        return JSONResponse({"error": "id requerido"}, status_code=400)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    res = engine.install_skill(skill_id, name, desc, instructions)
+    await difundir_arbol()
+    return {"ok": True, "skill": res}
+
+
+@app.post("/api/antigravity/skills/run")
+async def api_antigravity_skill_run(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    skill_id = body.get("id", "")
+    custom_prompt = body.get("prompt", "").strip()
+    proyecto = body.get("proyecto", "general")
+    sala = sala_de(proyecto) if proyecto else None
+    cwd_dir = Path(sala.directorio) if (sala and Path(sala.directorio).is_dir()) else WORKSPACE
+
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    skills = engine.discover_skills()
+    target_skill = next((s for s in skills if s["id"] == skill_id), None)
+    if not target_skill:
+        return JSONResponse({"error": f"Skill '{skill_id}' no encontrado"}, status_code=404)
+
+    skill_file = Path(target_skill["skill_file"])
+    instructions = skill_file.read_text(encoding="utf-8", errors="replace") if skill_file.is_file() else ""
+
+    run_prompt = (
+        f"Ejecuta la habilidad de Antigravity '{target_skill['name']}' (ID: {skill_id}).\n"
+        f"Ruta de la habilidad: {target_skill['path']}\n\n"
+        f"INSTRUCCIONES DE LA HABILIDAD (SKILL.md):\n{instructions}\n\n"
+        f"OBJETIVO ESPECÍFICO DEL USUARIO:\n{custom_prompt or 'Ejecuta el procedimiento principal de esta habilidad según las directrices descritas.'}"
+    )
+
+    await enviar_todos({
+        "tipo": "hermes_stream_start",
+        "prompt": f"⚡ Ejecutando Antigravity Skill: {target_skill['name']}",
+        "proyecto": proyecto,
+    })
+
+    def on_chunk(chunk: str):
+        asyncio.create_task(enviar_todos({
+            "tipo": "hermes_stream_chunk",
+            "chunk": chunk,
+            "proyecto": proyecto,
+        }))
+
+    ret, salida = await ai_engine.ejecutar_hermes(run_prompt, cwd=cwd_dir, yolo=True, on_chunk=on_chunk)
+
+    await enviar_todos({
+        "tipo": "hermes_stream_end",
+        "retcode": ret,
+        "salida": salida,
+        "proyecto": proyecto,
+    })
+    await difundir_arbol()
+    return {"ok": ret == 0, "retcode": ret, "salida": salida, "skill": target_skill["name"]}
+
+
+@app.get("/api/antigravity/rules")
+async def api_antigravity_rules(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    return {"ok": True, "rules": engine.discover_rules()}
+
+
+@app.get("/api/antigravity/mcp")
+async def api_antigravity_mcp(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    engine = antigravity_engine.get_antigravity_engine(WORKSPACE)
+    return {"ok": True, "mcp": engine.discover_mcp()}
 
 
 # ---------------------------------------------------------------- Social Matrix (Red Social 4 Entidades)
