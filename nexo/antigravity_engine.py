@@ -9,12 +9,12 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def parse_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
+def parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Parse YAML frontmatter from a markdown file (e.g. SKILL.md)."""
-    meta: Dict[str, Any] = {}
+    meta: dict[str, Any] = {}
     body = content
 
     if content.startswith("---"):
@@ -51,9 +51,9 @@ class AntigravityEngine:
         ]
         self.global_config_path = self.home_dir / ".gemini/config"
 
-    def _get_disabled_map(self) -> Dict[str, bool]:
+    def _get_disabled_map(self) -> dict[str, bool]:
         """Read disabled plugins/skills from state file or global config."""
-        disabled: Dict[str, bool] = {}
+        disabled: dict[str, bool] = {}
         if self.state_file.is_file():
             try:
                 data = json.loads(self.state_file.read_text(encoding="utf-8"))
@@ -62,7 +62,7 @@ class AntigravityEngine:
                 pass
         return disabled
 
-    def _save_disabled_map(self, disabled: Dict[str, bool]) -> None:
+    def _save_disabled_map(self, disabled: dict[str, bool]) -> None:
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
         self.state_file.write_text(json.dumps({"disabled": disabled}, indent=2), encoding="utf-8")
 
@@ -75,7 +75,7 @@ class AntigravityEngine:
         self._save_disabled_map(disabled)
         return True
 
-    def get_custom_sources(self) -> List[str]:
+    def get_custom_sources(self) -> list[str]:
         if self.state_file.is_file():
             try:
                 data = json.loads(self.state_file.read_text(encoding="utf-8"))
@@ -117,7 +117,7 @@ class AntigravityEngine:
             self.state_file.write_text(json.dumps(state_data, indent=2), encoding="utf-8")
         return True
 
-    def install_skill(self, skill_id: str, name: str, description: str, instructions: str) -> Dict[str, Any]:
+    def install_skill(self, skill_id: str, name: str, description: str, instructions: str) -> dict[str, Any]:
         """Create or install an Antigravity skill in workspace skills/ directory."""
         clean_id = re.sub(r'[^a-zA-Z0-9_\-]', '-', skill_id.strip()).lower()
         target_dir = self.workspace_root / "skills" / clean_id
@@ -127,7 +127,7 @@ class AntigravityEngine:
         skill_file.write_text(content, encoding="utf-8")
         return {"id": clean_id, "name": name, "path": str(target_dir), "skill_file": str(skill_file)}
 
-    def install_plugin(self, plugin_id: str, name: str, description: str, version: str = "1.0.0") -> Dict[str, Any]:
+    def install_plugin(self, plugin_id: str, name: str, description: str, version: str = "1.0.0") -> dict[str, Any]:
         """Create or install an Antigravity plugin in workspace .agents/plugins/ directory."""
         clean_id = re.sub(r'[^a-zA-Z0-9_\-]', '-', plugin_id.strip()).lower()
         target_dir = self.workspace_root / ".agents" / "plugins" / clean_id
@@ -144,7 +144,7 @@ class AntigravityEngine:
         (target_dir / "rules").mkdir(exist_ok=True)
         return {"id": clean_id, "name": name, "path": str(target_dir), "manifest_file": str(manifest_file)}
 
-    def discover_sources(self) -> List[Dict[str, Any]]:
+    def discover_sources(self) -> list[dict[str, Any]]:
         """List all Antigravity discovery root sources."""
         sources = []
         # 1. Workspace
@@ -203,9 +203,9 @@ class AntigravityEngine:
 
         return sources
 
-    def discover_skills(self) -> List[Dict[str, Any]]:
+    def discover_skills(self) -> list[dict[str, Any]]:
         """Discover all skills across workspace, plugins, and built-in roots."""
-        skills: List[Dict[str, Any]] = []
+        skills: list[dict[str, Any]] = []
         seen_names: set[str] = set()
         disabled_map = self._get_disabled_map()
 
@@ -280,9 +280,9 @@ class AntigravityEngine:
 
         return skills
 
-    def discover_plugins(self) -> List[Dict[str, Any]]:
+    def discover_plugins(self) -> list[dict[str, Any]]:
         """Discover plugins matching the Antigravity plugin specification."""
-        plugins: List[Dict[str, Any]] = []
+        plugins: list[dict[str, Any]] = []
         disabled_map = self._get_disabled_map()
 
         search_dirs = [
@@ -346,9 +346,9 @@ class AntigravityEngine:
 
         return plugins
 
-    def discover_rules(self) -> List[Dict[str, Any]]:
+    def discover_rules(self) -> list[dict[str, Any]]:
         """Find all AGENTS.md and GEMINI.md hierarchical rules."""
-        rules: List[Dict[str, Any]] = []
+        rules: list[dict[str, Any]] = []
 
         candidate_paths = [
             (self.workspace_root / "AGENTS.md", "workspace-root"),
@@ -386,9 +386,9 @@ class AntigravityEngine:
 
         return rules
 
-    def discover_mcp(self) -> Dict[str, Any]:
+    def discover_mcp(self) -> dict[str, Any]:
         """Find and parse MCP server configurations."""
-        servers: Dict[str, Any] = {}
+        servers: dict[str, Any] = {}
 
         candidate_configs = [
             self.workspace_root / ".agents" / "mcp_config.json",
@@ -439,9 +439,9 @@ class AntigravityEngine:
 
 
 # Singleton helper
-_engine_instance: Optional[AntigravityEngine] = None
+_engine_instance: AntigravityEngine | None = None
 
-def get_antigravity_engine(workspace: Optional[Path] = None) -> AntigravityEngine:
+def get_antigravity_engine(workspace: Path | None = None) -> AntigravityEngine:
     global _engine_instance
     if _engine_instance is None or (workspace and _engine_instance.workspace_root != workspace):
         from pathlib import Path

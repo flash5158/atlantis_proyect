@@ -666,11 +666,11 @@ async def api_terminal_exec(request: Request, token: str = Query("")):
         cmd = body.get("cmd", "").strip()
         if not cmd:
             return JSONResponse({"error": "comando vacío"}, status_code=400)
-        
+
         # Verify that CURRENT_TERMINAL_CWD exists, fallback to WORKSPACE
         if not CURRENT_TERMINAL_CWD.is_dir():
             CURRENT_TERMINAL_CWD = WORKSPACE
-        
+
         if body.get("reset_cwd"):
             CURRENT_TERMINAL_CWD = WORKSPACE
         elif body.get("target_cwd"):
@@ -738,7 +738,7 @@ exit $__ATL_RET__
                 "stderr": clean_stderr,
                 "cwd": new_cwd,
             }
-        except asyncio.TimeoutError:
+        except TimeoutError:
             proc.kill()
             return {"ok": False, "error": "Tiempo de espera agotado (40s)", "exit_code": -1, "cwd": str(CURRENT_TERMINAL_CWD)}
     except Exception as e:
