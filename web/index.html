@@ -10,67 +10,917 @@
 <body>
   <div class="app-shell">
     <header class="titlebar">
-      <div class="brand"><span class="brand-mark">✦</span><strong>Atlantis</strong><span class="brand-divider">/</span><span class="workspace-name">nexo-studio</span></div>
+      <div class="brand" id="brandWorkspace" title="Espacio de trabajo actual · Clic para opciones">
+        <span class="brand-mark">✦</span>
+        <strong>Atlantis</strong>
+      </div>
+
+      <nav class="app-menubar" id="appMenubar">
+        <div class="menu-item" id="menuFile">
+          <button class="menu-label">Archivo</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemNewFile"><span>Nuevo Archivo</span><kbd>⌘N</kbd></button>
+            <button class="dropdown-item" id="menuItemOpen"><span>Abrir Archivo o Carpeta...</span><kbd>⌘O</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemSave"><span>Guardar</span><kbd>⌘S</kbd></button>
+            <button class="dropdown-item" id="menuItemCloseTab"><span>Cerrar Pestaña</span><kbd>⌘W</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemRefreshTree"><span>Actualizar Explorador</span><kbd>⌘R</kbd></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuEdit">
+          <button class="menu-label">Editar</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemUndo"><span>Deshacer</span><kbd>⌘Z</kbd></button>
+            <button class="dropdown-item" id="menuItemRedo"><span>Rehacer</span><kbd>⇧⌘Z</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemCut"><span>Cortar</span><kbd>⌘X</kbd></button>
+            <button class="dropdown-item" id="menuItemCopy"><span>Copiar</span><kbd>⌘C</kbd></button>
+            <button class="dropdown-item" id="menuItemPaste"><span>Pegar</span><kbd>⌘V</kbd></button>
+            <button class="dropdown-item" id="menuItemSelectAll"><span>Seleccionar Todo</span><kbd>⌘A</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemFind"><span>Buscar en Archivo</span><kbd>⌘F</kbd></button>
+            <button class="dropdown-item" id="menuItemFormat"><span>Formatear Código</span><kbd>⌥⇧F</kbd></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuView">
+          <button class="menu-label">Ver</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemViewExplorer"><span>Explorador</span><kbd>⇧⌘E</kbd></button>
+            <button class="dropdown-item" id="menuItemViewSearch"><span>Buscar en Proyecto</span><kbd>⇧⌘F</kbd></button>
+            <button class="dropdown-item" id="menuItemViewGit"><span>Control de Código</span><kbd>⇧⌘G</kbd></button>
+            <button class="dropdown-item" id="menuItemViewRun"><span>Ejecutar y Depurar</span><kbd>⇧⌘D</kbd></button>
+            <button class="dropdown-item" id="menuItemViewPlugins"><span>Plugins y Skills Antigravity</span><kbd>🧩</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemToggleTerminal"><span>Alternar Terminal</span><kbd>Ctrl+`</kbd></button>
+            <button class="dropdown-item" id="menuItemToggleAssistant"><span>Alternar Asistente Hermes</span><kbd>⌘L</kbd></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuTerminal">
+          <button class="menu-label">Terminal</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemFocusTerm"><span>Línea de Comandos</span><kbd>↵</kbd></button>
+            <button class="dropdown-item" id="menuItemClearTerm"><span>Limpiar Terminal</span><kbd>⌫</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemRunHealth"><span>Ejecutar salud_sistema.py</span></button>
+            <button class="dropdown-item" id="menuItemRunGitStatus"><span>Ejecutar git status</span></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuHermes">
+          <button class="menu-label">Hermes IA</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemDebate"><span>Iniciar Debate Dual</span><kbd>⚡</kbd></button>
+            <button class="dropdown-item" id="menuItemAudit"><span>Auditar Código Activo</span><kbd>🛡️</kbd></button>
+            <button class="dropdown-item" id="menuItemExplain"><span>Explicar Archivo</span><kbd>📝</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemNewTask"><span>Crear Nueva Tarea</span><kbd>+</kbd></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuPlugins">
+          <button class="menu-label">Plugins</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemOpenPlugins"><span>Explorador de Plugins y Skills</span><kbd>🧩</kbd></button>
+            <button class="dropdown-item" id="menuItemAntigravitySkills"><span>Habilidades Antigravity</span><kbd>⚡</kbd></button>
+            <button class="dropdown-item" id="menuItemAntigravityRules"><span>Reglas (AGENTS.md)</span><kbd>📜</kbd></button>
+            <button class="dropdown-item" id="menuItemAntigravityMCP"><span>Servidores MCP</span><kbd>🔌</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemRefreshPlugins"><span>Escanear Fuentes</span><kbd>↻</kbd></button>
+            <button class="dropdown-item" id="menuItemAddSource"><span>Registrar Fuente Externa...</span><kbd>+</kbd></button>
+          </div>
+        </div>
+
+        <div class="menu-item" id="menuHelp">
+          <button class="menu-label">Ayuda</button>
+          <div class="menu-dropdown">
+            <button class="dropdown-item" id="menuItemHermesWizard"><span>Conectar y Vincular Hermes...</span><kbd>⚡</kbd></button>
+            <button class="dropdown-item" id="menuItemInvite"><span>Invitar Compañero</span></button>
+            <button class="dropdown-item" id="menuItemSettings"><span>Preferencias</span><kbd>⌘,</kbd></button>
+            <button class="dropdown-item" id="menuItemCommands"><span>Paleta de Comandos</span><kbd>⌘K</kbd></button>
+            <div class="menu-divider"></div>
+            <button class="dropdown-item" id="menuItemSwitchUser"><span>Cerrar Sesión / Cambiar Usuario</span></button>
+            <button class="dropdown-item" id="menuItemAbout"><span>Acerca de Atlantis Studio</span></button>
+          </div>
+        </div>
+      </nav>
+
       <button class="command-bar" id="commandBar" aria-label="Abrir paleta de comandos"><span>⌕</span> Buscar archivos, comandos y agentes <kbd>⌘ K</kbd></button>
-      <div class="title-actions"><button class="icon-btn" title="Control de versión">⑂</button><button class="icon-btn" title="Compartir espacio">♧</button><button class="avatar" title="Cuenta de Daniel">DS</button></div>
+
+      <div class="title-actions">
+        <span class="workspace-name" id="workspaceName">espacio-limpio</span>
+        <button class="icon-btn-text" id="btnHermesPairNav" title="Gestionar conexión y vinculación de Hermes Agents">⚡ Hermes Dual</button>
+        <button class="icon-btn" id="btnGit" title="Control de versión (Git)">⑂</button>
+        <button class="icon-btn" id="btnShare" title="Compartir espacio / Invitar compañero">♧</button>
+        <button class="avatar" id="btnAvatar" title="Perfil de Desarrollador">DS</button>
+      </div>
     </header>
 
-    <div class="workspace-grid">
+    <div class="workspace-grid" id="workspaceGrid">
       <nav class="activitybar" aria-label="Navegación principal">
-        <button class="activity active" data-view="explorer" title="Explorador">▤</button>
-        <button class="activity" data-view="search" title="Buscar">⌕</button>
-        <button class="activity" data-view="source" title="Control de código">⑂<b>3</b></button>
-        <button class="activity" data-view="run" title="Ejecutar y depurar">▷</button>
+        <button class="activity active" data-view="explorer" id="navExplorer" title="Explorador de Archivos (Ctrl+Shift+E)">▤</button>
+        <button class="activity" data-view="search" id="navSearch" title="Buscar en Archivos (Ctrl+Shift+F)">⌕</button>
+        <button class="activity" data-view="source" id="navSource" title="Control de Código / Git (Ctrl+Shift+G)">⑂<b id="gitBadge" hidden>0</b></button>
+        <button class="activity" data-view="run" id="navRun" title="Ejecutar y Depurar (Ctrl+Shift+D)">▷</button>
+        <button class="activity" data-view="plugins" id="navPlugins" title="Plugins y Fuentes Antigravity (Skills, Reglas, MCP)">🧩<b id="pluginsBadge" hidden>0</b></button>
         <span class="activity-spacer"></span>
-        <button class="activity" data-view="collab" title="Atlantis colaboración">✦</button>
-        <button class="activity" data-view="settings" title="Configuración">⚙</button>
+        <button class="activity" data-view="collab" id="navCollab" title="Puente Hermes y Colaboración (Ctrl+L)">✦</button>
+        <button class="activity" data-view="settings" id="navSettings" title="Configuración de Atlantis">⚙</button>
       </nav>
 
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-heading"><span id="sidebarTitle">EXPLORADOR</span><button class="small-icon" title="Más acciones">…</button></div>
-        <div class="sidebar-content" id="sidebarContent">
-          <div class="section-label">NEXO-STUDIO <span>⌄</span></div>
-          <div class="tree">
-            <button class="tree-row folder open"><span class="chevron">⌄</span><span class="tree-icon folder-icon">▾</span><span>src</span></button>
-            <button class="tree-row file selected" data-file="src/orchestrator.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>orchestrator.ts</span></button>
-            <button class="tree-row file" data-file="src/agents/hermes.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>hermes.ts</span></button>
-            <button class="tree-row file" data-file="src/agents/protocol.ts"><span class="indent"></span><span class="tree-icon ts">TS</span><span>protocol.ts</span></button>
-            <button class="tree-row folder"><span class="chevron">›</span><span class="tree-icon folder-icon">▾</span><span>web</span></button>
-            <button class="tree-row file" data-file="README.md"><span class="indent"></span><span class="tree-icon md">M</span><span>README.md</span></button>
-            <button class="tree-row file" data-file="package.json"><span class="indent"></span><span class="tree-icon json">{ }</span><span>package.json</span></button>
-            <button class="tree-row file" data-file=".env.example"><span class="indent"></span><span class="tree-icon env">•</span><span>.env.example</span></button>
+        <div class="sidebar-heading">
+          <span id="sidebarTitle">EXPLORADOR</span>
+          <div class="sidebar-actions">
+            <button class="small-icon" id="btnNewFile" title="Nuevo archivo (+)">+</button>
+            <button class="small-icon" id="btnOpenSystem" title="Abrir archivo o carpeta del sistema (Ctrl+O)">📂</button>
+            <button class="small-icon" id="btnRefreshTree" title="Actualizar árbol (Ctrl+R)">↻</button>
+            <button class="small-icon" id="btnMoreActions" title="Opciones">…</button>
           </div>
-          <div class="sidebar-block"><div class="section-label">OUTLINE <span>›</span></div></div>
-          <div class="sidebar-block"><div class="section-label">TIMELINE <span>›</span></div></div>
+        </div>
+
+        <div class="sidebar-content" id="sidebarContent">
+          <!-- Vista 1: Explorador -->
+          <div class="view-panel active" id="viewExplorer">
+            <div class="section-label"><span id="explorerWorkspaceLabel">WORKSPACE</span> <span class="badge" id="fileCountBadge">0</span></div>
+            <div class="tree" id="fileTree"></div>
+            <div class="sidebar-block">
+              <div class="section-label" id="toggleOutline">OUTLINE <span>⌄</span></div>
+              <div class="sub-tree" id="outlineContent"><div class="tree-empty">Símbolos del archivo actual listos</div></div>
+            </div>
+          </div>
+
+          <!-- Vista 2: Buscar -->
+          <div class="view-panel" id="viewSearch" hidden>
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="Buscar texto en el proyecto...">
+              <button class="primary-btn sm" id="btnDoSearch">Buscar</button>
+            </div>
+            <div class="replace-box" id="replaceBox" style="display: flex; gap: 6px; padding: 0 12px 8px;">
+              <input type="text" id="replaceInput" placeholder="Reemplazar con..." style="flex: 1; background: var(--panel-3); border: 1px solid var(--line); border-radius: 4px; color: var(--text); padding: 4px 8px; font-size: 11px;">
+              <button class="ghost-btn sm" id="btnDoReplace" title="Reemplazar en el archivo activo">Reemplazar</button>
+            </div>
+            <div class="search-results" id="searchResults"><div class="tree-empty">Escribe una palabra y presiona Buscar.</div></div>
+          </div>
+
+          <!-- Vista 3: Git / Source Control -->
+          <div class="view-panel" id="viewSource" hidden>
+            <div class="git-box">
+              <div class="git-branch-bar"><span>Rama activa:</span> <strong id="gitBranchName">main</strong></div>
+              <div class="git-actions-row" style="display: flex; gap: 4px; margin: 6px 0 8px;">
+                <button class="ghost-btn sm" id="btnRefreshGit" style="flex: 1;" title="Actualizar estado">↻ Estado</button>
+                <button class="ghost-btn sm" id="btnGitPull" style="flex: 1;" title="Traer cambios remotos">⬇ Pull</button>
+                <button class="ghost-btn sm" id="btnGitPush" style="flex: 1;" title="Subir cambios a remoto">⬆ Push</button>
+              </div>
+              <div class="git-status-summary" id="gitStatusSummary">Analizando cambios...</div>
+              <div class="git-file-list" id="gitFileList"></div>
+              <textarea id="gitCommitMsg" placeholder="Mensaje de commit..." rows="2"></textarea>
+              <button class="primary-btn full" id="btnGitCommit">✓ Confirmar y Sincronizar</button>
+            </div>
+          </div>
+
+          <!-- Vista 4: Ejecutar y Depurar -->
+          <div class="view-panel" id="viewRun" hidden>
+            <div class="run-box">
+              <div class="section-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>SCRIPTS DEL PROYECTO</span>
+                <button class="icon-btn-text" id="btnAddCustomRun" title="Añadir script personalizado">+ Comando</button>
+              </div>
+              <div class="run-list" id="runListContainer">
+                <button class="run-item-btn" data-cmd="python3 salud_sistema.py">🩺 Diagnóstico de Salud (salud_sistema.py)</button>
+                <button class="run-item-btn" data-cmd="git status">⎇ Estado de Git (git status)</button>
+                <button class="run-item-btn" data-cmd="ls -la">📁 Listar Archivos (ls -la)</button>
+                <button class="run-item-btn" data-cmd="uname -a">🐧 Información del Sistema (uname)</button>
+                <button class="run-item-btn" data-cmd="curl -s http://127.0.0.1:8787/api/status">⚡ Estado del Hub Local</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista 5: Plugins y Fuentes Antigravity -->
+          <div class="view-panel" id="viewPlugins" hidden>
+            <div class="plugins-box">
+              <div class="subtabs-bar">
+                <button class="subtab active" data-subtab="skills" id="subtabSkills">Skills (<span id="countSkills">0</span>)</button>
+                <button class="subtab" data-subtab="plugins" id="subtabPlugins">Plugins (<span id="countPlugins">0</span>)</button>
+                <button class="subtab" data-subtab="rules" id="subtabRules">Reglas (<span id="countRules">0</span>)</button>
+                <button class="subtab" data-subtab="mcp" id="subtabMcp">MCP (<span id="countMcp">0</span>)</button>
+              </div>
+
+              <!-- Subpanel 1: Skills -->
+              <div class="subpanel active" id="subpanelSkills">
+                <div class="plugins-search-bar">
+                  <input type="text" id="skillsSearchInput" placeholder="Filtrar habilidades Antigravity...">
+                  <button class="icon-btn-text" id="btnCreateSkill" title="Crear nueva Skill">+ Skill</button>
+                </div>
+                <div class="skills-list" id="skillsList">
+                  <div class="tree-empty">Cargando habilidades Antigravity...</div>
+                </div>
+              </div>
+
+              <!-- Subpanel 2: Plugins -->
+              <div class="subpanel" id="subpanelPlugins" hidden>
+                <div class="plugins-search-bar">
+                  <input type="text" id="pluginsSearchInput" placeholder="Filtrar plugins...">
+                  <button class="icon-btn-text" id="btnCreatePlugin" title="Crear nuevo Plugin">+ Plugin</button>
+                </div>
+                <div class="plugins-list" id="pluginsList">
+                  <div class="tree-empty">Cargando plugins Antigravity...</div>
+                </div>
+              </div>
+
+              <!-- Subpanel 3: Rules -->
+              <div class="subpanel" id="subpanelRules" hidden>
+                <div class="rules-header">
+                  <small>Reglas jerárquicas activas (AGENTS.md / GEMINI.md):</small>
+                </div>
+                <div class="rules-list" id="rulesList">
+                  <div class="tree-empty">Cargando reglas...</div>
+                </div>
+              </div>
+
+              <!-- Subpanel 4: MCP -->
+              <div class="subpanel" id="subpanelMcp" hidden>
+                <div class="mcp-header">
+                  <small>Servidores MCP (Model Context Protocol) detectados:</small>
+                </div>
+                <div class="mcp-list" id="mcpList">
+                  <div class="tree-empty">Cargando servidores MCP...</div>
+                </div>
+              </div>
+
+              <!-- Fuentes Registradas -->
+              <div class="sources-footer">
+                <div class="section-label" style="margin-top: 10px;">FUENTES DE DESCUBRIMIENTO</div>
+                <div class="sources-list" id="sourcesList"></div>
+                <button class="ghost-btn sm full" id="btnAddSourceDialog" style="margin-top: 6px;">+ Registrar Fuente Externa</button>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
 
       <main class="editor-area">
-        <div class="editor-tabs"><div class="editor-tab active"><span class="tree-icon ts">TS</span> orchestrator.ts <button>×</button></div><div class="editor-tab"><span class="tree-icon ts">TS</span> hermes.ts <button>×</button></div><div class="editor-tab-add">+</div></div>
-        <div class="breadcrumbs"><span>src</span><b>›</b><span>agents</span><b>›</b><strong>orchestrator.ts</strong><span class="editor-actions">⌘ S&nbsp;&nbsp; ⋯</span></div>
-        <section class="code-editor" id="codeEditor" aria-label="Editor de código"><div class="line-numbers" id="lineNumbers"></div><pre id="codeContent" tabindex="0"></pre></section>
-        <div class="editor-empty" id="editorEmpty" hidden>Selecciona un archivo del explorador para abrirlo.</div>
-        <section class="terminal-panel" id="terminalPanel">
-          <div class="panel-tabs"><button class="panel-tab active">TERMINAL</button><button class="panel-tab">PROBLEMAS <b>0</b></button><button class="panel-tab">SALIDA</button><span class="panel-spacer"></span><button class="small-icon">⌃</button><button class="small-icon">×</button></div>
-          <div class="terminal-output" id="terminalOutput"><div><span class="prompt">daniel@nexo</span><span class="path"> ~/nexo-studio</span><span> $ </span><span class="cmd">atlantis status</span></div><div class="success">✓ Hub local conectado · 2 agentes disponibles</div><div><span class="prompt">daniel@nexo</span><span class="path"> ~/nexo-studio</span><span> $ </span><span class="cursor"></span></div></div>
+        <div class="editor-tabs" id="editorTabs">
+          <div class="editor-tabs-list" id="editorTabsList"></div>
+          <button class="editor-tab-add" id="btnNewTab" title="Nuevo archivo">+</button>
+        </div>
+
+        <div class="breadcrumbs">
+          <span id="bcFolder">workspace</span><b>›</b><strong id="bcFile">archivo</strong>
+          <span class="unsaved-badge" id="unsavedBadge" hidden>● sin guardar</span>
+          <span class="editor-actions">
+            <button id="btnTogglePreview" class="action-btn" title="Previsualizar Markdown" hidden>👁 Previa</button>
+            <button id="btnSaveFile" class="action-btn" title="Guardar (⌘S)">💾 ⌘ S</button>
+            <button id="btnCopyPath" class="action-btn" title="Copiar ruta">📋 Ruta</button>
+            <button id="btnToggleWrap" class="action-btn" title="Ajuste de línea">↩ Wrap</button>
+          </span>
+        </div>
+
+        <section class="code-editor" id="codeEditor" aria-label="Editor de código">
+          <div id="monacoEditorContainer" style="width: 100%; height: 100%;"></div>
+          <div id="markdownPreviewContainer" class="markdown-preview" style="display: none; width: 100%; height: 100%; overflow-y: auto; padding: 20px 28px;"></div>
+          <div class="line-numbers" id="lineNumbers" style="display: none;"></div>
+          <textarea id="codeTextarea" spellcheck="false" style="display: none;" placeholder="// Selecciona o crea un archivo para empezar a programar..."></textarea>
         </section>
-        <footer class="statusbar"><span>⎇ main*</span><span>↻ Sincronizado</span><span class="status-spacer"></span><span id="connectionStatus" class="status-online">● Conectando</span><span>UTF-8</span><span>Spaces: 2</span><span>Ln 1, Col 1</span></footer>
+
+        <div class="editor-empty" id="editorEmpty" hidden>
+          <div class="empty-inner">
+            <span class="empty-icon">✦</span>
+            <h2>Atlantis Studio</h2>
+            <p>Selecciona un archivo del explorador o crea uno nuevo para empezar.</p>
+            <div class="empty-actions">
+              <button class="primary-btn" id="btnEmptyOpen">📂 Abrir Archivo o Carpeta...</button>
+              <button class="ghost-btn" id="btnEmptyNewFile">+ Nuevo archivo</button>
+              <button class="ghost-btn" id="btnEmptyTerminal">Abrir Terminal</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="terminal-panel" id="terminalPanel">
+          <div class="panel-tabs">
+            <button class="panel-tab active" data-tab="terminal" id="tabTerminal">TERMINAL</button>
+            <button class="panel-tab" data-tab="problems" id="tabProblems">PROBLEMAS <b id="problemCount">0</b></button>
+            <button class="panel-tab" data-tab="output" id="tabOutput">SALIDA</button>
+            <span class="panel-spacer"></span>
+            <button class="small-icon" id="btnClearTerminal" title="Limpiar terminal">⌫</button>
+            <button class="small-icon" id="btnToggleTerminalHeight" title="Maximizar / Restaurar panel">⌃</button>
+            <button class="small-icon" id="btnCloseTerminal" title="Ocultar terminal">×</button>
+          </div>
+          <div class="terminal-content">
+            <div class="terminal-output" id="terminalOutput"></div>
+            <form class="terminal-input-row" id="terminalForm">
+              <span class="prompt" id="terminalPromptUser">daniel@atlantis</span><span class="path" id="terminalPromptPath"> ~/workspace</span><span class="delim"> $ </span>
+              <input type="text" id="terminalInput" placeholder="Escribe un comando bash (ej. ls, pwd, cd, python3) y presiona Enter..." autocomplete="off" spellcheck="false">
+              <button type="submit" class="terminal-send-btn" id="btnTerminalSubmit" title="Ejecutar comando (Enter)">↵</button>
+            </form>
+          </div>
+        </section>
+
+        <footer class="statusbar">
+          <span id="sbBranch">⎇ main</span>
+          <span id="sbSync">↻ Sincronizado</span>
+          <span class="status-spacer"></span>
+          <span id="connectionStatus" class="status-online">● En línea</span>
+          <span>UTF-8</span>
+          <span>Spaces: 2</span>
+          <span id="sbCursor">Ln 1, Col 1</span>
+        </footer>
       </main>
 
-      <aside class="assistant-panel">
-        <div class="assistant-header"><div><span class="eyebrow">ATLANTIS</span><strong>Espacio compartido</strong></div><button class="icon-btn" id="collapseAssistant" title="Contraer panel">›</button></div>
-        <div class="presence-strip"><div class="presence-avatar daniel">DS</div><div><strong>Daniel</strong><span>Lead developer · ahora</span></div><span class="presence-dot"></span><button class="invite-btn" id="inviteBtn">Invitar</button></div>
-        <div class="assistant-tabs"><button class="assistant-tab active" data-channel="team">Equipo <span id="teamBadge">2</span></button><button class="assistant-tab" data-channel="agents">Agentes <span id="agentBadge">1</span></button></div>
-        <div class="channel-title"><span id="channelIcon">#</span><div><strong id="channelName">team-chat</strong><span id="channelHint">Daniel y tu compañero</span></div><button class="small-icon" title="Opciones del canal">…</button></div>
+      <aside class="assistant-panel" id="assistantPanel">
+        <div class="assistant-header">
+          <div><span class="eyebrow">ATLANTIS</span><strong>Red Multi-Agente</strong></div>
+          <button class="icon-btn" id="collapseAssistant" title="Contraer panel">›</button>
+        </div>
+
+        <div class="presence-strip">
+          <div class="presence-avatar daniel">DS</div>
+          <div><strong>Daniel</strong><span>Lead Developer · En línea</span></div>
+          <span class="presence-dot"></span>
+          <button class="invite-btn" id="inviteBtn">Invitar</button>
+        </div>
+
+        <div class="assistant-tabs">
+          <button class="assistant-tab active" data-channel="team" id="tabTeam">Equipo <span id="teamBadge">1</span></button>
+          <button class="assistant-tab" data-channel="agents" id="tabAgents">Agentes Hermes <span id="agentBadge">2</span></button>
+        </div>
+
+        <div class="channel-title">
+          <span id="channelIcon">#</span>
+          <div><strong id="channelName">team-chat</strong><span id="channelHint">Daniel y tu compañero en tiempo real</span></div>
+          <button class="new-task-inline" id="btnNewTaskHeader">+ Tarea</button>
+        </div>
+
         <div class="messages" id="messages" aria-live="polite"></div>
-        <div class="task-stack"><div class="task-stack-head"><span>TRABAJO ACTIVO</span><span class="task-count">0</span></div><div id="taskStackItems"><div class="task-empty">Sin tareas activas. Crea una desde el canal de agentes.</div></div></div>
-        <form class="composer" id="messageForm"><div class="composer-tools"><button type="button" class="tool-btn" title="Adjuntar contexto">⌘</button><button type="button" class="tool-btn" title="Mencionar agente">@</button><span class="composer-hint">Enter para enviar · Shift+Enter para nueva línea</span></div><textarea id="messageInput" rows="2" placeholder="Escribe un mensaje al equipo…"></textarea><div class="composer-bottom"><span class="secure">⌁ cifrado en tránsito</span><button class="send-btn" type="submit">Enviar <kbd>↵</kbd></button></div></form>
+
+        <div class="task-stack">
+          <div class="task-stack-head"><span>TRABAJO ACTIVO</span><span class="task-count" id="taskCount">0</span></div>
+          <div id="taskStackItems"><div class="task-empty">Sin tareas activas. Crea una con el botón "+ Tarea".</div></div>
+        </div>
+
+        <div class="agent-quick-actions">
+          <button type="button" class="quick-pill" id="pillDebate">🤖 Debate Hermes</button>
+          <button type="button" class="quick-pill" id="pillAudit">⚡ Auditar Código</button>
+          <button type="button" class="quick-pill" id="pillExplain">📝 Explicar</button>
+          <button type="button" class="quick-pill" id="pillSkills">🧩 Skills AGY</button>
+        </div>
+
+        <form class="composer" id="messageForm">
+          <div class="composer-tools">
+            <button type="button" class="tool-btn" id="btnAttachContext" title="Adjuntar archivo actual">⌘</button>
+            <button type="button" class="tool-btn" id="btnMentionAgent" title="Mencionar agente">@</button>
+            <button type="button" class="tool-btn" id="btnQuickPrompt" title="Instrucción predeterminada">✦</button>
+            <span class="composer-hint">Enter para enviar · Shift+Enter para nueva línea</span>
+          </div>
+          <textarea id="messageInput" rows="2" placeholder="Escribe un mensaje al equipo…"></textarea>
+          <div class="composer-bottom">
+            <span class="secure">⌁ cifrado de punto a punto</span>
+            <button class="send-btn" type="submit">Enviar <kbd>↵</kbd></button>
+          </div>
+        </form>
       </aside>
     </div>
 
-    <dialog id="taskDialog"><form method="dialog" id="taskForm"><div class="dialog-heading"><div><span class="eyebrow">ORQUESTACIÓN</span><h2>Nueva tarea para un agente</h2></div><button value="cancel" class="icon-btn">×</button></div><label>Título<input id="taskTitle" required placeholder="Ej. Auditar protocolo de sincronización"></label><label>Contexto<textarea id="taskDescription" rows="3" placeholder="Describe el resultado esperado…"></textarea></label><label>Asignar a<select id="taskAssignee"><option value="Hermes-Daniel">Hermes-Daniel · Creador</option><option value="Hermes-Amigo">Hermes-Amigo · Auditor</option><option value="ambos">Ambos agentes · Debate</option></select></label><div class="dialog-actions"><button value="cancel" class="ghost-btn">Cancelar</button><button value="default" class="primary-btn">Crear tarea</button></div></form></dialog>
+    <!-- Modales -->
+    <dialog id="taskDialog">
+      <form method="dialog" id="taskForm">
+        <div class="dialog-heading">
+          <div><span class="eyebrow">ORQUESTACIÓN</span><h2>Nueva tarea para agentes</h2></div>
+          <button value="cancel" class="icon-btn" title="Cerrar">×</button>
+        </div>
+        <div class="dialog-body">
+          <div class="form-group">
+            <label for="taskTitle">Título de la tarea</label>
+            <input id="taskTitle" required autofocus placeholder="Ej. Auditar protocolo de sincronización">
+          </div>
+          <div class="form-group">
+            <label for="taskDescription">Contexto y Objetivo esperado</label>
+            <textarea id="taskDescription" rows="3" placeholder="Describe el objetivo y resultado esperado…"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="taskAssignee">Asignar a</label>
+            <select id="taskAssignee">
+              <option value="Hermes-Daniel">Hermes-Daniel · Creador</option>
+              <option value="Hermes-Amigo">Hermes-Amigo · Auditor</option>
+              <option value="ambos">Ambos agentes · Debate Dual</option>
+            </select>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button value="cancel" class="ghost-btn">Cancelar</button>
+          <button value="default" class="primary-btn">Crear tarea</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="inviteDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">COLABORACIÓN</span><h2>Invitar Compañero</h2></div>
+        <button class="icon-btn" id="btnCloseInvite">×</button>
+      </div>
+      <div class="dialog-body">
+        <p>Comparte este enlace con tu amigo para que se conecte a tu sesión en tiempo real:</p>
+        <div class="copy-box">
+          <input type="text" id="inviteUrlInput" readonly>
+          <button class="primary-btn" id="btnCopyInvite">Copiar</button>
+        </div>
+        <div class="tunnel-status" id="tunnelStatusInfo">
+          <span class="badge online">Red Local Activa</span>
+          <small>Si tu compañero está fuera de tu red local, usa el túnel de Cloudflare incluido.</small>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnStartTunnelAction">⚡ Activar Túnel Cloudflare</button>
+        <button class="primary-btn" id="btnCloseInvite2">Cerrar</button>
+      </div>
+    </dialog>
+
+    <dialog id="commandPaletteDialog">
+      <div class="command-palette">
+        <div class="cp-search">
+          <span>⌕</span>
+          <input type="text" id="cpInput" placeholder="Escribe un comando o nombre de archivo..." autocomplete="off">
+          <button class="icon-btn sm" id="btnCloseCp">Esc</button>
+        </div>
+        <div class="cp-list" id="cpList"></div>
+      </div>
+    </dialog>
+
+    <dialog id="settingsDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">PREFERENCIAS</span><h2>Configuración de Atlantis</h2></div>
+        <button class="icon-btn" id="btnCloseSettings">×</button>
+      </div>
+      <div class="dialog-body">
+        <label>Motor de Inteligencia Artificial
+          <select id="settingAiProvider">
+            <option value="gemini">Google Gemini 3.6 Flash (AI Studio)</option>
+            <option value="hermes">Nous Hermes Agent Local</option>
+            <option value="dual">Matriz Dual Autónoma (Gemini + Hermes)</option>
+          </select>
+        </label>
+        <label>Tema de Interfaz
+          <select id="settingTheme">
+            <option value="obsidian">Obsidian Dark (Predeterminado)</option>
+            <option value="midnight">Midnight OLED</option>
+            <option value="cyberpunk">Cyberpunk Neon</option>
+          </select>
+        </label>
+        <label>Ruta del Workspace
+          <input type="text" id="settingWorkspacePath" readonly>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnCancelSettings">Cancelar</button>
+        <button class="primary-btn" id="btnSaveSettings">Guardar y Aplicar</button>
+      </div>
+    </dialog>
+
+    <dialog id="profileDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">CUENTA</span><h2>Perfil de Usuario</h2></div>
+        <button class="icon-btn" id="btnCloseProfile">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="profile-card">
+          <div class="profile-avatar-big">DS</div>
+          <div>
+            <h3 id="profileName">Daniel</h3>
+            <p>Lead Developer · Sesión Principal (Host)</p>
+          </div>
+        </div>
+        <label>Cambiar Nombre de Visualización
+          <input type="text" id="profileNameInput" value="Daniel">
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn" id="btnSaveProfile">Guardar Nombre</button>
+      </div>
+    </dialog>
+
+    <dialog id="newFileDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">WORKSPACE</span><h2>Crear Nuevo Archivo</h2></div>
+        <button class="icon-btn" id="btnCloseNewFile">×</button>
+      </div>
+      <div class="dialog-body">
+        <label>Ruta y nombre del archivo (ej. `app/nuevo.ts` o `test.py`)
+          <input type="text" id="newFilePathInput" placeholder="nombre-archivo.ext">
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnCancelNewFile">Cancelar</button>
+        <button class="primary-btn" id="btnConfirmNewFile">Crear Archivo</button>
+      </div>
+    </dialog>
+
+    <!-- Modal Detalle y Ejecución de Antigravity Skill -->
+    <dialog id="skillDetailDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">ANTIGRAVITY SKILL</span><h2 id="modalSkillName">Habilidad</h2></div>
+        <button class="icon-btn" id="btnCloseSkillDetail">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="skill-meta-tags">
+          <span class="source-badge" id="modalSkillSource">builtin</span>
+          <span class="id-badge" id="modalSkillId">id</span>
+        </div>
+        <p id="modalSkillDesc" class="skill-desc-text"></p>
+        <div class="section-label" style="margin-top: 10px;">INSTRUCCIONES Y PROCEDIMIENTOS (SKILL.md)</div>
+        <pre class="skill-code-preview" id="modalSkillContent"></pre>
+        <div class="section-label" style="margin-top: 12px;">EJECUTAR CON HERMES AGENT</div>
+        <label>Objetivo o directrices adicionales para el agente (opcional):
+          <textarea id="modalSkillPrompt" rows="2" placeholder="Ej. Aplica esta habilidad en este proyecto y reporta el análisis..."></textarea>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnCloseSkillDetail2">Cerrar</button>
+        <button class="ghost-btn" id="btnEditSkillInEditor">✏️ Abrir en Monaco</button>
+        <button class="primary-btn" id="btnExecuteSkillHermes">⚡ Ejecutar Habilidad con Hermes</button>
+      </div>
+    </dialog>
+
+    <!-- Modal Registrar Fuente Externa Antigravity -->
+    <dialog id="customSourceDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">ANTIGRAVITY</span><h2>Registrar Fuente Externa</h2></div>
+        <button class="icon-btn" id="btnCloseSourceModal">×</button>
+      </div>
+      <div class="dialog-body">
+        <p>Especifica la ruta a una carpeta con plugins, skills o reglas de Antigravity:</p>
+        <label>Ruta absoluta (ej. <code>/home/usuario/mis-skills</code> o <code>/ruta/al/plugin</code>):
+          <input type="text" id="customSourceInput" placeholder="/home/daniel-sosa/...">
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnCancelSourceModal">Cancelar</button>
+        <button class="primary-btn" id="btnSaveSourceModal">Registrar y Escanear</button>
+      </div>
+    </dialog>
+
+    <!-- Modal Crear Nueva Habilidad -->
+    <dialog id="createSkillDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">NUEVA HABILIDAD</span><h2>Crear Antigravity Skill</h2></div>
+        <button class="icon-btn" id="btnCloseCreateSkill">×</button>
+      </div>
+      <div class="dialog-body">
+        <label>ID de la Skill (ej. <code>mi-herramienta</code>):
+          <input type="text" id="newSkillId" placeholder="mi-habilidad">
+        </label>
+        <label>Nombre visual:
+          <input type="text" id="newSkillName" placeholder="Mi Habilidad Personalizada">
+        </label>
+        <label>Descripción:
+          <input type="text" id="newSkillDesc" placeholder="Qué hace esta habilidad...">
+        </label>
+        <label>Instrucciones y Procedimiento (Markdown / SKILL.md):
+          <textarea id="newSkillInstructions" rows="4" placeholder="Describe los pasos y procedimientos que Hermes ejecutará..."></textarea>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="ghost-btn" id="btnCancelCreateSkill">Cancelar</button>
+        <button class="primary-btn" id="btnConfirmCreateSkill">Crear Skill</button>
+      </div>
+    </dialog>
+
+    <!-- Modal Acerca de Atlantis Studio -->
+    <dialog id="aboutDialog">
+      <div class="dialog-heading">
+        <div><span class="eyebrow">INFO</span><h2>Acerca de Atlantis Studio</h2></div>
+        <button class="icon-btn" id="btnCloseAbout">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="about-hero" style="text-align: center; padding: 10px 0 16px;">
+          <div style="font-size: 36px; color: var(--blue); margin-bottom: 6px;">✦</div>
+          <h3 style="margin: 0; font-size: 18px; color: var(--text);">Atlantis Studio</h3>
+          <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Versión 2.0.0 (Cyberdeck Edition)</p>
+        </div>
+        <div class="about-specs" style="background: var(--panel-3); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Matriz Multi-Agente:</span>
+            <strong style="color: var(--cyan);">Hermes Dual Engine</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Compatibilidad:</span>
+            <strong style="color: var(--purple);">Antigravity Plugins &amp; Skills</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Editor de Código:</span>
+            <strong style="color: var(--blue);">Monaco Editor (VS Code Engine)</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Terminal:</span>
+            <strong style="color: var(--green);">PTY Bash Nativo Linux</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Arquitectura:</span>
+            <strong style="color: var(--text);">Modelo-Agnóstico</strong>
+          </div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px; line-height: 1.5; text-align: center;">
+          Diseñado para programación en pareja y colaboración multi-agente en tiempo real con cero fricción.
+        </p>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-btn full" id="btnCloseAboutBtn">Aceptar</button>
+      </div>
+    </dialog>
+
+    <div id="treeContextMenu" class="context-menu" hidden style="display: none;">
+      <button class="context-menu-item" id="cmOpen">📄 Abrir</button>
+      <button class="context-menu-item" id="cmOpenSystem">📂 Abrir Archivo o Carpeta...</button>
+      <button class="context-menu-item" id="cmCopyPath">📋 Copiar Ruta</button>
+      <div class="context-menu-separator"></div>
+      <button class="context-menu-item" id="cmNewFileHere">+ Nuevo Archivo Aquí</button>
+      <button class="context-menu-item" id="cmRename">✏️ Renombrar</button>
+      <button class="context-menu-item" id="cmDelete" style="color: var(--red);">🗑 Eliminar</button>
+      <div class="context-menu-separator"></div>
+      <button class="context-menu-item" id="cmRefresh">↻ Recargar Árbol</button>
+    </div>
+
+    <!-- Menú desplegable unificado para Abrir Archivo o Carpeta -->
+    <div id="openChoiceMenu" class="context-menu" hidden style="display: none; min-width: 230px;">
+      <button class="context-menu-item" id="choiceOpenFile">
+        <span>📄 Abrir Archivo...</span>
+        <kbd style="margin-left: auto; font-size: 11px; opacity: 0.65; padding: 2px 6px; background: rgba(255,255,255,0.06); border-radius: 4px;">Ctrl+O</kbd>
+      </button>
+      <button class="context-menu-item" id="choiceOpenFolder">
+        <span>📁 Abrir Carpeta / Proyecto...</span>
+        <kbd style="margin-left: auto; font-size: 11px; opacity: 0.65; padding: 2px 6px; background: rgba(255,255,255,0.06); border-radius: 4px;">⇧Ctrl+O</kbd>
+      </button>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- PORTAL DE INICIO: LOGIN, CONEXIÓN HERMES & VINCULACIÓN DUAL          -->
+    <!-- ==================================================================== -->
+    <div id="onboardingGateway" class="onboarding-overlay">
+      <div class="onboarding-modal">
+        <!-- Encabezado de Marca -->
+        <div class="onboarding-brand">
+          <div class="onboarding-logo">✦</div>
+          <div class="onboarding-brand-info">
+            <h1>Atlantis Studio</h1>
+            <p>IDE Colaborativo &amp; Matriz de Agentes Hermes</p>
+          </div>
+          <button class="icon-btn onboarding-close-btn" id="btnCloseOnboarding" title="Cerrar y volver al IDE" style="margin-left: auto; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-muted); width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+        </div>
+
+        <!-- Stepper Indicators (2 Pasos: Conectar Hermes -> Vincular con Amigo) -->
+        <div class="onboarding-stepper">
+          <div class="step-item active" id="stepIndicator1">
+            <span class="step-num">1</span>
+            <span class="step-text">Conectar mi Hermes</span>
+          </div>
+          <div class="step-line" id="stepLine1"></div>
+          <div class="step-item" id="stepIndicator2">
+            <span class="step-num">2</span>
+            <span class="step-text">Vincular con Hermes de Amigo</span>
+          </div>
+        </div>
+
+        <!-- PASO 1: CONECTAR MI HERMES AGENT -->
+        <div class="onboarding-card cyber-card-main" id="onboardingStep1">
+          <div class="card-title-block">
+            <div class="title-tag-row">
+              <span class="hud-pill"><span class="pulse-dot"></span> ENLACE NEURAL ACTIVO</span>
+              <span class="hud-pill mono" id="hudLatency">LATENCIA IPC: 0.6ms</span>
+            </div>
+            <h2>Conexión de Hermes Agent</h2>
+            <p>Enlace directo con el runtime de tu máquina. Total soberanía local, terminal bash autónomo y habilidades Antigravity.</p>
+          </div>
+
+          <!-- Tarjeta Holográfica de Detección de Hermes Local -->
+          <div class="user-session-card cyber-card" id="obHermesDetectCard">
+            <div class="session-avatar-wrap">
+              <div class="session-avatar cyber-avatar" id="obHermesAvatar">KO</div>
+              <div class="avatar-orbit"></div>
+              <span class="avatar-status-badge">● LIVE</span>
+            </div>
+            <div class="session-details">
+              <div class="session-header-row">
+                <strong id="obHermesDetectedName" class="agent-title">Koko</strong>
+                <span class="session-badge cyber-badge" id="obHermesDetectedBadge">✓ Hermes Detectado</span>
+              </div>
+              <div class="telemetry-tags">
+                <span class="telemetry-chip" id="obHermesDetectedPath">~/.local/bin/hermes</span>
+                <span class="telemetry-chip active" id="obHermesDetectedModel">nemotron-3-ultra-free</span>
+                <span class="telemetry-chip">PTY Bash</span>
+                <span class="telemetry-chip">Skills Antigravity</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector Rápido de Cerebro LLM -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="obMyAgentModel">Cerebro de Inteligencia Artificial (Modelo):</label>
+              <span class="model-badge-spec" id="modelSpecBadge">⚡ Configuración Nativa de tu Hermes</span>
+            </div>
+            <!-- Quick Chips de Modelos -->
+            <div class="model-quick-chips" id="modelQuickChips">
+              <button type="button" class="model-chip active" data-val="nemotron-3-ultra-free">⚡ Nemotron (Tu Hermes)</button>
+              <button type="button" class="model-chip" data-val="gemini-2.5-pro">🧠 Gemini 2.5 Pro</button>
+              <button type="button" class="model-chip" data-val="claude-3.5-sonnet">🏗️ Claude 3.5</button>
+              <button type="button" class="model-chip" data-val="deepseek-v3">💻 DeepSeek-V3</button>
+              <button type="button" class="model-chip" data-val="ollama-local">🔒 Ollama Local</button>
+            </div>
+            <select id="obMyAgentModel" class="cyber-select">
+              <optgroup label="Configuración Actual de tu Hermes (~/.hermes)">
+                <option value="nemotron-3-ultra-free" data-provider="opencode-free" selected>⚡ Nemotron 3 Ultra Free (Actual en config.yaml)</option>
+              </optgroup>
+              <optgroup label="Google AI Studio (Nativo)">
+                <option value="gemini-3.6-flash" data-provider="gemini">⚡ Gemini 3.6 Flash (Recomendado — Ultra Rápido & Razonamiento)</option>
+                <option value="gemini-2.5-pro" data-provider="gemini">🧠 Gemini 2.5 Pro (Razonamiento Profundo de Código)</option>
+              </optgroup>
+              <optgroup label="Anthropic Claude">
+                <option value="claude-3.5-sonnet" data-provider="anthropic">🏗️ Claude 3.5 Sonnet (Arquitectura y Refactor)</option>
+                <option value="claude-3.5-haiku" data-provider="anthropic">⚡ Claude 3.5 Haiku (Respuestas Ágiles)</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option value="gpt-4o" data-provider="openai">🌐 GPT-4o (Multimodal & Visión Integral)</option>
+                <option value="gpt-4o-mini" data-provider="openai">💡 GPT-4o mini (Económico y Veloz)</option>
+              </optgroup>
+              <optgroup label="DeepSeek AI">
+                <option value="deepseek-r1" data-provider="deepseek">🔬 DeepSeek-R1 (Lógica, Algoritmos & Auditoría)</option>
+                <option value="deepseek-v3" data-provider="deepseek">💻 DeepSeek-V3 (Desarrollo y Programación)</option>
+              </optgroup>
+              <optgroup label="Modelos Locales / Privados">
+                <option value="ollama-local" data-provider="ollama">🔒 Ollama Local (100% Offline / Privacidad Absoluta)</option>
+              </optgroup>
+              <optgroup label="Hermes CLI Nativo">
+                <option value="hermes-cli" data-provider="hermes_cli">🖥️ Hermes Daemon PTY (Nativo Linux ~/.local/bin/hermes)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Ajustes Avanzados Desplegables (Minimalista) -->
+          <details class="cyber-details" id="obAdvancedDetails">
+            <summary class="cyber-summary">
+              <span>⚙️ Parámetros Avanzados y Credenciales</span>
+              <span class="summary-arrow">▸</span>
+            </summary>
+            <div class="details-content">
+              <div class="form-group">
+                <label for="obMyAgentName">Alias del Agente:</label>
+                <input type="text" id="obMyAgentName" value="Koko" placeholder="Ej. Koko">
+              </div>
+              <div class="form-group">
+                <label for="obMyAgentEngine">Modo de Ejecución:</label>
+                <select id="obMyAgentEngine">
+                  <option value="local" selected>Hermes Local PTY & CLI (Nativo en tu máquina)</option>
+                  <option value="gateway">Hermes Gateway URL Remoto (HTTP/WS)</option>
+                </select>
+              </div>
+              <div class="form-group" id="obGroupGateway" style="display: none;">
+                <label for="obGatewayUrl">URL Gateway Hermes:</label>
+                <input type="text" id="obGatewayUrl" placeholder="http://127.0.0.1:8787">
+              </div>
+              <div class="form-group" id="obGroupApiKey">
+                <label for="obApiKey">API Key LLM Override (Opcional):</label>
+                <input type="password" id="obApiKey" placeholder="sk-... / o vacía para usar ~/.hermes/.env">
+                <small class="key-status-hint" id="obApiKeyHint">✓ Clave detectada en ~/.hermes/.env</small>
+              </div>
+            </div>
+          </details>
+
+          <!-- Consola de Telemetría y Estado de Enlace -->
+          <div class="connection-status-box cyber-status-box" id="obMyAgentStatusBox">
+            <div class="status-indicator">
+              <span class="status-dot connected" id="obMyAgentDot"></span>
+              <span id="obMyAgentStatusText">Hermes detectado y listo para conectar</span>
+            </div>
+            <button class="action-btn cyber-btn-test" id="btnTestMyAgent">⚡ Probar Enlace</button>
+          </div>
+
+          <div class="onboarding-actions">
+            <button class="primary-btn full cyber-btn-primary" id="btnConnectMyAgent">
+              <span>⚡ Conectar mi Hermes Agent</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 2: VINCULAR CON EL HERMES AGENT DE TU AMIGO -->
+        <div class="onboarding-card cyber-card-main" id="onboardingStep2" hidden>
+          <div class="card-title-block">
+            <div class="title-tag-row">
+              <span class="hud-pill violet"><span class="pulse-dot violet"></span> ENLACE DUAL COLABORATIVO</span>
+              <span class="hud-pill mono">AGNOSTIC MATRIX</span>
+            </div>
+            <h2>Vincular con Hermes de tu Amigo</h2>
+            <p>Conecta tu agente con el de tu compañero. Ambos cooperan en tiempo real sin importar el modelo que use cada uno.</p>
+          </div>
+
+          <!-- Puente Dual Inmersivo con Efecto Cyber -->
+          <div class="dual-agent-preview cyber-bridge">
+            <div class="agent-node left">
+              <div class="node-avatar-wrap">
+                <div class="node-avatar cyber-avatar-cyan" id="nodeAvatarMine">KO</div>
+                <div class="avatar-orbit cyan"></div>
+              </div>
+              <strong id="nodeNameMine">Koko</strong>
+              <span class="node-badge mine" id="nodeBadgeMine">Nemotron 3 Ultra</span>
+            </div>
+            <div class="node-connector cyber-conduit">
+              <div class="conduit-line">
+                <span class="conduit-pulse"></span>
+              </div>
+              <span class="node-icon">⚡</span>
+              <span class="node-link-label">PUENTE DUAL SYNC</span>
+            </div>
+            <div class="agent-node right">
+              <div class="node-avatar-wrap">
+                <div class="node-avatar friend cyber-avatar-purple" id="nodeAvatarFriend">HA</div>
+                <div class="avatar-orbit purple"></div>
+              </div>
+              <strong id="nodeNameFriend">Hermes-Amigo</strong>
+              <span class="node-badge friend" id="nodeBadgeFriend">Modelo-Agnóstico</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="obFriendAgentName">Nombre del Agente de tu Amigo:</label>
+            <input type="text" id="obFriendAgentName" value="Hermes-Amigo" placeholder="Ej. Hermes-Amigo">
+          </div>
+
+          <div class="form-group">
+            <label>Modo de Colaboración:</label>
+            <div class="pairing-mode-chips cyber-mode-chips">
+              <button type="button" class="mode-chip cyber-chip active" data-mode="dual_local" id="chipModeDualLocal">
+                <div class="chip-title-row">
+                  <span class="chip-icon">⚡</span>
+                  <strong>Modo Dúo Autónomo</strong>
+                </div>
+                <small>Ambos agentes dialogan y co-desarrollan en el mismo hub</small>
+              </button>
+              <button type="button" class="mode-chip cyber-chip" data-mode="code" id="chipModeCode">
+                <div class="chip-title-row">
+                  <span class="chip-icon">🔗</span>
+                  <strong>Código de Enlace</strong>
+                </div>
+                <small>Sincronización segura entre diferentes estaciones</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" id="obGroupPairCode" style="display: none;">
+            <label for="obPairCode">Código de Vinculación:</label>
+            <div class="copy-box cyber-copy-box">
+              <input type="text" id="obPairCode" placeholder="HERMES-XXXXXX">
+              <button class="action-btn" type="button" id="btnGenPairCode">🎲 Generar Código</button>
+            </div>
+          </div>
+
+          <!-- Selector de Workspace Limpio (Cyber Cards) -->
+          <div class="workspace-selector-box cyber-ws-box">
+            <div class="section-label">ESPACIO DE TRABAJO (WORKSPACE)</div>
+            <div class="workspace-cards-grid">
+              <label class="cyber-ws-card active">
+                <input type="radio" name="obWorkspaceChoice" value="clean" checked>
+                <div class="ws-card-content">
+                  <span class="ws-card-icon">✨</span>
+                  <div class="ws-card-text">
+                    <strong>Espacio Limpio</strong>
+                    <small>Inicia sin proyectos previos ni archivos abiertos</small>
+                  </div>
+                </div>
+              </label>
+              <label class="cyber-ws-card" id="cardBrowseSystem">
+                <input type="radio" name="obWorkspaceChoice" value="browse">
+                <div class="ws-card-content">
+                  <span class="ws-card-icon">📂</span>
+                  <div class="ws-card-text">
+                    <strong>Abrir Carpeta del Sistema</strong>
+                    <small id="obBrowseFolderLabel">Explorar carpetas en tu disco...</small>
+                  </div>
+                </div>
+              </label>
+            </div>
+            <div id="obNewProjectContainer" style="display: none; margin-top: 8px;">
+              <input type="text" id="obNewProjectName" placeholder="Nombre de la carpeta (ej. mi-proyecto)">
+            </div>
+          </div>
+
+          <div class="onboarding-actions split">
+            <button class="ghost-btn cyber-ghost-btn" id="btnStep2Back">← Volver a Mi Hermes</button>
+            <button class="primary-btn cyber-btn-primary" id="btnLaunchStudio">
+              <span>🚀 Vincular Agentes y Entrar a Atlantis Studio</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="toast" id="toast" role="status"></div>
   </div>
-  <script>document.write(`<script src="${location.protocol === "file:" ? "./" : "/static/"}app.js"><\/script>`);</script>
+  <input type="file" id="fallbackFileInput" style="display: none;">
+  <input type="file" id="fallbackFolderInput" webkitdirectory directory style="display: none;">
+  <script>document.write(`<script src="${location.protocol === "file:" ? "./vs/loader.js" : "/static/vs/loader.js"}"><\/script>`);</script>
+  <script>document.write(`<script src="${location.protocol === "file:" ? "./app.js" : "/static/app.js"}"><\/script>`);</script>
 </body>
 </html>
