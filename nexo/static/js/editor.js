@@ -133,8 +133,10 @@ function updateEditorTabsUI() {
       <span>${getFileIcon(filename)}</span>
       <span>${escapeHtml(filename)}</span>
       ${item.dirty ? '<span style="color: var(--accent-daniel); font-size: 14px;">*</span>' : ''}
-      <span class="tab-close-btn" onclick="closeEditorTab('${escapeHtml(p)}', event)">✕</span>
+      <span class="tab-close-btn">✕</span>
     `;
+    const closeBtn = tab.querySelector('.tab-close-btn');
+    if (closeBtn) closeBtn.onclick = (ev) => closeEditorTab(p, ev);
     tab.onclick = () => openFile(p);
     container.appendChild(tab);
   });
@@ -180,17 +182,23 @@ function renderFileTree(tree) {
     row.className = 'tree-node';
     row.style.paddingLeft = `${indent * 12 + 8}px`;
 
-    if (item.tipo === 'directorio') {
+    if (item.tipo === 'directorio' || Array.isArray(item.archivos)) {
       row.innerHTML = `<span>📁</span> <span style="font-weight: 500;">${escapeHtml(item.nombre)}</span>`;
       container.appendChild(row);
       if (item.hijos && item.hijos.length > 0) {
         item.hijos.forEach(ch => buildNode(ch, indent + 1));
+      } else if (Array.isArray(item.archivos)) {
+        item.archivos.forEach(f => {
+          const fullRuta = item.es_raiz ? f : `proyectos/${item.nombre}/${f}`;
+          buildNode({ nombre: f, ruta: fullRuta }, indent + 1);
+        });
       }
     } else {
-      const isAct = (item.ruta === currentFile);
+      const ruta = item.ruta || item.nombre;
+      const isAct = (ruta === currentFile);
       if (isAct) row.classList.add('active');
       row.innerHTML = `<span>${getFileIcon(item.nombre)}</span> <span>${escapeHtml(item.nombre)}</span>`;
-      row.onclick = () => openFile(item.ruta);
+      row.onclick = () => openFile(ruta);
       container.appendChild(row);
     }
   }

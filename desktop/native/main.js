@@ -235,8 +235,8 @@ async function createWindow() {
     autoHideMenuBar: false,
     webPreferences: {
       preload: preloadPath,
-      contextIsolation: false,
-      nodeIntegration: true,
+      contextIsolation: true,
+      nodeIntegration: false,
       sandbox: false
     }
   });
@@ -260,8 +260,13 @@ async function createWindow() {
   });
 
   windowRef.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/i.test(url) && !url.includes("127.0.0.1") && !url.includes("localhost")) {
-      shell.openExternal(url);
+    try {
+      const parsed = new URL(url);
+      if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname !== "127.0.0.1" && parsed.hostname !== "localhost") {
+        shell.openExternal(url);
+        return { action: "deny" };
+      }
+    } catch {
       return { action: "deny" };
     }
     return { action: "allow" };

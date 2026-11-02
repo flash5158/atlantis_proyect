@@ -88,21 +88,25 @@
         "atlantis.runtimePath": {
           "type": "string",
           "default": "",
+          "scope": "machine",
           "description": "Ejecutable Atlantis Runtime. Se detecta automáticamente en la aplicación."
         },
         "atlantis.pythonPath": {
           "type": "string",
           "default": "python3",
+          "scope": "machine",
           "description": "Python para ejecutar el runtime desde el código fuente."
         },
         "atlantis.runtimeCwd": {
           "type": "string",
           "default": "",
+          "scope": "machine",
           "description": "Repositorio Atlantis al ejecutar desde el código fuente."
         },
         "atlantis.hermesPath": {
           "type": "string",
           "default": "hermes",
+          "scope": "machine",
           "description": "Ejecutable de tu Hermes local."
         },
         "atlantis.workspace": {

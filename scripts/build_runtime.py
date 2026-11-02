@@ -15,6 +15,7 @@ subprocess.run(
     [str(python), "-m", "PyInstaller", "--noconfirm", "--clean", "--onefile",
      "--name", "atlantis-runtime", "--paths", str(root / "nexo"),
      "--hidden-import", "atlantis_hub.app", "--hidden-import", "atlantis_hub.models",
+     "--hidden-import", "atlantis_hub.documents",
      str(root / "nexo" / "atlantis_runtime.py")], cwd=root, check=True
 )
 source = root / "dist" / ("atlantis-runtime.exe" if sys.platform == "win32" else "atlantis-runtime")

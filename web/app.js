@@ -1848,8 +1848,13 @@ function renderMarkdownHTML(md) {
   html = html.replace(/^\s*[-*]\s+(.*$)/gim, "<li>$1</li>");
   html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
 
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: var(--blue); text-decoration: underline;">$1</a>');
+  // Links (sanitize protocol to prevent javascript:/data: XSS)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, rawUrl) => {
+    const cleanUrl = rawUrl.trim();
+    if (!/^(https?:\/\/|mailto:|\/|#)/i.test(cleanUrl)) return label;
+    const safeHref = cleanUrl.replace(/"/g, "&quot;");
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" style="color: var(--blue); text-decoration: underline;">${label}</a>`;
+  });
 
   // Paragraph line breaks
   html = html.replace(/\n\n/g, "<br><br>");
@@ -2450,6 +2455,11 @@ function bindEvents() {
       openFile(file).then(() => {
         // Jump to line
         setTimeout(() => {
+          if (monacoEditor) {
+            monacoEditor.revealLineInCenter(line);
+            monacoEditor.setPosition({ lineNumber: line, column: 1 });
+            monacoEditor.focus();
+          }
           const lines = $("codeTextarea").value.split("\n");
           let pos = 0;
           for (let i = 0; i < line - 1 && i < lines.length; i++) pos += lines[i].length + 1;
@@ -2549,7 +2559,7 @@ function bindEvents() {
   $("btnStartTunnelAction").addEventListener("click", () => {
     $("inviteDialog").close();
     $("tabTerminal").click();
-    executeTerminalCmd("./tunnel.sh");
+    executeTerminalCmd("./tunnel.sh start");
   });
 
   // Settings Modal
@@ -2807,9 +2817,6 @@ function bindMenubar() {
   });
   $("menuItemOpenFile")?.addEventListener("click", () => { closeAll(); promptOpenSystemFile(); });
   $("menuItemOpenFolder")?.addEventListener("click", () => { closeAll(); promptOpenSystemFolder(); });
-  $("menuItemSave")?.addEventListener("click", () => { closeAll(); saveCurrentFile(); });
-  $("menuItemCloseTab")?.addEventListener("click", () => { closeAll(); if (state.activeTabIdx >= 0) closeTab(state.activeTabIdx); });
-  $("menuItemRefreshTree")?.addEventListener("click", () => { closeAll(); loadTree(); toast("Explorador actualizado"); });
   $("menuItemSave")?.addEventListener("click", () => { closeAll(); saveCurrentFile(); });
   $("menuItemCloseTab")?.addEventListener("click", () => { closeAll(); if (state.activeTabIdx >= 0) closeTab(state.activeTabIdx); });
   $("menuItemRefreshTree")?.addEventListener("click", () => { closeAll(); loadTree(); toast("Explorador actualizado"); });

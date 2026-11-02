@@ -6,6 +6,7 @@ OUT="$ROOT/desktop/extension/runtime"
 mkdir -p "$OUT"
 "$PYTHON" -m PyInstaller --noconfirm --clean --onefile --name atlantis-runtime \
   --paths "$ROOT/nexo" --hidden-import atlantis_hub.app --hidden-import atlantis_hub.models \
+  --hidden-import atlantis_hub.documents \
   "$ROOT/nexo/atlantis_runtime.py"
 cp "$ROOT/dist/atlantis-runtime" "$OUT/atlantis-runtime"
 chmod +x "$OUT/atlantis-runtime"

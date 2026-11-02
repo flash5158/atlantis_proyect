@@ -38,10 +38,15 @@ class HubClient:
 def git_worktree(workspace: Path, task_id: str) -> tuple[Path, str | None]:
     if not (workspace / ".git").exists():
         return workspace, None
-    path = workspace / ".atlantis" / "worktrees" / task_id
+    safe_id = Path(task_id).name
+    if not safe_id or safe_id in {".", ".."}:
+        raise ValueError(f"task_id inválido: {task_id}")
+    path = (workspace / ".atlantis" / "worktrees" / safe_id).resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=workspace, capture_output=True)
     subprocess.run(
-        ["git", "worktree", "add", "--detach", str(path), "HEAD"],
+        ["git", "worktree", "add", "--force", "--detach", str(path), "HEAD"],
         cwd=workspace,
         check=True,
         capture_output=True,

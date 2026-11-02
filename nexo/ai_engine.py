@@ -463,9 +463,9 @@ async def verificar_estado_ia() -> dict[str, Any]:
     gemini_msg = "Sin clave configurada"
     if key:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash?key={key}"
+            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash"
             async with httpx.AsyncClient(timeout=8.0) as client:
-                res = await client.get(url)
+                res = await client.get(url, headers={"x-goog-api-key": key})
                 if res.status_code == 200:
                     gemini_ok = True
                     gemini_msg = "Operacional y Conectado (Google AI Studio)"

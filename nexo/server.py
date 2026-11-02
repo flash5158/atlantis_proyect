@@ -14,7 +14,7 @@ Características avanzadas:
 """
 
 import asyncio
-import fcntl
+import base64
 import hashlib
 import hmac
 import json
@@ -22,6 +22,7 @@ import os
 import platform
 import re
 import secrets
+import shlex
 import shutil
 import signal
 import subprocess
@@ -62,6 +63,9 @@ if IS_VERCEL:
     WORKSPACE = Path("/tmp/atlantis_proyect").resolve()
     PROYECTOS = WORKSPACE / "proyectos"
     NEXO_DATA_DIR = Path("/tmp/.nexo")
+    ATLANTIS_USER_DIR = Path("/tmp/.atlantis")
+    ATLANTIS_USER_DIR.mkdir(parents=True, exist_ok=True)
+    ACCOUNTS_FILE = ATLANTIS_USER_DIR / "accounts.json"
 else:
     env_ws = os.environ.get("NEXO_WORKSPACE")
     if env_ws and Path(env_ws).exists():
@@ -93,7 +97,8 @@ def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
 
 
 def verify_password(password: str, hashed: str, salt: str) -> bool:
-    return hashlib.sha256((salt + password).encode("utf-8")).hexdigest() == hashed
+    calc = hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
+    return hmac.compare_digest(calc, hashed or "")
 
 
 def cargar_cuentas() -> list[dict[str, Any]]:
@@ -314,6 +319,12 @@ def token_ok(token: str) -> bool:
 
 
 def es_local(req_or_ws) -> bool:
+    headers = getattr(req_or_ws, "headers", None)
+    if headers:
+        for hdr in ("cf-connecting-ip", "x-forwarded-for", "x-real-ip", "forwarded"):
+            val = headers.get(hdr, "").split(",")[0].strip()
+            if val and val not in ("127.0.0.1", "::1", "localhost"):
+                return False
     client = getattr(req_or_ws, "client", None)
     if not client:
         return True
@@ -569,20 +580,25 @@ async def api_chat(req: Request, proyecto: str = Query("general"), token: str = 
 
 
 def resolver_archivo(proyecto: str, ruta: str) -> Path:
+    ws_root = WORKSPACE.resolve()
+    sala = sala_de(proyecto)
+    sala_root = sala.directorio.resolve()
     p_direct = Path(ruta)
     if p_direct.is_absolute():
-        return p_direct.resolve()
-    sala = sala_de(proyecto)
+        p_res = p_direct.resolve()
+        if p_res == ws_root or ws_root in p_res.parents or p_res == sala_root or sala_root in p_res.parents:
+            return p_res
+        raise ValueError(f"Ruta fuera del workspace: {ruta}")
     try:
         p = ruta_segura(sala, ruta)
-        if p.is_file():
+        if p.exists():
             return p
-    except Exception:
+    except ValueError:
         pass
-    p_ws = (WORKSPACE / ruta).resolve()
-    if p_ws == WORKSPACE or WORKSPACE in p_ws.parents:
+    p_ws = (ws_root / ruta).resolve()
+    if p_ws == ws_root or ws_root in p_ws.parents:
         return p_ws
-    return sala.directorio / ruta
+    return ruta_segura(sala, ruta)
 
 
 @app.get("/api/archivo")
@@ -675,7 +691,8 @@ async def api_terminal_exec(request: Request, token: str = Query("")):
             CURRENT_TERMINAL_CWD = WORKSPACE
         elif body.get("target_cwd"):
             cand = Path(body["target_cwd"]).resolve()
-            if cand.is_dir():
+            ws_root = WORKSPACE.resolve()
+            if cand.is_dir() and (cand == ws_root or ws_root in cand.parents):
                 CURRENT_TERMINAL_CWD = cand
 
         start_cwd = CURRENT_TERMINAL_CWD
@@ -683,7 +700,7 @@ async def api_terminal_exec(request: Request, token: str = Query("")):
         # Execute command in bash with CWD tracking sentinel
         # Subshell captures command exit code and prints final $PWD
         script = f'''
-cd "{start_cwd}"
+cd {shlex.quote(str(start_cwd))}
 {cmd}
 __ATL_RET__=$?
 printf "\\n__ATL_CWD__:%s\\n" "$PWD"
@@ -777,7 +794,7 @@ async def api_buscar(q: str, request: Request, token: str = Query("")):
         return {"resultados": []}
     try:
         proc = await asyncio.create_subprocess_exec(
-            "git", "grep", "-n", "-I", "-i", q,
+            "git", "grep", "-n", "-I", "-i", "--", q,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=str(WORKSPACE)
@@ -966,6 +983,57 @@ async def api_ai_msg(req: Request, token: str = Query("")):
         asyncio.create_task(procesar_tarea_ia())
 
     return {"ok": True, "mensaje": nuevo_msg}
+
+
+@app.post("/api/ai/presence")
+async def api_ai_presence(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    agente = str(body.get("agente") or CFG.get("ia_nombre", "antigravity")).strip()
+    agentes = AI_STORE.setdefault("agentes", {})
+    agentes[agente] = {
+        "tipo": body.get("tipo", agente),
+        "estado": body.get("estado", "listo"),
+        "actividad": body.get("actividad", "En línea"),
+        "ultimo_ping": time.time(),
+    }
+    _guardar_ai_data(AI_STORE)
+    await enviar_todos({"tipo": "presencia", "conectados": len(CONECTADOS), "agentes": agentes})
+    return {"ok": True, "agente": agentes[agente]}
+
+
+@app.post("/api/ai/reply")
+async def api_ai_reply(req: Request, token: str = Query("")):
+    if not es_local(req) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
+    body = await req.json()
+    orig_id = body.get("id", "")
+    de = body.get("de", CFG.get("ia_nombre", "antigravity"))
+    contenido = body.get("contenido", "")
+    codigo = body.get("codigo", "")
+    estado = body.get("estado", "completado")
+    mensajes = AI_STORE.setdefault("mensajes", [])
+    orig = next((m for m in mensajes if m.get("id") == orig_id), None)
+    if orig:
+        orig["estado"] = estado
+    rep_msg = {
+        "id": f"rep-{int(time.time())}-{secrets.token_hex(2)}",
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "de": de,
+        "para": orig.get("de", "todos") if orig else "todos",
+        "proyecto": orig.get("proyecto", "general") if orig else body.get("proyecto", "general"),
+        "tipo": "respuesta",
+        "titulo": f"Re: {orig['titulo']}" if orig and orig.get("titulo") else "Respuesta IA",
+        "contenido": contenido,
+        "codigo": codigo,
+        "estado": estado,
+        "respuesta_a": orig_id,
+    }
+    mensajes.append(rep_msg)
+    _guardar_ai_data(AI_STORE)
+    await enviar_todos({"tipo": "ai_msg", "mensaje": rep_msg})
+    return {"ok": True, "mensaje": rep_msg}
 
 
 @app.get("/api/ai/tasks")
@@ -1205,15 +1273,14 @@ async def api_auth_me(request: Request, token: str = Query("")):
     if tok and tok in ACTIVE_SESSIONS:
         return {"ok": True, "user": ACTIVE_SESSIONS[tok]}
 
-    # 2. Si no hay token explícito pero hay última sesión autenticada
-    if LAST_AUTHENTICATED_USER:
-        return {"ok": True, "user": LAST_AUTHENTICATED_USER}
-
-    # 3. Retornar cuenta por defecto en local si existe
-    cuentas = cargar_cuentas()
-    if cuentas:
-        default_user = {k: v for k, v in cuentas[0].items() if k not in ("password_hash", "salt")}
-        return {"ok": True, "user": default_user}
+    # 2. En entorno local o autenticado con token maestro, permitir última sesión o cuenta por defecto
+    if es_local(request) or (tok and token_ok(tok)):
+        if LAST_AUTHENTICATED_USER:
+            return {"ok": True, "user": LAST_AUTHENTICATED_USER}
+        cuentas = cargar_cuentas()
+        if cuentas:
+            default_user = {k: v for k, v in cuentas[0].items() if k not in ("password_hash", "salt")}
+            return {"ok": True, "user": default_user}
 
     return JSONResponse({"error": "No autenticado"}, status_code=401)
 
@@ -1231,7 +1298,9 @@ async def api_auth_logout(request: Request, token: str = Query("")):
 
 # ---------------------------------------------------------------- Endpoints de Hermes Agent y Vinculación Dual
 @app.get("/api/hermes/detect")
-async def api_hermes_detect(request: Request):
+async def api_hermes_detect(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
     hermes_dir = HOME / ".hermes"
     hermes_bin = ai_engine.detectar_hermes_bin()
     cfg_yaml = hermes_dir / "config.yaml"
@@ -1684,6 +1753,8 @@ async def api_social_feed(request: Request, token: str = Query("")):
 
 @app.get("/api/social/entities")
 async def api_social_entities(request: Request, token: str = Query("")):
+    if not es_local(request) and not token_ok(token):
+        return JSONResponse({"error": "token inválido"}, status_code=401)
     return {
         "entidades": social_matrix.ENTIDADES,
         "presencia": social_matrix.ESTADO_PRESENCIA,
@@ -1891,7 +1962,8 @@ async def pty_endpoint(
     fcntl.ioctl(master, termios.TIOCSWINSZ, wsz)
 
     shell = os.environ.get("SHELL", "/bin/zsh" if Path("/bin/zsh").exists() else "/bin/bash")
-    cwd_dir = (PROYECTOS / proyecto).resolve() if proyecto and (PROYECTOS / proyecto).is_dir() else WORKSPACE
+    proy_clean = Path(proyecto).name.strip() if proyecto else ""
+    cwd_dir = (PROYECTOS / proy_clean).resolve() if proy_clean and (PROYECTOS / proy_clean).is_dir() else WORKSPACE
 
     proc = subprocess.Popen(
         [shell],
@@ -2127,6 +2199,95 @@ async def ws_endpoint(ws: WebSocket, token: str = Query(""), nombre: str = Query
                         "fecha": fecha,
                     })
                     await difundir_arbol()
+
+            elif tipo == "archivo_renombrar":
+                sala = sala_de(msg.get("proyecto", "general"))
+                try:
+                    ruta = msg.get("ruta", "").strip()
+                    nuevo = msg.get("nuevo", "").strip()
+                    p_orig = ruta_segura(sala, ruta)
+                    p_dest = ruta_segura(sala, nuevo)
+                    if not p_orig.exists():
+                        raise FileNotFoundError(f"No existe {ruta}")
+                    p_dest.parent.mkdir(parents=True, exist_ok=True)
+                    p_orig.rename(p_dest)
+                    sala.guardar_sistema(f"{nombre_usuario} renombró {ruta} → {nuevo}", fecha)
+                    await enviar(ws, {"tipo": "operacion_ok", "accion": "renombrar", "ruta": ruta, "nuevo": nuevo})
+                    await difundir_arbol()
+                except Exception as e:
+                    await enviar(ws, {"tipo": "error", "texto": str(e)})
+
+            elif tipo == "archivo_subir":
+                sala = sala_de(msg.get("proyecto", "general"))
+                try:
+                    ruta = msg.get("ruta", "").strip()
+                    raw_bytes = base64.b64decode(msg.get("datos", ""))
+                    if len(raw_bytes) > MAX_SUBIDA:
+                        raise ValueError("Archivo supera el tamaño máximo permitido")
+                    p = ruta_segura(sala, ruta)
+                    p.parent.mkdir(parents=True, exist_ok=True)
+                    p.write_bytes(raw_bytes)
+                    sala.guardar_sistema(f"{nombre_usuario} subió {ruta} ({len(raw_bytes)} bytes)", fecha)
+                    await enviar(ws, {"tipo": "operacion_ok", "accion": "subir", "ruta": ruta})
+                    await difundir_arbol()
+                except Exception as e:
+                    await enviar(ws, {"tipo": "error", "texto": str(e)})
+
+            elif tipo == "proyecto_borrar":
+                n_proy = Path(msg.get("nombre", "")).name.strip()
+                if n_proy and msg.get("confirmar"):
+                    proy_dir = (PROYECTOS / n_proy).resolve()
+                    if proy_dir.is_dir() and PROYECTOS.resolve() in proy_dir.parents:
+                        shutil.rmtree(proy_dir)
+                        SALAS.pop(n_proy, None)
+                        await difundir_arbol()
+                    else:
+                        await enviar(ws, {"tipo": "error", "texto": f"Proyecto '{n_proy}' no existe"})
+
+            elif tipo in ("run", "git"):
+                sala = sala_de(msg.get("proyecto", "general"))
+                cwd_run = sala.directorio if tipo == "run" else WORKSPACE
+                try:
+                    if tipo == "run":
+                        cmd_str = msg.get("cmd", "").strip()
+                        proc_run = await asyncio.create_subprocess_exec(
+                            "/bin/bash", "-c", cmd_str,
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.STDOUT,
+                            cwd=str(cwd_run),
+                            env=entorno_limpio(cwd_run),
+                        )
+                    else:
+                        accion = msg.get("accion", "status")
+                        if accion == "status":
+                            git_args = ["git", "status"]
+                        elif accion == "diff":
+                            git_args = ["git", "diff"]
+                        elif accion == "log":
+                            git_args = ["git", "log", "-n", "15", "--oneline"]
+                        elif accion == "pull":
+                            git_args = ["git", "pull"]
+                        elif accion == "push":
+                            git_args = ["git", "push"]
+                        elif accion == "commit":
+                            p_add = await asyncio.create_subprocess_exec("git", "add", "-A", cwd=str(cwd_run))
+                            await p_add.wait()
+                            git_args = ["git", "commit", "-m", msg.get("msg") or "chore: commit desde NEXO CLI"]
+                        else:
+                            git_args = ["git", "status"]
+                        proc_run = await asyncio.create_subprocess_exec(
+                            *git_args,
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.STDOUT,
+                            cwd=str(cwd_run),
+                            env=entorno_limpio(cwd_run),
+                        )
+                    out_b, _ = await proc_run.communicate()
+                    if out_b:
+                        await enviar(ws, {"tipo": "output", "texto": out_b.decode("utf-8", errors="replace"), "id": msg.get("id", "cli")})
+                    await enviar(ws, {"tipo": "run_fin", "code": proc_run.returncode or 0, "id": msg.get("id", "cli")})
+                except Exception as e:
+                    await enviar(ws, {"tipo": "error", "texto": str(e)})
 
             elif tipo == "arbol":
                 await enviar(ws, {"tipo": "arbol", "arbol": _arbol()})

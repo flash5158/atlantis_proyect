@@ -322,7 +322,12 @@ function showToast(msg) {
 
 function escapeHtml(s) {
   if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // ---------------------------------------------------- BOOTSTRAP DE LA APLICACIÓN

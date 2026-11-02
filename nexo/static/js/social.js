@@ -154,10 +154,10 @@ function createPostElement(post) {
             <span class="post-code-title">📄 ${escapeHtml(fn)}</span>
           </div>
           <div class="post-code-actions">
-            <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(${JSON.stringify(post.codigo)}, ${JSON.stringify(post.archivo || '')})">
+            <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(decodeURIComponent('${encodeURIComponent(post.codigo).replace(/'/g, '%27')}'), decodeURIComponent('${encodeURIComponent(post.archivo || '').replace(/'/g, '%27')}'))">
               📥 Abrir en Editor
             </button>
-            <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(${JSON.stringify(fn)}, ${JSON.stringify(post.codigo)})">
+            <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(decodeURIComponent('${encodeURIComponent(fn).replace(/'/g, '%27')}'), decodeURIComponent('${encodeURIComponent(post.codigo).replace(/'/g, '%27')}'))">
               💾 Aplicar
             </button>
           </div>
@@ -252,10 +252,10 @@ function renderReplyHtml(postId, reply) {
             <span class="post-code-title">📄 ${escapeHtml(fn)}</span>
           </div>
           <div class="post-code-actions">
-            <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(${JSON.stringify(reply.codigo)}, ${JSON.stringify(fn)})">
+            <button type="button" class="post-code-btn" onclick="openFileInEditorFromSocial(decodeURIComponent('${encodeURIComponent(reply.codigo).replace(/'/g, '%27')}'), decodeURIComponent('${encodeURIComponent(fn).replace(/'/g, '%27')}'))">
               📥 Abrir en Editor
             </button>
-            <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(${JSON.stringify(fn)}, ${JSON.stringify(reply.codigo)})">
+            <button type="button" class="post-code-btn apply" onclick="applyCodeToWorkspace(decodeURIComponent('${encodeURIComponent(fn).replace(/'/g, '%27')}'), decodeURIComponent('${encodeURIComponent(reply.codigo).replace(/'/g, '%27')}'))">
               💾 Aplicar
             </button>
           </div>
