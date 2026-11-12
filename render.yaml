@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: atlantis-hub
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/auth/count
+    envVars:
+      - key: NEXO_PUBLIC
+        value: "1"
+    disk:
+      name: atlantis-data
+      mountPath: /root/.atlantis
+      sizeGB: 1

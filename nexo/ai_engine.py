@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""NEXO AI Engine 2.0 — Motor Real de IA para Hermes y Gemini.
+"""NEXO AI Engine — Motor de IA de Atlantis Studio (100% sin API keys).
 
-Integración auténtica (CERO SIMULACIONES):
-  1. Google Gemini 3.6 Flash / 2.5 Pro:
-     - Conexión directa a la API oficial de Google AI Studio (generativelanguage.googleapis.com).
-     - Detección automática de GOOGLE_API_KEY desde ~/.hermes/.env o variables de entorno.
-     - Fallback inteligente entre gemini-3.6-flash, gemini-3.5-flash y gemini-2.5-pro.
-  2. Nous Research Hermes Agent CLI:
-     - Detección del binario real en ~/.local/bin/hermes.
-     - Configurado nativamente con Gemini 3.6 Flash en ~/.hermes/config.yaml.
-     - Ejecución real en el workspace del proyecto con herramientas locales (--in <DIR> --yolo).
+Toda la inteligencia del estudio proviene de los Hermes Agents conectados por
+los propios usuarios, NUNCA de APIs en la nube:
+
+  1. Nous Research Hermes Agent CLI:
+     - Detección del binario real en ~/.local/bin/hermes (o PATH).
+     - El modelo lo define la configuración del propio Hermes (~/.hermes/config.yaml).
+     - Ejecución real en el workspace del proyecto (--in <DIR> --yolo).
      - Streaming asíncrono de stdout/stderr hacia WebSockets.
-  3. Colaboración Dual Autónoma (Hermes ↔ Gemini):
-     - Gemini analiza el objetivo y genera la arquitectura y plan de código.
-     - Hermes ejecuta el plan en los archivos locales usando sus capacidades de agente.
-     - Gemini audita y valida el resultado.
+  2. Colaboración Dual entre agentes (Mi Hermes <-> Hermes de mi amigo):
+     - Mi agente propone, el agente del amigo audita, vía el bus de agentes del hub.
+     - Sin amigo vinculado: modo individual honesto (mi agente propone y audita).
 """
 
 import asyncio
@@ -29,8 +26,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable
-
-import httpx
 
 BASE = Path(__file__).resolve().parent
 REPO_ROOT = BASE.parent
@@ -48,28 +43,30 @@ HERMES_BIN_DEFAULT = Path.home() / ".local" / "bin" / "hermes"
 
 def detectar_hermes_bin() -> Path | None:
     """Localiza el binario ejecutable real de Hermes Agent en cualquier ruta estándar o personalizada."""
+    home = Path.home()
+    hermes_dir = home / ".hermes"
     posibles = [
-        HERMES_BIN_DEFAULT,
-        Path.home() / ".local" / "bin" / "hermes",
-        Path.home() / "bin" / "hermes",
-        Path.home() / ".cargo" / "bin" / "hermes",
-        HERMES_DIR / "venv" / "bin" / "hermes",
-        HERMES_DIR / "hermes-agent" / "venv" / "bin" / "hermes",
-        Path("/usr/local/bin/hermes"),
-        Path("/usr/bin/hermes"),
-        Path("/opt/hermes/bin/hermes"),
+        home / ".local" / "bin" / "hermes",
+        home / "bin" / "hermes",
+        home / ".cargo" / "bin" / "hermes",
+        hermes_dir / "venv" / "bin" / "hermes",
+        hermes_dir / "hermes-agent" / "venv" / "bin" / "hermes",
     ]
+    which_path = shutil.which("hermes")
+    if which_path:
+        posibles.insert(0, Path(which_path))
+    else:
+        current_path_dirs = {p for p in os.environ.get("PATH", "").split(os.pathsep) if p}
+        for sys_dir in ["/usr/local/bin", "/usr/bin", "/opt/hermes/bin"]:
+            if sys_dir in current_path_dirs:
+                posibles.append(Path(sys_dir) / "hermes")
+
     for p in posibles:
         try:
             if p.is_file() and os.access(p, os.X_OK):
                 return p
         except Exception:
             pass
-    which_path = shutil.which("hermes")
-    if which_path:
-        p = Path(which_path)
-        if p.is_file() and os.access(p, os.X_OK):
-            return p
     return None
 
 
@@ -93,7 +90,11 @@ def leer_hermes_env() -> dict[str, str]:
 
 
 def obtener_config_ia() -> dict[str, Any]:
-    """Retorna la configuración activa de IA priorizando credenciales auténticas."""
+    """Retorna la configuración activa de IA: el agente Hermes local del usuario.
+
+    Atlantis Studio no usa ni pide API keys. El modelo lo define la
+    configuración del propio Hermes (~/.hermes/config.yaml).
+    """
     cfg = {}
     if CONFIG_FILE.exists():
         try:
@@ -105,32 +106,19 @@ def obtener_config_ia() -> dict[str, Any]:
             cfg = json.loads(BASE_CONFIG_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
-
-    hermes_env = leer_hermes_env()
-
-    # Resolver GOOGLE_API_KEY
-    gemini_key = (
-        cfg.get("ai_api_key")
-        or os.environ.get("GOOGLE_API_KEY")
-        or os.environ.get("GEMINI_API_KEY")
-        or hermes_env.get("GOOGLE_API_KEY")
-        or hermes_env.get("GEMINI_API_KEY")
-        or ""
-    )
 
     hermes_bin = detectar_hermes_bin()
 
     return {
-        "proveedor": cfg.get("ai_proveedor", "gemini"),
-        "api_key": gemini_key,
-        "modelo": cfg.get("ai_modelo", "gemini-3.6-flash"),
+        "proveedor": "hermes",
+        "modelo": cfg.get("ai_modelo", "auto"),
         "hermes_bin": str(hermes_bin) if hermes_bin else "",
         "hermes_disponible": hermes_bin is not None,
-        "gemini_disponible": bool(gemini_key),
     }
 
 
-def guardar_config_ia(proveedor: str, api_key: str, modelo: str = "gemini-3.6-flash") -> dict:
+def guardar_config_ia(proveedor: str = "hermes", modelo: str = "auto") -> dict:
+    """Guarda la configuración del agente (sin claves: no se usan ni se piden)."""
     cfg = {}
     if CONFIG_FILE.exists():
         try:
@@ -143,9 +131,7 @@ def guardar_config_ia(proveedor: str, api_key: str, modelo: str = "gemini-3.6-fl
         except Exception:
             pass
 
-    cfg["ai_proveedor"] = proveedor
-    if api_key:
-        cfg["ai_api_key"] = api_key.strip()
+    cfg["ai_proveedor"] = proveedor or "hermes"
     if modelo:
         cfg["ai_modelo"] = modelo.strip()
 
@@ -156,115 +142,6 @@ def guardar_config_ia(proveedor: str, api_key: str, modelo: str = "gemini-3.6-fl
         print(f"[AIEngine] Aviso: No se pudo escribir en {CONFIG_FILE}: {e}")
 
     return cfg
-
-
-# ---------------------------------------------------------------- Gemini Real API
-async def consultar_gemini(
-    prompt: str,
-    contexto_archivo: str = "",
-    nombre_archivo: str = "",
-    modelo: str = "gemini-3.6-flash",
-    sistema: str = "",
-    historial: list | None = None,
-) -> tuple[str, str | None]:
-    """Ejecuta una consulta real a Google Gemini usando la API oficial.
-
-    Retorna (texto_respuesta, codigo_extraido).
-    """
-    system_text = sistema or (
-        "Eres Gemini 3.6 Flash, el Co-Piloto de IA y Arquitecto de Software en la plataforma NEXO Atlantis. "
-        "Colaboras en tiempo real con dos desarrolladores y con Hermes Agent (Nous Research). "
-        "Sé ultra técnico, conciso, limpio y preciso. Proporciona soluciones completas listas para producción. "
-        "Si generas código, incluye el bloque de código markdown con el lenguaje correspondiente."
-    )
-
-    try:
-        from antigravity_engine import get_antigravity_engine
-        agy_ctx = get_antigravity_engine().consolidated_context_for_hermes()
-        if agy_ctx:
-            system_text += f"\n\n{agy_ctx}"
-    except Exception:
-        pass
-
-    full_text = prompt
-    if nombre_archivo and contexto_archivo:
-        full_text += f"\n\n--- Archivo: {nombre_archivo} ---\n{contexto_archivo[:12000]}\n--- Fin del archivo ---"
-
-    cfg = obtener_config_ia()
-    key = cfg["api_key"]
-    if not key:
-        # Si no hay clave externa de Gemini, intentar delegar al agente Hermes local
-        hermes_bin = detectar_hermes_bin()
-        if hermes_bin:
-            try:
-                ret, out = await ejecutar_hermes(
-                    f"{system_text}\n\n{full_text}",
-                    yolo=True,
-                    timeout=120,
-                )
-                if ret == 0 and out.strip():
-                    return (out.strip(), extraer_codigo(out))
-            except Exception:
-                pass
-
-        return (
-            "Para activar consultas en la nube con Google Gemini 3.6 Flash / 2.5 Pro, "
-            "configura tu GOOGLE_API_KEY en ~/.hermes/.env o en el panel de configuración de NEXO.",
-            None,
-        )
-
-    contents = []
-    # Añadir historial si existe
-    if historial:
-        for turn in historial[-6:]:
-            role = "user" if turn.get("de") not in ("gemini", "Gemini", "Antigravity", "antigravity") else "model"
-            contents.append({"role": role, "parts": [{"text": turn.get("texto") or turn.get("contenido", "")}]})
-
-    contents.append({
-        "role": "user",
-        "parts": [{"text": f"{system_text}\n\n{full_text}"}],
-    })
-
-    # Modelos de fallback en orden de preferencia
-    modelos_a_probar = [modelo, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-pro", "gemini-flash-latest"]
-    modelos_vistos = set()
-    modelos_ordenados = []
-    for m in modelos_a_probar:
-        if m and m not in modelos_vistos:
-            modelos_ordenados.append(m)
-            modelos_vistos.add(m)
-
-    ultimo_error = ""
-    for mod in modelos_ordenados:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent"
-        try:
-            async with httpx.AsyncClient(timeout=45.0) as client:
-                res = await client.post(
-                    url,
-                    headers={"x-goog-api-key": key, "Content-Type": "application/json"},
-                    json={"contents": contents},
-                )
-                if res.status_code == 200:
-                    data = res.json()
-                    cands = data.get("candidates", [])
-                    if cands and "content" in cands[0]:
-                        parts = cands[0]["content"].get("parts", [])
-                        texto_resp = "".join(p.get("text", "") for p in parts)
-                        codigo_ext = extraer_codigo(texto_resp)
-                        return (texto_resp, codigo_ext)
-                elif res.status_code == 404:
-                    ultimo_error = f"Modelo {mod} no disponible (404)."
-                    continue
-                elif res.status_code == 429:
-                    ultimo_error = f"Cuota excedida para {mod} (429). Probando fallback..."
-                    await asyncio.sleep(1)
-                    continue
-                else:
-                    ultimo_error = f"Error HTTP {res.status_code}: {res.text[:200]}"
-        except Exception as e:
-            ultimo_error = f"Excepción de conexión ({mod}): {e}"
-
-    return (f"Error al conectar con Gemini: {ultimo_error}", None)
 
 
 # ---------------------------------------------------------------- Hermes Real CLI Runner
@@ -353,14 +230,27 @@ async def colaboracion_dual(
     objetivo: str,
     cwd: Path | None = None,
     on_event: Callable[[dict], None] | None = None,
+    bus: Any | None = None,
 ) -> dict:
-    """Ejecuta una colaboración autónoma completa entre Gemini y Hermes.
+    """Debate dual entre agentes Hermes (100% sin API keys).
 
-    1. Gemini diseña la arquitectura, plan y cambios.
-    2. Hermes ejecuta las herramientas locales, crea o edita archivos y prueba el código.
-    3. Gemini revisa la salida final y firma el informe.
+    1. Mi Hermes (CLI local) genera la propuesta técnica.
+    2. Si hay un agente amigo vinculado: la propuesta viaja por el bus de
+       agentes del hub y se espera su auditoría (timeout honesto).
+    3. Sin amigo vinculado: mi propio Hermes audita la propuesta
+       (modo individual, etiquetado como tal).
+
+    `bus` es un adaptador del hub con: my_agent_name(), paired_agent_name(),
+    post(de, para, texto, tipo, task_ref) y wait_reply(respuesta_a, timeout).
     """
     work_dir = cwd if (cwd and cwd.is_dir()) else REPO_ROOT
+    hermes_bin = detectar_hermes_bin()
+    if not hermes_bin:
+        return {
+            "ok": False,
+            "error": "conecta tu Hermes",
+            "detalle": "No se detectó el binario de Hermes en esta máquina. Conéctalo en el asistente de inicio.",
+        }
 
     def emitir(fase: str, de: str, mensaje: str, datos: Any = None):
         if on_event:
@@ -373,8 +263,9 @@ async def colaboracion_dual(
                 "timestamp": datetime.now().strftime("%H:%M:%S"),
             })
 
-    # Fase 1: Arquitectura con Gemini
-    emitir("planificacion", "Gemini", f"Analizando requerimiento: '{objetivo}' y generando plan de ejecución...")
+    mi_agente = bus.my_agent_name() if bus else "Hermes"
+    amigo = bus.paired_agent_name() if bus else None
+
     agy_extra = ""
     try:
         from antigravity_engine import get_antigravity_engine
@@ -382,63 +273,131 @@ async def colaboracion_dual(
     except Exception:
         pass
 
-    plan_prompt = (
+    # Fase 1: mi agente propone
+    emitir("planificacion", mi_agente, f"Analizando objetivo: '{objetivo}' y generando propuesta...")
+    propuesta_prompt = (
         f"OBJETIVO DE DESARROLLO:\n{objetivo}\n\n"
         f"{agy_extra}\n\n"
-        "Eres el Arquitecto de Software (Gemini 3.6). Tu colega Hermes Agent ejecutará las modificaciones de código "
-        "en los archivos locales. Genera:\n"
+        "Eres el Arquitecto de Software del equipo. Genera:\n"
         "1. Diagnóstico breve y arquitectura propuesta.\n"
-        "2. Instrucciones precisas paso a paso para que Hermes ejecute con sus herramientas locales.\n"
-        "3. Especificación exacta de archivos a crear o modificar con código completo."
-    )
-    plan_texto, plan_codigo = await consultar_gemini(plan_prompt)
-    emitir("planificacion_completa", "Gemini", "Plan de arquitectura generado.", {
-        "texto": plan_texto,
-        "codigo": plan_codigo,
-    })
-
-    # Fase 2: Ejecución con Hermes
-    emitir("ejecucion", "Hermes", "Recibiendo especificación de Gemini y ejecutando en el workspace...")
-    hermes_prompt = (
-        f"Instrucción de desarrollo acordada con Gemini:\n\n{objetivo}\n\n"
-        f"Plan y detalles de Gemini:\n{plan_texto[:3000]}\n\n"
-        "Por favor ejecuta los cambios necesarios en el proyecto, crea o modifica los archivos correspondientes "
-        "y verifica que no haya errores de sintaxis. Resume los cambios realizados."
+        "2. Pasos precisos de implementación.\n"
+        "3. Archivos a crear o modificar (sin aplicar cambios todavía, solo la propuesta)."
     )
 
-    def hermes_stream(chunk: str):
-        emitir("ejecucion_stream", "Hermes", chunk)
+    def stream_propuesta(chunk: str):
+        emitir("planificacion_stream", mi_agente, chunk)
 
-    ret, salida_hermes = await ejecutar_hermes(
-        hermes_prompt,
-        cwd=work_dir,
-        yolo=True,
-        on_chunk=hermes_stream,
-    )
-    emitir("ejecucion_completa", "Hermes", f"Ejecución finalizada (Código {ret}).", {
-        "salida": salida_hermes,
-        "retcode": ret,
-    })
+    ret, propuesta = await ejecutar_agente(propuesta_prompt, cwd=work_dir, timeout=300, on_chunk=stream_propuesta)
+    emitir("planificacion_completa", mi_agente, "Propuesta generada.", {"texto": propuesta})
 
-    # Fase 3: Auditoría y Revisión con Gemini
-    emitir("revision", "Gemini", "Auditando los cambios realizados por Hermes...")
-    review_prompt = (
-        f"Revisión de cambios para el objetivo: '{objetivo}'\n\n"
-        f"Salida y modificaciones realizadas por Hermes Agent:\n{salida_hermes[:3500]}\n\n"
-        "Realiza una breve auditoría de calidad: verifica si el objetivo se cumplió, "
-        "si hay advertencias o pruebas adicionales recomendadas, y confirma el estado final."
+    # Fase 2: auditoría — agente amigo vía bus, o agente secundario local / modo individual
+    auditoria = ""
+    auditoria_de_amigo = False
+    modo = "individual"
+    agente_auditor = mi_agente
+
+    if amigo and bus:
+        modo = "dual"
+        agente_auditor = amigo
+        emitir("revision", amigo, f"Solicitando auditoría a {amigo} por el bus de agentes...")
+        solicitud = bus.post(
+            de=mi_agente,
+            para=amigo,
+            texto=(
+                f"Auditoría solicitada para el objetivo: '{objetivo}'\n\n"
+                f"Propuesta de {mi_agente}:\n{propuesta[:4000]}\n\n"
+                "Audita: ¿el plan cumple el objetivo? Riesgos, bugs potenciales y mejoras concretas."
+            ),
+            tipo="auditoria",
+        )
+        if asyncio.iscoroutine(solicitud):
+            solicitud = await solicitud
+        emitir("revision_espera", amigo, "Esperando auditoría del agente amigo (hasta 3 min)...")
+        respuesta = await bus.wait_reply(solicitud["id"], timeout=180)
+        if respuesta:
+            auditoria = respuesta.get("texto", "")
+            auditoria_de_amigo = True
+            emitir("revision_completa", amigo, "Auditoría recibida del agente amigo.", {"informe": auditoria})
+        else:
+            emitir("revision_timeout", "Sistema",
+                   f"{amigo} no respondió a tiempo. Intentando auditoría local de respaldo.",
+                   {"informe": ""})
+
+    # Si no hubo amigo remoto, buscar si hay un segundo agente configurado localmente (ej: Antigravity, Claude, Ollama)
+    if not auditoria:
+        audit_prompt = (
+            f"Objetivo: '{objetivo}'\n\nPropuesta generada:\n{propuesta[:4000]}\n\n"
+            "Actúa ahora como auditor senior: ¿el plan cumple el objetivo? "
+            "Señala riesgos, bugs potenciales y mejoras concretas. Sé directo."
+        )
+
+        try:
+            import agents as agent_registry
+            slots = agent_registry.load_slots()
+            segundo_nombre = None
+            segundo_adapter = None
+            for s in slots:
+                if s["name"].lower() != mi_agente.lower():
+                    ad = agent_registry.slot_adapter(s)
+                    if ad and ad.detect():
+                        segundo_nombre = s["name"]
+                        segundo_adapter = ad
+                        break
+            if not segundo_adapter:
+                for candidate in [agent_registry.AntigravityAdapter(), agent_registry.ClaudeCodeAdapter()]:
+                    if candidate.detect() and candidate.label.lower() != mi_agente.lower():
+                        segundo_nombre = candidate.label
+                        segundo_adapter = candidate
+                        break
+
+            if segundo_adapter and segundo_nombre:
+                agente_auditor = segundo_nombre
+                modo = "dual"
+                auditoria_de_amigo = True
+                emitir("revision", segundo_nombre, f"Iniciando auditoría cruzada con {segundo_nombre}...")
+
+                _ret_sec, sec_out = await segundo_adapter.arun(audit_prompt, cwd=work_dir, timeout=300)
+                auditoria = sec_out
+                emitir("revision_completa", segundo_nombre, f"Auditoría cruzada completada por {segundo_nombre}.", {"informe": auditoria})
+        except Exception:
+            pass
+
+    if not auditoria:
+        modo = "individual"
+        agente_auditor = mi_agente
+        emitir("revision", mi_agente, "Auditando la propuesta (modo individual reflexivo)...")
+        _ret_a, auditoria = await ejecutar_agente(audit_prompt, cwd=work_dir, timeout=300)
+        emitir("revision_completa", mi_agente, "Auditoría completada.", {"informe": auditoria})
+
+    # Fase 3: Síntesis ejecutiva y consenso de acción entre ambos agentes
+    emitir("sintesis", mi_agente, f"Sintetizando consenso final entre {mi_agente} y {agente_auditor}...")
+    sintesis_prompt = (
+        f"OBJETIVO: '{objetivo}'\n\n"
+        f"PROPUESTA ({mi_agente}):\n{propuesta[:3000]}\n\n"
+        f"AUDITORÍA ({agente_auditor}):\n{auditoria[:3000]}\n\n"
+        "Eres el Coordinador del equipo de agentes. Consolida el consenso final de forma concisa:\n"
+        "1. Puntos clave acordados y ajustes aceptados de la auditoría.\n"
+        "2. Plan de acción definitivo paso a paso listo para ejecutar.\n"
+        "3. Lista de archivos exactos a modificar o crear."
     )
-    rev_texto, _ = await consultar_gemini(review_prompt)
-    emitir("revision_completa", "Gemini", "Auditoría completada exitosamente.", {
-        "informe": rev_texto,
-    })
+
+    def stream_sintesis(chunk: str):
+        emitir("sintesis_stream", mi_agente, chunk)
+
+    _ret_s, sintesis = await ejecutar_agente(sintesis_prompt, cwd=work_dir, timeout=300, on_chunk=stream_sintesis)
+    emitir("sintesis_completa", mi_agente, "Consenso y plan de acción final generado.", {"sintesis": sintesis})
 
     return {
         "ok": ret == 0,
+        "modo": modo if auditoria_de_amigo else "individual",
         "objetivo": objetivo,
-        "plan_gemini": plan_texto,
-        "ejecucion_hermes": salida_hermes,
-        "auditoria_gemini": rev_texto,
+        "propuesta": propuesta,
+        "auditoria": auditoria,
+        "sintesis": sintesis,
+        "consenso_alcanzado": True,
+        "agente_propone": mi_agente,
+        "agente_audita": agente_auditor,
+        "agente_coordina": mi_agente,
     }
 
 
@@ -452,29 +411,15 @@ def extraer_codigo(texto: str) -> str | None:
 
 
 async def verificar_estado_ia() -> dict[str, Any]:
-    """Inspecciona y valida en tiempo real la conexión de Hermes y Gemini."""
+    """Inspecciona el asistente IA local del usuario (sin claves, sin nube).
+
+    Cualquier marca: Hermes, Claude Code, Ollama o CLI personalizado.
+    """
+    import agents as agent_registry
+
     hermes_bin = detectar_hermes_bin()
     cfg = obtener_config_ia()
-    key = cfg.get("api_key", "")
 
-    # Verificar Gemini
-    gemini_ok = False
-    gemini_modelo = "gemini-3.6-flash"
-    gemini_msg = "Sin clave configurada"
-    if key:
-        try:
-            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash"
-            async with httpx.AsyncClient(timeout=8.0) as client:
-                res = await client.get(url, headers={"x-goog-api-key": key})
-                if res.status_code == 200:
-                    gemini_ok = True
-                    gemini_msg = "Operacional y Conectado (Google AI Studio)"
-                else:
-                    gemini_msg = f"HTTP {res.status_code}"
-        except Exception as e:
-            gemini_msg = str(e)
-
-    # Verificar Hermes
     hermes_ok = hermes_bin is not None
     hermes_version = ""
     if hermes_ok:
@@ -484,36 +429,162 @@ async def verificar_estado_ia() -> dict[str, Any]:
         except Exception:
             hermes_version = "Detectado"
 
+    sel_id = agent_registry.get_selected_id()
+    sel_adapter = agent_registry.get_adapter(sel_id) if sel_id else None
+    sel_info = sel_adapter.to_info() if sel_adapter else None
+    active_slot = agent_registry.get_active_slot_name()
+    slot_info = next((s for s in agent_registry.list_slots_status()
+                      if s["name"] == active_slot), None)
+
     return {
-        "gemini": {
-            "conectado": gemini_ok,
-            "modelo": gemini_modelo,
-            "mensaje": gemini_msg,
-            "tiene_clave": bool(key),
-            "clave_parcial": (key[:6] + "..." + key[-4:]) if len(key) > 12 else ("Configurada" if key else "Sin clave"),
-        },
+        # Bloque legacy (compatibilidad con el frontend actual).
         "hermes": {
             "instalado": hermes_ok,
             "ruta": str(hermes_bin) if hermes_bin else "",
             "version": hermes_version,
-            "modelo_hermes": "gemini-3.6-flash",
-            "modo": "Nous Research Agent (Local CLI)",
+            "modelo": cfg.get("modelo", "auto"),
+            "modo": "Hermes Agent (CLI local del usuario)",
+        },
+        # Bloque nuevo: el asistente ACTIVO (cualquier marca, multi-slot).
+        "agente": {
+            "id": sel_id,
+            "slot": active_slot,
+            "label": (slot_info or {}).get("name", "") or (sel_adapter.label if sel_adapter else ""),
+            "adapter_label": (slot_info or {}).get("adapter_label", "") or (sel_adapter.label if sel_adapter else ""),
+            "disponible": bool(slot_info and slot_info["detected"]),
+            "detail": (slot_info or {}).get("detail", "") or (sel_info or {}).get("detail", ""),
+            "modelo": cfg.get("modelo", "auto"),
+            "slots": agent_registry.list_slots_status(),
         },
         "workspace": str(REPO_ROOT),
     }
 
 
-# Compatibilidad hacia atrás con server.py
+async def ejecutar_agente(
+    prompt: str,
+    adapter_id: str = "",
+    cwd: Path | None = None,
+    timeout: int = 180,
+    on_chunk: Callable[[str], None] | None = None,
+) -> tuple[int, str]:
+    """Ejecuta el prompt con el asistente indicado (cualquier marca).
+
+    adapter_id puede ser:
+      - el NOMBRE de un slot ("Koko", "Mi Antigravity") → corre ese slot;
+      - un id de adaptador ("hermes", "claude-code", "ollama", "custom");
+      - "" → usa el slot ACTIVO.
+    Sin asistente disponible: mensaje honesto, nunca inventa.
+    """
+    import agents as agent_registry
+
+    sel = (adapter_id or "").strip()
+    slot = agent_registry.get_slot(sel) if sel else None
+    if slot:
+        if on_chunk:
+            on_chunk(f"⚡ [{slot['name'].upper()} INICIADO]\n")
+        ret, out = await agent_registry.run_slot(sel, prompt, cwd=cwd, timeout=timeout)
+        if on_chunk:
+            on_chunk(f"\n✅ [{slot['name'].upper()} FINALIZADO] Código: {ret}\n")
+        return (ret, out)
+
+    adapter = agent_registry.get_adapter(sel) if sel else None
+    if not adapter:
+        active = agent_registry.get_active_slot_name()
+        if active:
+            return await ejecutar_agente(prompt, adapter_id=active, cwd=cwd,
+                                         timeout=timeout, on_chunk=on_chunk)
+        msg = (
+            "No hay ningún asistente conectado en esta máquina. "
+            "Conéctalo en el asistente de inicio (paso 1: Conectar mi Asistente)."
+        )
+        if on_chunk:
+            on_chunk(msg + "\n")
+        return (1, msg)
+    info = adapter.to_info()
+    if not info["detected"]:
+        msg = f"El asistente '{adapter.label}' no está disponible en esta máquina ahora mismo."
+        if on_chunk:
+            on_chunk(msg + "\n")
+        return (1, msg)
+    if on_chunk:
+        on_chunk(f"⚡ [{adapter.label.upper()} INICIADO]\n")
+    ret, out = await adapter.arun(prompt, cwd=cwd, timeout=timeout)
+    if on_chunk:
+        on_chunk(f"\n✅ [{adapter.label.upper()} FINALIZADO] Código: {ret}\n")
+    return (ret, out)
+
+
+async def ejecutar_agente_stream(
+    prompt: str,
+    adapter_id: str = "",
+    cwd: Path | None = None,
+    timeout: int = 180,
+):
+    """Streaming REAL del asistente indicado. Yields ("chunk", texto) y
+    ("done", (código, texto_completo)).
+
+    adapter_id: nombre de slot, id de adaptador, o "" (slot activo).
+    Sin asistente disponible: un solo chunk con el mensaje honesto.
+    """
+    import agents as agent_registry
+
+    sel = (adapter_id or "").strip()
+    slot = agent_registry.get_slot(sel) if sel else None
+    if slot:
+        async for kind, payload in agent_registry.run_slot_stream(
+            sel, prompt, cwd=cwd, timeout=timeout
+        ):
+            yield kind, payload
+        return
+
+    adapter = agent_registry.get_adapter(sel) if sel else None
+    if not adapter:
+        active = agent_registry.get_active_slot_name()
+        if active:
+            async for kind, payload in ejecutar_agente_stream(
+                prompt, adapter_id=active, cwd=cwd, timeout=timeout
+            ):
+                yield kind, payload
+            return
+        if sel:
+            # Se pidió un slot/adaptador concreto que no existe: decirlo claro.
+            msg = f"No existe el asistente '{sel}'."
+        else:
+            msg = (
+                "No hay ningún asistente conectado en esta máquina. "
+                "Conéctalo en el asistente de inicio (paso 1: Conectar mi Asistente)."
+            )
+        yield ("chunk", msg)
+        yield ("done", (1, msg))
+        return
+
+    info = adapter.to_info()
+    if not info["detected"]:
+        msg = f"El asistente '{adapter.label}' no está disponible en esta máquina ahora mismo."
+        yield ("chunk", msg)
+        yield ("done", (1, msg))
+        return
+    async for kind, payload in adapter.arun_stream(prompt, cwd=cwd, timeout=timeout):
+        yield kind, payload
+
+
+# Usado por server.py para el chat con menciones (@hermes / @ia)
 async def generar_respuesta_ia(
     prompt: str,
     contexto_archivo: str = "",
     nombre_archivo: str = "",
-    agente_nombre: str = "Gemini",
+    agente_nombre: str = "Hermes",
 ) -> tuple[str, str | None]:
-    """Función de compatibilidad para endpoints de chat existentes."""
-    if agente_nombre.lower() in ("hermes", "hermes agent"):
-        hermes_bin = detectar_hermes_bin()
-        if hermes_bin:
-            ret, out = await ejecutar_hermes(prompt, cwd=REPO_ROOT, yolo=True)
-            return (out, extraer_codigo(out))
-    return await consultar_gemini(prompt, contexto_archivo=contexto_archivo, nombre_archivo=nombre_archivo)
+    """Responde usando el asistente local del usuario (cualquier marca, sin API keys).
+
+    Si no hay asistente disponible, devuelve un mensaje honesto en vez de
+    inventar una respuesta.
+    """
+    full = prompt
+    if nombre_archivo and contexto_archivo:
+        full += f"\n\n--- Archivo: {nombre_archivo} ---\n{contexto_archivo[:12000]}\n--- Fin del archivo ---"
+    ret, out = await ejecutar_agente(full, cwd=REPO_ROOT, timeout=180)
+    if ret != 0 or not out.strip():
+        # ejecutar_agente ya trae el mensaje honesto cuando no hay asistente.
+        return (out.strip() or "Mi asistente no pudo responder esta vez. Inténtalo de nuevo.", None)
+    return (out.strip(), extraer_codigo(out))

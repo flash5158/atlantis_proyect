@@ -1,0 +1,12 @@
+# No subir al deploy: entorno virtual, cachés, artefactos locales.
+nexo/.venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.git/
+node_modules/
+*.AppImage
+workspace/
+colab-hub/

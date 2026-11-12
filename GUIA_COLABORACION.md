@@ -1,165 +1,128 @@
-# 🚀 Guía Definitiva de Colaboración Simultánea — NEXO 2.0 (Atlantis)
+# 🤝 Guía de colaboración — Atlantis Studio
 
-> **Desarrollo en conjunto para ti y tu compañero, potenciado por comunicación directa entre sus Inteligencias Artificiales (Antigravity & Hermes).**
-
----
-
-## 🎯 ¿Qué es NEXO 2.0?
-
-NEXO 2.0 es un entorno de desarrollo colaborativo en tiempo real diseñado para que dos programadores trabajen sobre el mismo código simultáneamente, mientras sus agentes de IA se comunican entre sí para coordinar tareas, revisar código y sincronizar cambios sin conflictos.
+Cómo trabajar **tú y tu amigo en el mismo proyecto al mismo tiempo**, con sus
+**Hermes Agents comunicándose entre sí**. Sin API keys, sin cuentas, sin nube:
+todo corre en sus máquinas.
 
 ```
-       MÁQUINA 1 (Tú)                              MÁQUINA 2 (Tu amigo)
- ┌─────────────────────────┐               ┌─────────────────────────┐
- │ • Jaime (Desarrollador) │               │ • Amigo (Desarrollador) │
- │ • Antigravity (IA)      │               │ • Hermes (IA)           │
- │ • Servidor NEXO (8787)  │ ◄───────────► │ • Cliente NEXO / Web    │
- │ • Workspace en disco    │  Túnel HTTPS  │ • Terminal & Editor HUD │
- └─────────────────────────┘ (Cloudflare)  └─────────────────────────┘
+   TU MÁQUINA (anfitrión)                        MÁQUINA DE TU AMIGO
+ ┌──────────────────────────┐                    ┌──────────────────────────┐
+ │ Atlantis Studio          │                    │ Atlantis Studio        │
+ │ • Tú (editor+terminal)   │   Túnel HTTPS      │ • Tu amigo             │
+ │ • Tu Hermes (hermes_link)│ ◄───────────────►  │ • Su Hermes            │
+ │ • Hub NEXO (puerto 8787) │  + código ATL-XXX  │   (hermes_link)        │
+ │ • Workspace en disco     │                    │ • Se une con el enlace │
+ └──────────────────────────┘                    └──────────────────────────┘
 ```
 
 ---
 
-## ⚡ Paso 1: Arrancar el Servidor (En tu máquina)
-
-Solo **una persona** (tú) necesita tener el servidor levantado. Todo lo que ambos programen se guardará en el workspace de tu máquina y se sincronizará con Git.
-
-### Opción Rápida (1 solo comando):
+## Paso 1 — Arranca tu hub (solo tú)
 
 ```bash
-./start.sh --tunnel
+python3 -m venv nexo/.venv
+nexo/.venv/bin/pip install -r nexo/requirements.txt
+PORT=8787 NEXO_WORKSPACE=~/AtlantisProjects nexo/.venv/bin/python nexo/server.py
 ```
 
-Este comando:
-1. Configura el entorno virtual de Python.
-2. Inicia el servidor NEXO en el puerto `8787`.
-3. Levanta automáticamente un **túnel público gratuito (Cloudflare Quick Tunnel)** sin necesidad de crear cuenta ni abrir puertos en el router.
-4. Te muestra en pantalla la **URL pública** y el **Token de acceso**.
+Abre `http://127.0.0.1:8787`. El asistente te pide **conectar tu Hermes**
+(detecta `~/.local/bin/hermes` solo; si no lo tienes, igual entras).
 
-Si solo quieres trabajar en tu red local (LAN/Wi-Fi):
-```bash
-./start.sh
-# Accede en http://127.0.0.1:8787
-```
+## Paso 2 — Comparte tu espacio
 
----
+1. Clic en **🔗 Compartir Espacio** (barra superior).
+2. **⚡ Activar túnel** → copia la URL pública (`https://xxx.trycloudflare.com`).
+3. **🎲 Generar código de enlace** → obtienes algo como `ATL-7F3K9Q`
+   (expira en 15 minutos; si expira, genera otro).
+4. Mándale a tu amigo por WhatsApp/Telegram/Discord:
+   - el **enlace** (ya trae tu token y tu nombre)
+   - el **código ATL-XXXXXX**
 
-## 🤝 Paso 2: Invitar a tu Amigo
+## Paso 3 — Tu amigo se une
 
-En la barra superior de la interfaz web (`http://127.0.0.1:8787`), haz clic en el botón:
+1. Abre el enlace → verá **"🤝 [Tu nombre] te invitó a colaborar"**.
+2. Conecta **su** Hermes (paso 1 del asistente).
+3. Escribe el **código de enlace** (paso 2) → **⚡ Enlace establecido**.
+   (También puede escanear el **QR** del código con la cámara de su teléfono:
+   aparece junto al código en Compartir equipo.)
+4. Entra al IDE. En **COLABORADORES** ambos se ven en vivo, con presencia
+   (quién está en qué archivo y dónde tiene el cursor).
 
-👉 **`🔗 Conectar Amigo`**
+## Paso 4 — Enlacen sus agentes
 
-Se abrirá una ventana con todos los accesos listos para copiar con 1 clic:
-- **URL Web Pública:** `https://xxxx.trycloudflare.com` (o tu IP local)
-- **Token Secreto:** `(tu token de config.json)`
-
-Pásale esos datos a tu amigo por Discord, Telegram o WhatsApp.
-
----
-
-## 💻 Paso 3: Cómo se Conecta tu Amigo
-
-Tu amigo tiene tres formas de colaborar (puede usar cualquiera de ellas o combinarlas):
-
-### Forma A: Directo desde el Navegador (Sin instalar nada)
-1. Abre el enlace público que le diste (`https://xxxx.trycloudflare.com`).
-2. Pega el Token cuando se lo pida.
-3. ¡Listo! Verá la interfaz HUD estilo **Jarvis / Ultron**, el editor de código, el chat en vivo, el tablero de tareas y la terminal integrada.
-
----
-
-### Forma B: Usando su Agente Hermes (Terminal)
-Si tu amigo prefiere programar con Hermes desde su terminal:
+En **cada máquina**, corran su worker (con el nombre de su agente):
 
 ```bash
-# 1. Clona el repositorio
-git clone https://github.com/flash5158/atlantis_proyect.git
-cd atlantis_proyect/nexo
+# Tu máquina
+python3 nexo/hermes_link.py --hub http://127.0.0.1:8787 --agent "Koko"
 
-# 2. Configura sus credenciales (o pásalas por flag)
-export NEXO_SERVER="https://xxxx.trycloudflare.com"
-export NEXO_TOKEN="tu-token-aqui"
-export NEXO_NOMBRE="hermes-2"
-
-# 3. Quedarse escuchando en vivo (modo agente):
-python3 nexo-cli.py escuchar --proyecto mi-proyecto
+# Máquina de tu amigo (apuntando a TU hub)
+python3 nexo/hermes_link.py --hub https://xxx.trycloudflare.com --agent "KokoAmigo" --token <tu-token>
 ```
+
+Desde ese momento, en la pestaña **Agentes Hermes** verán a los dos agentes
+hablarse: se reparten trabajo, se avisan cuando terminan y confirman resultados.
+
+## Paso 5 — Trabajen el proyecto
+
+- **Nuevo proyecto**: Archivo → Nuevo Proyecto (Web, Node.js, Python, Vacío).
+- **Ejecutar**: el botón ▶ detecta el tipo y lo corre en la terminal real.
+- **Archivos en vivo**: al guardar, el otro lo ve al instante. Si chocan en el
+  mismo archivo, sale la barra de conflicto: **"Usar la de X"** / **"Usar la mía"**.
+- **Asignar tareas a un agente**: desde Tareas, asígnala a `Koko` o `KokoAmigo`;
+  el agente la recoge del bus y publica su resultado.
+- **Chat de equipo** y **terminal compartida** en el panel lateral.
 
 ---
 
-### Forma C: Usando Antigravity IDE
-Si tu amigo también usa Antigravity:
-1. Abre el proyecto en Antigravity IDE.
-2. La skill `nexo-colab` ya está incluida en la carpeta `skills/nexo-colab/`.
-3. Simplemente le dice a Antigravity: *"Conéctate al servidor NEXO en https://xxxx.trycloudflare.com y revisa si hay tareas pendientes."*
+## Modo equipo (3+ personas)
+
+El mismo código `ATL-XXXXXX` sirve para **todo un equipo** (hasta 8 miembros).
+Cada compañero repite el Paso 3 con el mismo código: no expira mientras el
+equipo esté activo.
+
+- En **Compartir equipo** ves la lista de miembros en vivo, con medalla
+  **Anfitrión** para quien creó el equipo.
+- Cada miembro que se une aparece anunciado en el bus de agentes.
+- Un miembro puede irse cuando quiera (**"Salir del equipo"**); el equipo
+  sigue con los demás.
+- Si sale el **anfitrión** (o no queda nadie), el equipo se cierra para todos.
+- El anfitrión puede cerrar el equipo en cualquier momento
+  (**"Cerrar equipo"**); todos vuelven a modo individual.
 
 ---
 
-## 🤖 Comunicación Directa IA-a-IA (Antigravity ↔ Hermes)
+## Conecta cualquier modelo local (endpoint OpenAI-compatible)
 
-El punto más potente de NEXO 2.0 es que **ustedes no tienen que copiar y pegar código entre sus IAs**. Las IAs se comunican directamente a través del protocolo estructurado de NEXO:
+Además de Hermes, Claude Code, Ollama y tu CLI, puedes conectar **cualquier
+servidor local con API tipo OpenAI**: LM Studio, llama.cpp, text-generation-webui…
 
-### 1. Antigravity le asigna una tarea a Hermes:
-Desde tu IDE, puedes decirle a Antigravity:
-> *"Pídele a Hermes que implemente los endpoints de login en auth.py mientras yo diseño la base de datos en models.py."*
+1. En **Mis Asistentes** (barra del asistente → gestionar) pulsa **Añadir asistente**.
+2. Elige **"Endpoint local (OpenAI-compatible)"**.
+3. Ponle un nombre, la **URL base** (ej. `http://localhost:1234/v1`), el **modelo**
+   y la **API key solo si tu servidor la pide** (LM Studio y llama.cpp no la piden).
+4. Pulsa **"Probar conexión"**: consulta `/models` de verdad y te muestra los
+   modelos disponibles (o el error real si algo falla).
+5. **Añadir asistente** → ya lo tienes como un slot más, con streaming en vivo.
 
-Antigravity ejecutará internamente:
-```bash
-python3 nexo/nexo-cli.py ai-send \
-  --para "hermes" \
-  --tipo "tarea" \
-  --titulo "Crear endpoints de login" \
-  --contenido "Necesitamos POST /login y POST /register con JWT." \
-  --archivos "auth.py"
-```
-
-### 2. Hermes recibe la tarea automáticamente:
-Hermes consulta su buzón mediante cron o con:
-```bash
-python3 nexo/nexo-cli.py ai-inbox --pendientes
-```
-
-Hermes lee los requisitos, genera el código, lo escribe directamente en el workspace con:
-```bash
-python3 nexo/nexo-cli.py escribir auth.py --contenido "..."
-```
-
-Y le responde a Antigravity:
-```bash
-python3 nexo/nexo-cli.py ai-reply \
-  --id "<ID_TAREA>" \
-  --contenido "Endpoints creados y verificados. ¿Puedes conectarlos a la UI?"
-```
-
-### 3. Revisión de Código Cruzada (Code Review):
-En la interfaz web, puedes hacer clic en **`🤖 Solicitar Revisión a IA`** en cualquier archivo abierto para que la IA de tu compañero analice el archivo y emita comentarios o propuestas de mejora en tiempo real.
+Todo queda en tu máquina: sin nube y sin API keys obligatorias. Si el endpoint
+no responde, el slot lo dice con honestidad ("no detectado ahora") en vez de
+fingir que funciona.
 
 ---
 
-## 🎨 Temas Visuales: Jarvis & Ultron
+## Preguntas rápidas
 
-En la esquina superior derecha puedes alternar el tema visual:
-- **⚡ JARVIS:** Estética holográfica en cian y azul neón (`#00f0ff`) sobre negro profundo espacial, con bordes de cristal y líneas técnicas.
-- **🔴 ULTRON:** Estética cibernética en carmesí y cobalto (`#ff1e56` y `#3a86ff`) sobre titanio oscuro.
+**¿Necesito alguna API key?** No. Nunca. Si algo la pidiera, es un bug: repórtalo.
 
-Ambos temas incluyen un **sintetizador de voz HUD** (Web Speech API) que anuncia eventos del sistema, como llegada de mensajes o ejecución de código (puedes activarlo o silenciarlo con el botón `🔊 HUD Audio`).
+**¿El código expiró?** Genera uno nuevo en Compartir Espacio (duran 15 min).
 
----
+**¿Mi amigo no ve mis cambios?** Revisa que ambos estén en el mismo hub
+(misma URL) y que el túnel siga activo.
 
-## 🛡️ Prevención de Conflictos de Archivos
+**¿El agente no responde?** Verifica que `hermes_link.py` siga corriendo en su
+máquina y que el binario `hermes` exista (`~/.local/bin/hermes`).
 
-Para evitar que tú y tu compañero sobreescriban el mismo archivo al mismo tiempo:
-- Cuando abres un archivo en el editor, NEXO activa una etiqueta de presencia en tiempo real (`EDITANDO: <usuario>`).
-- Tu compañero verá la etiqueta de bloqueo preventivo en su árbol lateral.
-
----
-
-## ⎇ Sincronización con GitHub
-
-Cualquiera de los dos puede pulsar el botón **`⎇ Git`** en la barra superior o usar el CLI:
-- Ver estado: `python3 nexo/nexo-cli.py git status`
-- Guardar cambios: `python3 nexo/nexo-cli.py git commit --msg "feat: nueva funcionalidad"`
-- Sincronizar: `python3 nexo/nexo-cli.py git push` o `git pull`
-
-Cada agente y desarrollador commitea con su propio nombre para mantener un historial limpio y transparente.
+**¿Puedo usar la extensión de VS Code?** Sí, es un cliente secundario:
+`desktop/extension` (útil si tu amigo prefiere VS Code; el IDE web es la
+experiencia completa).

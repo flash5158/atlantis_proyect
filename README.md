@@ -1,140 +1,125 @@
-# NEXO Studio 2.0 — Atlantis Project (Dual-AI Collaborative IDE)
+# Atlantis Studio — IDE colaborativo
 
-Plataforma de desarrollo colaborativo en tiempo real para que **dos desarrolladores programen simultáneamente** mientras sus **agentes de Inteligencia Artificial (Hermes Agent & Google Gemini)** se comunican directamente, coordinan tareas, auditan código y ejecutan cambios en el workspace local.
+Estudio de creación de apps inspirado en Antigravity, pero **colaborativo**:
+tú y tu compañero trabajan en el **mismo proyecto al mismo tiempo**, cada uno
+conecta su propio **Hermes Agent**, y los dos agentes **se comunican entre sí**
+para coordinarse y dividirse el trabajo.
 
-![NEXO Studio 2.0](https://img.shields.io/badge/NEXO_Studio-2.0_Dual--AI-06b6d4?style=for-the-badge)
-![Hermes CLI](https://img.shields.io/badge/Nous_Hermes-CLI_Online-10b981?style=for-the-badge)
-![Google Gemini](https://img.shields.io/badge/Gemini_3.6-Flash_Connected-8b5cf6?style=for-the-badge)
+**Sin API keys. Sin nube. Sin cuentas.** La IA del estudio son sus propios
+agentes Hermes corriendo en sus máquinas.
 
 ---
 
-## 🚀 Inicio Rápido en 1 Paso
-
-En tu terminal local:
+## 🚀 Inicio rápido
 
 ```bash
-git clone https://github.com/flash5158/atlantis_proyect.git
-cd atlantis_proyect
+# 1. Entorno Python (una vez)
+python3 -m venv nexo/.venv
+nexo/.venv/bin/pip install -r nexo/requirements.txt
 
-# Iniciar servidor local y generar túnel público opcional:
-./start.sh --tunnel
+# 2. Arrancar el hub (puerto 8787 por defecto)
+PORT=8787 NEXO_WORKSPACE=~/AtlantisProjects nexo/.venv/bin/python nexo/server.py
 ```
 
-Abre en tu navegador: **`http://127.0.0.1:8787`**
-
-Para invitar a tu compañero, haz clic en el botón superior **`🔗 Invitar Amigo`** o comparte el enlace seguro de Cloudflare generado por `./tunnel.sh`.
-
----
-
-## 🌟 Características Principales (Cero Simulaciones)
-
-### 1. Conexión Auténtica con Nous Hermes Agent CLI
-- Detección automática del binario real en `~/.local/bin/hermes`.
-- Configurado con el motor nativo `gemini-3.6-flash`.
-- Ejecución real en el workspace con herramientas locales (`--in <DIR> --yolo`).
-- Consola de streaming en tiempo real (stdout/stderr línea a línea) mediante WebSockets.
-
-### 2. Google Gemini 3.6 Flash (AI Studio)
-- Detección automática de `GOOGLE_API_KEY` desde `~/.hermes/.env` o variables de entorno.
-- Cliente asíncrono ultra-rápido (`httpx`) con HTTP/2 y TLS moderno.
-- Latencia comprobada de **~215 ms** con generación de código e inserción directa en el editor.
-
-### 3. Matriz de Colaboración Dual Autónoma (Hermes ↔ Gemini)
-- **Fase 1 (Gemini Arquitecto):** Analiza el objetivo del usuario y diseña el plan técnico y la arquitectura.
-- **Fase 2 (Hermes Ejecutor):** Aplica modificaciones de código, ejecuta comandos de terminal y crea archivos en el repositorio.
-- **Fase 3 (Gemini Auditor):** Inspecciona el código resultante y emite una auditoría técnica final.
-
-### 4. Interfaz Moderna Estándar IDE 2026
-- **Paleta Obsidian Slate:** Tema oscuro profesional (`#07090e`, `#0f1523`) con tipografía `Inter` y `JetBrains Mono`.
-- **Monaco Editor:** Motor oficial de VS Code con múltiples pestañas, mini-mapa, resaltado de sintaxis y atajo nativo `Ctrl+S` / `Cmd+S`.
-- **Dock Inferior Multitarea:** Terminal interactiva PTY (ZSH/Bash con `xterm.js`), consola en vivo de Hermes y registro de colaboración dual.
-- **Control de Versiones Integrado:** Panel Git para revisar cambios modificados y hacer `commit & push` con un clic.
-
----
-
-## 🩺 Diagnóstico de Salud del Sistema
-
-Verifica en cualquier momento la conexión con ambas IAs ejecutando:
+Abre **`http://127.0.0.1:8787`** en tu navegador, o la app Electron:
 
 ```bash
-python3 salud_sistema.py
+cd desktop/native && npm install && npm start
 ```
 
-Salida esperada:
-```json
-{
-  "gemini": {
-    "status": "healthy",
-    "modelo": "gemini-3.6-flash",
-    "latency_ms": 215.22,
-    "error": null
-  },
-  "hermes": {
-    "status": "healthy",
-    "modelo": "gemini-3.6-flash (Nous Hermes CLI)",
-    "latency_ms": 293.76,
-    "error": null
-  }
-}
-```
+El asistente inicial te guía en 2 pasos: **conectar tu Hermes** → **vincularte
+con tu compañero**.
 
 ---
 
-## 📁 Estructura del Repositorio
+## 🤝 Colaborar con tu amigo
+
+1. En la app, abre **Compartir Espacio** (botón 🔗).
+2. **Activa el túnel** → obtienes una URL pública (`https://xxx.trycloudflare.com`).
+3. **Genera un código de enlace** (`ATL-XXXXXX`, expira en 15 min).
+4. Pásale a tu amigo el **enlace + el código**.
+5. Tu amigo abre el enlace (verá que **tú lo invitaste**), conecta su Hermes,
+   escribe el código y entra al IDE. Ambos se ven en **COLABORADORES** con
+   presencia en vivo (quién está en qué archivo).
+
+Guía paso a paso: [`GUIA_COLABORACION.md`](GUIA_COLABORACION.md)
+
+---
+
+## 🤖 Tus agentes, conectados
+
+Cada máquina corre su Hermes y lo enlaza al hub con **`hermes_link`**:
+
+```bash
+# En tu máquina (agente "Koko")
+python3 nexo/hermes_link.py --hub http://127.0.0.1:8787 --agent "Koko"
+
+# En la de tu amigo (agente "KokoAmigo")
+python3 nexo/hermes_link.py --hub http://127.0.0.1:8787 --agent "KokoAmigo"
+```
+
+El worker sondea el bus de agentes, ejecuta cada mensaje/tarea con el binario
+real de Hermes (`~/.local/bin/hermes`) y publica el resultado. Si el hub se
+cae, reintenta con backoff exponencial y no duplica trabajo. Sin el binario,
+queda inactivo de forma honesta.
+
+**Bus de agentes** (visible en la pestaña *Agentes Hermes*):
+- `POST /api/agents/message` — un agente (o humano) le escribe a otro
+- `GET /api/agents/inbox?agent=<nombre>&pendientes=true` — bandeja del agente
+- `POST /api/agents/ack` — el agente confirma con su resultado
+- `POST /api/ai/task` con `asignado: <agente>` — asignar tarea a un agente
+
+---
+
+## 📁 Proyectos de todo tipo
+
+**Archivo → Nuevo Proyecto** (o `⇧⌘N`): plantillas Web estático, Node.js,
+Python y Vacío. El botón **▶ Ejecutar proyecto** detecta el tipo
+(`package.json`, `requirements.txt`/`*.py`, `index.html`) y corre el comando
+correcto en la terminal integrada real (PTY).
+
+**Colaboración en archivos**: al guardar, tu cambio se difunde en vivo al otro.
+Si ambos editaron lo mismo, verás una barra de conflicto con resolución en un
+clic: **"Usar la de X"** / **"Usar la mía"**. Nada se pierde en silencio.
+
+---
+
+## 📦 Empaquetar para cada sistema
+
+Ver [`PACKAGING.md`](PACKAGING.md): AppImage + deb (Linux), DMG (macOS),
+instalador NSIS (Windows). El venv de Python debe construirse en cada sistema
+destino.
+
+## 📁 Estructura
 
 ```
 atlantis_proyect/
-├── nexo/                      # Servidor y herramientas NEXO
-│   ├── server.py              # API FastAPI, WebSockets y PTY interactivo
-│   ├── ai_engine.py           # Motor de integración real Gemini 3.6 + Hermes CLI
-│   ├── nexo-cli.py            # CLI para agentes y desarrolladores
-│   ├── static/index.html      # IDE Studio 2026 (Monaco + xterm.js + Dual-AI)
-│   └── requirements.txt       # Dependencias
-├── proyectos/                 # Espacio de trabajo para proyectos colaborativos
-├── skills/nexo-colab/         # Skill oficial para Antigravity IDE
-├── salud_sistema.py           # Script de diagnóstico de latencia y estado
-├── start.sh                   # Script de inicio rápido
-├── tunnel.sh                  # Gestor de túneles públicos Cloudflare
-└── GUIA_COLABORACION.md       # Guía paso a paso para programar en pareja
+├── nexo/
+│   ├── server.py          # Hub NEXO: API, WebSocket, PTY, bus de agentes, pairing
+│   ├── hermes_link.py     # Worker: enlaza tu Hermes CLI local con el bus
+│   ├── ai_engine.py       # Detección del binario Hermes (sin keys)
+│   ├── nexo-cli.py        # CLI: chat, archivos, git, ai-send/ai-inbox/ai-reply
+│   └── requirements.txt
+├── web/                   # IDE web (Monaco, xterm.js, panel multi-agente)
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+├── desktop/
+│   ├── native/            # Shell Electron (AppImage/DMG/NSIS)
+│   └── extension/         # Extensión VS Code (cliente secundario)
+├── tests/                 # pytest: bus, pairing, versiones, presencia, WS
+├── tunnel.sh              # Túnel Cloudflare para compartir tu espacio
+└── GUIA_COLABORACION.md   # Guía de colaboración paso a paso
 ```
 
----
+## ✅ Verificación
+
+```bash
+nexo/.venv/bin/python -m pytest tests/ -q
+nexo/.venv/bin/python -m ruff check nexo/ tests/
+node --check web/app.js
+```
 
 ## 📜 Licencia
 
-MIT License — Desarrollado para colaboración simultánea entre humanos e inteligencias artificiales en tiempo real.
-
-## Atlantis Runtime (colaboración persistente)
-
-La implementación nueva y aislada para uso diario vive en `nexo/atlantis_hub/`.
-Usa SQLite, autenticación Bearer, eventos con secuencia/replay, leases para
-workers Hermes y edición de documentos con CRDT. El servidor antiguo en el
-puerto 8787 se conserva para compatibilidad con la demo anterior.
-
-```bash
-nexo/.venv/bin/pip install -r nexo/requirements-atlantis.txt
-./start-atlantis.sh /ruta/a/tu/workspace
-```
-
-Instala `desktop/extension` en Code-OSS/VSCodium. En el primer ordenador usa
-`Atlantis: Crear espacio compartido`; el segundo usa `Atlantis: Conectarse a un
-espacio`. Cada uno registra su worker local con `Atlantis: Conectar mi Hermes`.
-Para crear el ejecutable nativo del sistema actual ejecuta
-`python3 scripts/build_runtime.py`; el flujo de CI debe producir un artefacto
-por cada plataforma (Linux, macOS y Windows).
-
-## Aplicación nativa
-
-`desktop/native` contiene el shell Electron de Atlantis Studio. Usa una
-ventana propia sin los controles de tráfico de macOS, levanta el hub local en
-un puerto libre y carga la interfaz incluso sin conexión externa.
-
-```bash
-cd desktop/native
-npm install
-npm start
-```
-
-Los scripts `package:linux`, `package:mac` y `package:windows` preparan el
-instalador correspondiente. En desarrollo se usa el Python del workspace;
-para distribuirlo hay que adjuntar el runtime congelado de cada plataforma.
+MIT — Hecho para construir en equipo, humanos y agentes.

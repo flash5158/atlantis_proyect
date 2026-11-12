@@ -79,7 +79,8 @@ start_tunnel() {
     echo "⏳ Obteniendo URL pública segura..."
     for _ in {1..30}; do
         sleep 1
-        if grep -o "https://[-a-zA-Z0-9]*\.trycloudflare\.com" "$LOG_FILE" | head -n 1 > "$URL_FILE"; then
+        # Excluye api.trycloudflare.com (es el endpoint de la API, no el túnel)
+        if grep -o "https://[-a-zA-Z0-9]*\.trycloudflare\.com" "$LOG_FILE" | grep -v "^https://api\.trycloudflare\.com$" | head -n 1 > "$URL_FILE"; then
             TUNNEL_URL="$(cat "$URL_FILE")"
             if [[ -n "$TUNNEL_URL" ]]; then
                 echo ""
@@ -93,9 +94,15 @@ start_tunnel() {
                 return 0
             fi
         fi
+        # Si cloudflared murió, no tiene sentido seguir esperando
+        if ! kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
+            break
+        fi
     done
 
-    echo "❌ No se pudo extraer la URL en 30s. Revisa los logs con: ./tunnel.sh logs"
+    rm -f "$URL_FILE"
+    echo "❌ No se pudo establecer el túnel. Revisa los logs con: ./tunnel.sh logs"
+    return 1
 }
 
 stop_tunnel() {

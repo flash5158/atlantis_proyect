@@ -45,7 +45,6 @@ BASE = Path(__file__).resolve().parent
 
 def config_por_defecto() -> dict:
     rutas_cfg = [
-        Path.home() / ".atlantis" / "config.json",
         BASE / "config.json",
         Path.home() / "nexo" / "config.json",
         Path.home() / "colab-hub" / "nexo" / "config.json",
@@ -231,7 +230,7 @@ async def enviar_y_esperar(args, msg: dict, hasta="run_fin", timeout=300) -> lis
                     break
                 m = json.loads(raw)
                 out.append(m)
-                if m.get("tipo") in (hasta, "error"):
+                if m.get("tipo") == hasta:
                     break
     except Exception as e:
         out.append({"tipo": "error", "texto": f"Error WebSocket: {e}"})
@@ -375,9 +374,6 @@ async def main():
             hasta="operacion_ok",
             timeout=15,
         )
-        if any(m.get("tipo") == "error" for m in resp):
-            print("Error: " + next(m["texto"] for m in resp if m.get("tipo") == "error"), file=sys.stderr)
-            sys.exit(1)
         print(f"✓ '{args.ruta}' eliminado.")
         return
 
@@ -389,9 +385,6 @@ async def main():
             hasta="operacion_ok",
             timeout=15,
         )
-        if any(m.get("tipo") == "error" for m in resp):
-            print("Error: " + next(m["texto"] for m in resp if m.get("tipo") == "error"), file=sys.stderr)
-            sys.exit(1)
         print(f"✓ Renombrado: {args.ruta} → {args.nuevo}")
         return
 
@@ -410,9 +403,6 @@ async def main():
             hasta="operacion_ok",
             timeout=60,
         )
-        if any(m.get("tipo") == "error" for m in resp):
-            print("Error: " + next(m["texto"] for m in resp if m.get("tipo") == "error"), file=sys.stderr)
-            sys.exit(1)
         print("✓ Archivo subido con éxito.")
         return
 
@@ -443,9 +433,6 @@ async def main():
             print("Usa --confirmar para eliminar el proyecto.", file=sys.stderr)
             sys.exit(1)
         resp = await enviar_y_esperar(args, {"tipo": "proyecto_borrar", "nombre": args.nombre, "confirmar": True}, hasta="arbol", timeout=20)
-        if any(m.get("tipo") == "error" for m in resp):
-            print("Error: " + next(m["texto"] for m in resp if m.get("tipo") == "error"), file=sys.stderr)
-            sys.exit(1)
         print(f"✓ Proyecto '{args.nombre}' eliminado.")
         return
 

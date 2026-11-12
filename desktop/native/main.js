@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, globalShortcut, shell, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, Menu, globalShortcut, shell, ipcMain, dialog, nativeImage } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const net = require("node:net");
@@ -7,7 +7,7 @@ const path = require("node:path");
 app.disableHardwareAcceleration();
 
 const workspaceRoot = path.resolve(__dirname, "../..");
-const HOME = process.env.HOME || "/home/daniel-sosa";
+const HOME = process.env.HOME || require("node:os").homedir();
 
 let windowRef;
 let hubProcess;
@@ -40,15 +40,11 @@ function runtimeCommand(port) {
   const root = appRoot();
   let python = process.env.ATLANTIS_PYTHON;
   if (!python) {
-    const localVenv = path.join(root, "nexo", ".venv", "bin", "python");
-    const devVenv = path.join(HOME, ".gemini/antigravity/scratch/atlantis_proyect/nexo/.venv/bin/python");
-    if (fs.existsSync(localVenv)) {
-      python = localVenv;
-    } else if (fs.existsSync(devVenv)) {
-      python = devVenv;
-    } else {
-      python = "python3";
-    }
+    const candidates = [
+      path.join(root, "nexo", ".venv", "bin", "python"),       // venv POSIX (dev / Linux / macOS)
+      path.join(root, "nexo", ".venv", "Scripts", "python.exe") // venv Windows
+    ];
+    python = candidates.find(p => fs.existsSync(p)) || "python3";
   }
   const workspace = workspacePath();
   fs.mkdirSync(workspace, { recursive: true });
@@ -220,7 +216,10 @@ async function createWindow() {
 
   setupApplicationMenu();
 
-  const iconPath = path.join(HOME, ".local/share/icons/atlantis-studio.png");
+  const localIcon = path.join(__dirname, "assets/icon-512.png");
+  const homeIcon = path.join(HOME, ".local/share/icons/atlantis-studio.png");
+  const resolvedIcon = fs.existsSync(localIcon) ? localIcon : (fs.existsSync(homeIcon) ? homeIcon : undefined);
+  const icon = resolvedIcon ? nativeImage.createFromPath(resolvedIcon) : undefined;
   const preloadPath = path.join(__dirname, "preload.js");
 
   windowRef = new BrowserWindow({
@@ -229,14 +228,14 @@ async function createWindow() {
     minWidth: 1000,
     minHeight: 650,
     title: "Atlantis Studio",
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    icon: icon,
     frame: true,
     backgroundColor: "#111318",
     autoHideMenuBar: false,
     webPreferences: {
       preload: preloadPath,
-      contextIsolation: true,
-      nodeIntegration: false,
+      contextIsolation: false,
+      nodeIntegration: true,
       sandbox: false
     }
   });
@@ -260,13 +259,8 @@ async function createWindow() {
   });
 
   windowRef.webContents.setWindowOpenHandler(({ url }) => {
-    try {
-      const parsed = new URL(url);
-      if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname !== "127.0.0.1" && parsed.hostname !== "localhost") {
-        shell.openExternal(url);
-        return { action: "deny" };
-      }
-    } catch {
+    if (/^https?:/i.test(url) && !url.includes("127.0.0.1") && !url.includes("localhost")) {
+      shell.openExternal(url);
       return { action: "deny" };
     }
     return { action: "allow" };

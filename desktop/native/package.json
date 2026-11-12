@@ -49,7 +49,8 @@
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "icon": "assets/icon-512.png"
     },
     "mac": {
       "target": [
@@ -61,7 +62,8 @@
       "target": [
         "nsis"
       ]
-    }
+    },
+    "icon": "assets/icon-512.png"
   },
   "devDependencies": {
     "electron": "^38.1.0",

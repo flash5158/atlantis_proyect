@@ -2,3 +2,8 @@ fastapi
 uvicorn[standard]
 websockets
 httpx
+sqlalchemy>=2.0,<3
+psycopg[binary]
+pycrdt
+mcp>=1.0,<2
+
