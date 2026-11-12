@@ -9,6 +9,7 @@ son miembros del equipo del proyecto (bus con alcance al equipo).
 """
 from __future__ import annotations
 
+from typing import Any
 import asyncio
 import json
 import os
@@ -696,7 +697,7 @@ async def _hermes_bus_worker_loop() -> None:
             # Despertar reactivo: responde al instante cuando hay un mensaje nuevo en el bus
             try:
                 await asyncio.wait_for(ev.wait(), timeout=1.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass
             ev.clear()
             _hermes_worker_stats["last_poll"] = time.time()

@@ -19,7 +19,6 @@ from backend.core.state import (
     _arbol,
     _autor_version_archivo,
     _bump_version_archivo,
-    _eliminar_version_archivo,
     _mover_version_archivo,
     _version_archivo,
     difundir_arbol,

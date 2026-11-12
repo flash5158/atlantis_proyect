@@ -70,7 +70,6 @@ import asyncio
 import base64
 import hashlib
 import json
-import os
 import re
 import secrets
 import time
@@ -83,10 +82,8 @@ from fastapi import WebSocket
 
 from backend.core.config import config
 from backend.core.state import (
-    _autor_version_archivo,
     _bus_difundir,
     _bus_post,
-    _bump_version_archivo,
     _eliminar_version_archivo,
     _fijar_version_archivo,
     _mover_version_archivo,

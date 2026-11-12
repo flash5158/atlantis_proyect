@@ -398,7 +398,7 @@ async def _bus_esperar_respuesta(respuesta_a: str, timeout: float = 180.0) -> di
         restante = max(0.05, min(1.0, fin - time.time()))
         try:
             await asyncio.wait_for(ev.wait(), timeout=restante)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pass
         finally:
             ev.clear()

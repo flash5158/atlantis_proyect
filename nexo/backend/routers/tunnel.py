@@ -53,7 +53,7 @@ async def api_tunnel_start(request: Request, token: str = Query("")):
                     "error": "No se pudo establecer el túnel (revisa tu conexión a internet).",
                     "salida": stdout[-800:]}
         return {"ok": True, "url": url, "salida": stdout[-800:]}
-    except asyncio.TimeoutError:
+    except TimeoutError:
         try:
             proc.kill()
         except Exception:
@@ -99,7 +99,7 @@ async def api_tunnel_stop(request: Request, token: str = Query("")):
     try:
         stdout_bytes, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
         return {"ok": True, "salida": stdout_bytes.decode("utf-8", errors="replace")[-400:]}
-    except asyncio.TimeoutError:
+    except TimeoutError:
         try:
             proc.kill()
         except Exception:

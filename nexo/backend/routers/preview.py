@@ -25,7 +25,6 @@ import json
 import mimetypes
 import os
 import shutil
-import signal
 import socket
 import subprocess
 import sys
@@ -36,10 +35,10 @@ from pathlib import Path
 
 import httpx
 from fastapi import APIRouter, Query, Request
-from fastapi.responses import JSONResponse, Response, StreamingResponse
+from fastapi.responses import JSONResponse, Response
 
-from backend.core.config import config, es_local, token_ok
-from backend.core.state import resolver_archivo, sala_de
+from backend.core.config import es_local, token_ok
+from backend.core.state import sala_de
 
 router = APIRouter()
 
