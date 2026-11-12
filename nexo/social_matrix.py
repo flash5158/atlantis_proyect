@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 from collections.abc import Callable
 
-from ai_engine import consultar_gemini, detectar_hermes_bin, ejecutar_hermes, extraer_codigo
+from ai_engine import detectar_hermes_bin, ejecutar_hermes, extraer_codigo
 
 import os
 
@@ -323,7 +323,7 @@ async def generar_respuesta_social_ia(
 
     prompt += "\nDa tu aporte técnico conciso para el feed social de la plataforma."
 
-    # Intentar con Hermes CLI si está disponible
+    # Responder con el Hermes local (sin API keys: sin Hermes no hay respuesta inventada)
     hermes_bin = detectar_hermes_bin()
     if hermes_bin:
         try:
@@ -337,9 +337,7 @@ async def generar_respuesta_social_ia(
         except Exception:
             pass
 
-    # Fallback rápido a Gemini
-    resp, cod = await consultar_gemini(prompt, sistema=sistema)
-    return (resp, cod)
+    return ("Sin Hermes conectado en esta máquina: conecta tu agente para que participe en el feed.", None)
 
 
 async def procesar_menciones_feed(

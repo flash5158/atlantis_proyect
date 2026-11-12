@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlantis Studio — Programa junto a tu compañero, con IAs conectadas</title>
+<meta name="description" content="Atlantis Studio: el IDE donde tú y tu compañero programan juntos en tiempo real, con sus asistentes de IA conectados hablando entre ellos. 100% local, sin claves ni nube.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='64' y2='64' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cdefs%3E%3Cmask id='m'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Cpath d='M13 38 q6 -7 12 0 t12 0 t12 0' stroke='%23000' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M32 7 L56 57 H44.5 L32 25 L19.5 57 H8 Z' fill='url(%23g)' mask='url(%23m)'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg-0:#08090d; --bg-1:#0d0f16; --bg-2:#141828; --bg-3:#1b2138;
+  --violet:#8b7cf6; --violet-hi:#a78bfa; --cyan:#22d3ee;
+  --text:#eceaf6; --muted:#a2a8c3; --faint:#626b8a;
+  --border:rgba(255,255,255,0.07);
+  --grad:linear-gradient(135deg,var(--violet-hi),var(--cyan));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg-0);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+::selection{background:rgba(139,124,246,.35)}
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:60;background:rgba(8,9,13,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;padding:13px 0;gap:16px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:16.5px;letter-spacing:.01em;color:var(--text);text-decoration:none}
+.brand svg{width:32px;height:32px;filter:drop-shadow(0 2px 10px rgba(139,124,246,.45))}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a.nl{color:var(--muted);text-decoration:none;font-size:14px;transition:color .15s}
+.nav-links a.nl:hover{color:var(--text)}
+.btn{display:inline-block;padding:12px 28px;border-radius:999px;border:0;cursor:pointer;
+  font-size:15px;font-weight:700;color:#0a0b10;text-decoration:none;font-family:inherit;
+  background:var(--grad);box-shadow:0 6px 24px rgba(139,124,246,.35);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(139,124,246,.5)}
+.btn.small{padding:9px 22px;font-size:13.5px}
+.btn.ghost{background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn.ghost:hover{background:rgba(255,255,255,.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.burger{display:none;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;padding:6px 11px;cursor:pointer}
+/* ---------- hero ---------- */
+.hero{position:relative;padding:88px 0 40px;text-align:center;overflow:hidden}
+.aurora{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.aurora i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:drift 14s ease-in-out infinite alternate}
+.aurora i:nth-child(1){width:560px;height:380px;left:8%;top:-120px;background:rgba(139,124,246,.35)}
+.aurora i:nth-child(2){width:480px;height:340px;right:6%;top:40px;background:rgba(34,211,238,.22);animation-delay:-6s}
+.aurora i:nth-child(3){width:420px;height:300px;left:38%;top:280px;background:rgba(139,124,246,.18);animation-delay:-3s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,30px) scale(1.08)}}
+.hero-in{position:relative}
+.pill-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--border);margin-bottom:26px}
+.pill-badge .dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.8);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero-logo{width:104px;height:104px;margin:0 auto 26px;filter:drop-shadow(0 10px 36px rgba(139,124,246,.55))}
+.hero h1{font-size:clamp(34px,5.6vw,60px);font-weight:800;letter-spacing:-.025em;line-height:1.1;max-width:840px;margin:0 auto 20px}
+.hero h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:660px;margin:0 auto 36px}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.meta{font-size:13px;color:var(--faint)}
+.meta b{color:var(--muted);font-weight:600}
+/* ---------- IDE mockup ---------- */
+.mock-stage{position:relative;max-width:960px;margin:56px auto 0}
+.mock{background:var(--bg-1);border:1px solid var(--border);border-radius:18px;overflow:hidden;text-align:left;
+  box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 0 1px rgba(139,124,246,.08),0 0 80px rgba(139,124,246,.12)}
+.mock-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.mock-bar .d{width:11px;height:11px;border-radius:50%}
+.mock-bar .t{margin-left:8px;font-size:12.5px;color:var(--faint)}
+.mock-body{display:grid;grid-template-columns:52px 190px 1fr 240px;min-height:340px}
+.mock-rail{background:rgba(255,255,255,.015);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0}
+.mock-rail span{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--faint);font-size:15px}
+.mock-rail span.on{background:rgba(139,124,246,.16);color:var(--violet-hi)}
+.mock-side{border-right:1px solid var(--border);padding:14px;font-size:12.5px}
+.mock-side .hd{font-size:10.5px;letter-spacing:.12em;color:var(--faint);font-weight:700;margin-bottom:10px}
+.mock-file{padding:5px 9px;border-radius:8px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.mock-file.on{background:rgba(139,124,246,.14);color:var(--text)}
+.mock-file .fd{color:var(--violet-hi);font-size:11px}
+.mock-code{padding:18px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.75;overflow:hidden}
+.mock-code .ln{color:var(--faint);display:inline-block;width:26px;user-select:none}
+.tok-k{color:#c4b5fd}.tok-s{color:#86efac}.tok-f{color:#7dd3fc}.tok-c{color:#5b647f;font-style:italic}.tok-p{color:var(--muted)}
+.mock-cursor{display:inline-block;width:8px;height:16px;background:var(--cyan);vertical-align:-3px;animation:blink 1.1s steps(1) infinite;border-radius:2px}
+@keyframes blink{50%{opacity:0}}
+.mock-agent{border-left:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.012)}
+.mock-agent .hd{font-size:10.5px;letter-spacing:.12em;color:var(--faint);font-weight:700}
+.agent-chip{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--bg-2);border:1px solid var(--border);border-radius:12px}
+.agent-chip .av{width:28px;height:28px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;flex:none}
+.agent-chip .nm{font-size:12.5px;font-weight:600}
+.agent-chip .st{font-size:10.5px;color:#34d399;display:flex;align-items:center;gap:5px}
+.agent-chip .st i{width:6px;height:6px;border-radius:50%;background:#34d399}
+.bubble{background:var(--bg-2);border:1px solid var(--border);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:12.5px;color:var(--muted)}
+.bubble b{color:var(--text)}
+.float-chip{position:absolute;display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:600;
+  background:rgba(20,24,40,.92);border:1px solid rgba(139,124,246,.35);backdrop-filter:blur(10px);
+  box-shadow:0 14px 40px rgba(0,0,0,.5);animation:floaty 5s ease-in-out infinite;white-space:nowrap}
+.float-chip .av2{width:26px;height:26px;border-radius:50%;background:var(--grad);display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.fc1{top:6%;left:-34px}
+.fc2{bottom:10%;right:-30px;animation-delay:-2.5s}
+/* ---------- stats ---------- */
+.stats{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(255,255,255,.012);margin-top:72px}
+.stats-in{display:grid;grid-template-columns:repeat(4,1fr);padding:30px 0}
+.stat{text-align:center;padding:6px 12px}
+.stat+.stat{border-left:1px solid var(--border)}
+.stat .n{font-size:30px;font-weight:800;letter-spacing:-.02em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .l{font-size:13px;color:var(--muted);margin-top:4px}
+/* ---------- sections ---------- */
+.section{padding:84px 0}
+.kicker{text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.16em;color:var(--violet-hi);text-transform:uppercase;margin-bottom:14px}
+.section h2{text-align:center;font-size:clamp(26px,3.6vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+.section .sub{text-align:center;color:var(--muted);max-width:620px;margin:0 auto 48px;font-size:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{background:var(--bg-1);border:1px solid var(--border);border-radius:20px;padding:28px;transition:transform .18s,border-color .18s,box-shadow .18s}
+.card:hover{transform:translateY(-4px);border-color:rgba(139,124,246,.35);box-shadow:0 18px 44px rgba(0,0,0,.4)}
+.card .ic{width:46px;height:46px;border-radius:14px;background:rgba(139,124,246,.12);border:1px solid rgba(139,124,246,.25);
+  display:grid;place-items:center;margin-bottom:18px;color:var(--violet-hi)}
+.card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.card p{font-size:14px;color:var(--muted)}
+.card .tag{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--cyan);
+  background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);padding:4px 10px;border-radius:999px}
+/* ---------- architecture ---------- */
+.arch{background:var(--bg-1);border:1px solid var(--border);border-radius:24px;padding:44px 36px;position:relative;overflow:hidden}
+.arch::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(500px 240px at 50% 0%,rgba(139,124,246,.14),transparent 70%)}
+.arch-row{display:flex;align-items:stretch;justify-content:center;gap:0;margin:26px 0;position:relative;flex-wrap:wrap}
+.node{background:var(--bg-2);border:1px solid rgba(139,124,246,.3);border-radius:16px;padding:18px 22px;text-align:center;min-width:170px;position:relative;z-index:1}
+.node .t{font-weight:700;font-size:14.5px}
+.node .d{font-size:12px;color:var(--muted);margin-top:4px}
+.node.you{border-color:rgba(34,211,238,.45)}
+.node small{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--faint);font-weight:700;margin-bottom:6px}
+.link{align-self:center;padding:0 6px;color:var(--violet-hi);font-size:20px;position:relative;z-index:1}
+.link small{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10.5px;color:var(--faint);white-space:nowrap;font-weight:600}
+.arch-note{text-align:center;color:var(--faint);font-size:13px;max-width:640px;margin:8px auto 0;position:relative}
+/* ---------- agents visual ---------- */
+.slots{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:34px 0}
+.slot{background:var(--bg-1);border:1px solid var(--border);border-radius:18px;padding:20px 24px;text-align:center;min-width:150px;transition:transform .18s,border-color .18s}
+.slot:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.4)}
+.slot .av{width:44px;height:44px;border-radius:14px;background:var(--grad);display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff;margin:0 auto 10px}
+.slot .nm{font-weight:700;font-size:14.5px}
+.slot .ad{font-size:11.5px;color:var(--faint)}
+.bridge{background:var(--bg-1);border:1px solid var(--border);border-radius:18px;padding:22px 26px;max-width:640px;margin:0 auto;font-size:14px}
+.bridge .row{display:flex;gap:12px;margin:10px 0;align-items:flex-start}
+.bridge .who{flex:none;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(139,124,246,.14);border:1px solid rgba(139,124,246,.3);color:var(--violet-hi)}
+.bridge .who.b{color:var(--cyan);background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.3)}
+.bridge p{color:var(--muted)}
+.bridge p b{color:var(--text)}
+/* ---------- table ---------- */
+.cmp{overflow-x:auto;border:1px solid var(--border);border-radius:20px;background:var(--bg-1)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th,td{padding:15px 18px;text-align:left;border-bottom:1px solid var(--border)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:700}
+th.hl,td.hl{background:rgba(139,124,246,.07)}
+th.hl{color:var(--violet-hi)}
+td.hl{font-weight:600}
+tr:last-child td{border-bottom:0}
+.yes{color:#34d399;font-weight:700}.no{color:var(--faint)}.part{color:var(--violet-hi);font-weight:600}
+/* ---------- shortcuts ---------- */
+.keys{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.key{display:flex;align-items:center;gap:10px;background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:10px 16px;font-size:13.5px;color:var(--muted)}
+kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;background:var(--bg-3);border:1px solid rgba(255,255,255,.12);
+  border-bottom-width:2px;border-radius:7px;padding:3px 8px;color:var(--text)}
+/* ---------- faq ---------- */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq details{background:var(--bg-1);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .15s}
+.faq details[open]{border-color:rgba(139,124,246,.35)}
+.faq summary{padding:19px 24px;cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .pm{color:var(--violet-hi);font-size:18px;flex:none;transition:transform .2s}
+.faq details[open] summary .pm{transform:rotate(45deg)}
+.faq .a{padding:0 24px 22px;color:var(--muted);font-size:14.5px}
+/* ---------- code banner ---------- */
+#codeBanner{display:none;margin:0 0 26px;padding:20px 24px;border-radius:18px;text-align:center;position:relative;
+  background:linear-gradient(135deg,rgba(139,124,246,.16),rgba(34,211,238,.12));border:1px solid rgba(139,124,246,.4)}
+#codeBanner .lbl{font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+#codeBanner .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:30px;font-weight:800;letter-spacing:.2em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+#codeBanner .hint{font-size:13px;color:var(--muted);margin-top:8px}
+/* ---------- download ---------- */
+.dl-box{background:var(--bg-1);border:1px solid rgba(139,124,246,.3);border-radius:28px;padding:64px 32px;text-align:center;position:relative;overflow:hidden}
+.dl-box::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(600px 280px at 50% 100%,rgba(139,124,246,.16),transparent 70%)}
+.dl-box h2{font-size:clamp(26px,3.6vw,36px);font-weight:800;margin-bottom:12px;position:relative}
+.dl-box p{color:var(--muted);margin-bottom:30px;position:relative}
+.dl-box .btn{font-size:17px;padding:16px 44px;position:relative}
+#dlInfo{margin-top:18px;font-size:13.5px;color:var(--muted);position:relative}
+#dlError{display:none;margin:18px auto 0;max-width:520px;font-size:13.5px;color:#fda4af;background:rgba(244,63,94,.08);
+  border:1px solid rgba(244,63,94,.3);padding:12px 18px;border-radius:12px;position:relative}
+/* ---------- steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:var(--bg-1);border:1px solid var(--border);border-radius:20px;padding:30px 26px}
+.step .n{width:42px;height:42px;border-radius:50%;background:var(--grad);display:grid;place-items:center;font-weight:800;font-size:17px;color:#fff;margin-bottom:18px}
+.step h3{font-size:16.5px;margin-bottom:8px}
+.step p{font-size:14px;color:var(--muted)}
+.step code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--cyan);background:rgba(34,211,238,.08);padding:2px 7px;border-radius:6px}
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--border);padding:40px 0;color:var(--faint);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer .brand{font-size:14px}
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}.aurora i{animation:none}.mock-cursor{animation:none}}
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .mock-body{grid-template-columns:52px 1fr}
+  .mock-side{display:none}.mock-agent{display:none}
+  .fc1{left:6px}.fc2{right:6px}
+  .stats-in{grid-template-columns:1fr 1fr;gap:18px}
+  .stat+.stat{border-left:0}
+  .steps{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .nav-links a.nl{display:none}
+  .burger{display:block}
+  .nav-links.open{position:absolute;top:100%;left:0;right:0;background:var(--bg-1);flex-direction:column;align-items:stretch;padding:12px 24px 20px;border-bottom:1px solid var(--border);z-index:59}
+  .nav-links.open a.nl{display:block;padding:10px 0}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .hero{padding:64px 0 32px}
+  .section{padding:60px 0}
+  .arch{padding:32px 20px}
+  .node{min-width:140px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="wrap nav-in">
+  <a class="brand" href="#top">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg0" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><defs><mask id="lm0"><rect width="64" height="64" fill="#fff"/><path d="M13 38 q6.0 -7 12.0 0 t12.0 0 t12.0 0" stroke="#000" stroke-width="6" fill="none" stroke-linecap="round"/></mask></defs><path d="M32 7 L56 57 H44.5 L32 25 L19.5 57 H8 Z" fill="url(#lg0)" mask="url(#lm0)"/></svg>
+    Atlantis Studio
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a class="nl" href="#funciones">Funciones</a>
+    <a class="nl" href="#como-funciona">Cómo funciona</a>
+    <a class="nl" href="#comparativa">Comparativa</a>
+    <a class="nl" href="#faq">FAQ</a>
+    <a class="btn small" href="#descargar">Descargar</a>
+  </div>
+  <button class="burger" id="burger" aria-label="Menú">☰</button>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="aurora"><i></i><i></i><i></i></div>
+  <div class="wrap hero-in">
+    <div class="pill-badge"><span class="dot"></span> v0.1.0 · 100% local · Sin cuentas en la nube</div>
+    <svg class="hero-logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><defs><mask id="lm1"><rect width="64" height="64" fill="#fff"/><path d="M13 38 q6.0 -7 12.0 0 t12.0 0 t12.0 0" stroke="#000" stroke-width="6" fill="none" stroke-linecap="round"/></mask></defs><path d="M32 7 L56 57 H44.5 L32 25 L19.5 57 H8 Z" fill="url(#lg1)" mask="url(#lm1)"/></svg>
+    <h1>Programa con tu compañero <span class="grad">en tiempo real</span>, con sus IAs conectadas</h1>
+    <p class="lead">Atlantis Studio es el IDE donde tú y tu compañero trabajan juntos sobre el mismo código — y donde sus asistentes de IA se conectan entre ellos para colaborar.</p>
+    <div id="codeBanner">
+      <div class="lbl">Tu código de enlace</div>
+      <div class="code" id="codeValue">—</div>
+      <div class="hint">Guárdalo: lo pegarás en la app, en Hermes IA → Conectar y Vincular.</div>
+    </div>
+    <div class="hero-cta">
+      <a class="btn" href="#descargar">Descargar gratis</a>
+      <a class="btn ghost" href="#enlazarte">¿Cómo me enlazo?</a>
+    </div>
+    <div class="meta"><b>100% local</b> · <b>Sin API keys</b> · <b>Sin nube</b> · Windows, macOS y Linux</div>
+
+    <div class="mock-stage rv">
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="d" style="background:#f87171"></span><span class="d" style="background:#fbbf24"></span><span class="d" style="background:#34d399"></span>
+          <span class="t">main.py — Atlantis Studio</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-rail"><span class="on">▤</span><span>⌕</span><span>⑂</span><span>▷</span><span>▦</span></div>
+          <div class="mock-side">
+            <div class="hd">EXPLORADOR</div>
+            <div class="mock-file"><span class="fd">▾</span> mi-proyecto</div>
+            <div class="mock-file on"><span class="fd">·</span> <span style="color:#7dd3fc">◈</span> main.py</div>
+            <div class="mock-file"><span class="fd">·</span> <span style="color:#7dd3fc">◈</span> utils.py</div>
+            <div class="mock-file"><span class="fd">·</span> <span style="color:#86efac">✎</span> README.md</div>
+          </div>
+          <div class="mock-code"><span class="ln">1</span> <span class="tok-c"># servidor del proyecto</span><br><span class="ln">2</span> <span class="tok-k">def</span> <span class="tok-f">iniciar</span>():<br><span class="ln">3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-k">return</span> <span class="tok-s">"Atlantis"</span><span class="mock-cursor"></span><br><span class="ln">4</span><br><span class="ln">5</span> <span class="tok-c"># tu compañero está editando aquí ↓</span></div>
+          <div class="mock-agent">
+            <div class="hd">RED MULTI-AGENTE</div>
+            <div class="agent-chip"><span class="av">H</span><span><span class="nm">Hermes</span><br><span class="st"><i></i>En línea</span></span></div>
+            <div class="bubble"><b>Koko:</b> ya refactoricé <b>utils.py</b>, revísalo cuando puedas.</div>
+            <div class="bubble"><b>Tú:</b> dale, lo miro ahora mismo.</div>
+          </div>
+        </div>
+      </div>
+      <div class="float-chip fc1"><span class="av2">D</span> Daniel está escribiendo…</div>
+      <div class="float-chip fc2"><span class="av2">K</span> Koko → Hermes: te paso el contexto</div>
+    </div>
+  </div>
+</header>
+
+<div class="stats"><div class="wrap stats-in rv">
+  <div class="stat"><div class="n">0</div><div class="l">API keys necesarias</div></div>
+  <div class="stat"><div class="n">100%</div><div class="l">de tu código se queda en tu red</div></div>
+  <div class="stat"><div class="n">4+</div><div class="l">asistentes conectables a la vez</div></div>
+  <div class="stat"><div class="n">5 min</div><div class="l">para enlazarte con tu compañero</div></div>
+</div></div>
+<section class="section" id="funciones"><div class="wrap">
+  <div class="kicker rv">Funciones</div>
+  <h2 class="rv">Todo lo que trae</h2>
+  <p class="sub rv">Un entorno completo, no un editor con plugins pegados.</p>
+  <div class="grid3">
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M16 14.2c2.3.3 3.9 1.9 4.4 4.3"/></svg></div>
+      <h3>Colaboración en tiempo real</h3>
+      <p>Edición simultánea, presencia en vivo, chat de equipo y tareas compartidas. Ves a tu compañero trabajar, letra por letra.</p>
+      <span class="tag">TIEMPO REAL</span>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/><path d="M11 7.5h4.5V12M13 16.5H8.5V12"/></svg></div>
+      <h3>Múltiples asistentes de IA</h3>
+      <p>Conecta Hermes, Claude Code, Ollama o tu propio CLI. Varios asistentes a la vez, con identidades separadas que hablan entre ellos.</p>
+      <span class="tag">MULTI-AGENTE</span>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9.5 12l2 2 3.5-4"/></svg></div>
+      <h3>100% local, sin claves</h3>
+      <p>Tus modelos corren en tu máquina. Sin API keys, sin nube, sin cuentas externas. Tu código nunca sale de tu red.</p>
+      <span class="tag">PRIVADO</span>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 5l-2 14"/></svg></div>
+      <h3>MCP Builder</h3>
+      <p>Crea servidores MCP reales con un asistente paso a paso: define herramientas, pruébalas en vivo y úsalas desde tus agentes.</p>
+      <span class="tag">WIZARD GUIADO</span>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg></div>
+      <h3>Chat y tareas de equipo</h3>
+      <p>Canales por proyecto, menciones a tus asistentes con @, y un tablero de tareas que tus IAs pueden ejecutar de verdad.</p>
+      <span class="tag">EQUIPO</span>
+    </div>
+    <div class="card rv">
+      <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg></div>
+      <h3>Terminal real integrada</h3>
+      <p>Terminal de verdad dentro del IDE, Git integrado y túnel seguro para que tu compañero se conecte desde cualquier red.</p>
+      <span class="tag">INTEGRADA</span>
+    </div>
+  </div>
+</div></section>
+
+<section class="section" id="como-funciona" style="padding-top:20px"><div class="wrap">
+  <div class="kicker rv">Arquitectura</div>
+  <h2 class="rv">Cómo funciona por dentro</h2>
+  <p class="sub rv">Sin nube, sin intermediarios. Tu máquina es el servidor.</p>
+  <div class="arch rv">
+    <div class="arch-row">
+      <div class="node you"><small>TÚ</small><div class="t">Tu Atlantis</div><div class="d">IDE + hub local</div></div>
+      <div class="link">⟷<small>túnel seguro</small></div>
+      <div class="node"><small>TU COMPAÑERO</small><div class="t">Su Atlantis</div><div class="d">misma sesión, en vivo</div></div>
+    </div>
+    <div class="arch-row">
+      <div class="node"><small>AGENTE 1</small><div class="t">Tu Hermes</div><div class="d">en tu máquina</div></div>
+      <div class="link">⟷<small>bus de agentes</small></div>
+      <div class="node"><small>AGENTE 2</small><div class="t">Su Hermes</div><div class="d">en la suya</div></div>
+    </div>
+    <p class="arch-note">Cada quien corre sus propios modelos en su propia máquina. El bus de agentes les permite conversar, dividirse tareas y pedir ayuda entre ellos — sin que nada pase por servidores de terceros.</p>
+  </div>
+
+  <div style="height:64px"></div>
+  <div class="kicker rv">Red multi-agente</div>
+  <h2 class="rv">Tus asistentes, hablando entre ellos</h2>
+  <p class="sub rv">Conecta varios a la vez. Cámbialos con un clic. Menciónalos con @ en el chat.</p>
+  <div class="slots rv">
+    <div class="slot"><div class="av">H</div><div class="nm">Hermes</div><div class="ad">agente local</div></div>
+    <div class="slot"><div class="av">C</div><div class="nm">Claude Code</div><div class="ad">CLI</div></div>
+    <div class="slot"><div class="av">O</div><div class="nm">Ollama</div><div class="ad">modelos locales</div></div>
+    <div class="slot"><div class="av">+</div><div class="nm">Tu propio CLI</div><div class="ad">cualquier asistente</div></div>
+  </div>
+  <div class="bridge rv">
+    <div class="row"><span class="who">KOKO</span><p><b>@hermes</b> ¿me ayudas con este bug? Te paso el archivo.</p></div>
+    <div class="row"><span class="who b">HERMES</span><p>Dale — lo reviso y te devuelvo el diff en un minuto.</p></div>
+  </div>
+</div></section>
+
+<section class="section" id="comparativa" style="padding-top:20px"><div class="wrap">
+  <div class="kicker rv">Comparativa</div>
+  <h2 class="rv">Atlantis vs. lo demás</h2>
+  <p class="sub rv">Sin humo: lo que cada uno realmente ofrece.</p>
+  <div class="cmp rv"><table>
+    <tr><th></th><th class="hl">Atlantis Studio</th><th>VS Code + Live Share</th><th>Antigravity</th></tr>
+    <tr><td>Colaboración en tiempo real</td><td class="hl yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+    <tr><td>Asistentes de IA integrados</td><td class="hl yes">✓ múltiples</td><td class="part">vía extensiones</td><td class="yes">✓ uno</td></tr>
+    <tr><td>Agentes que hablan entre ellos</td><td class="hl yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>100% local, sin cuentas externas</td><td class="hl yes">✓</td><td class="no">requiere cuenta Microsoft</td><td class="no">requiere cuenta Google</td></tr>
+    <tr><td>Constructor de servidores MCP</td><td class="hl yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>Portable entre computadoras</td><td class="hl yes">✓</td><td class="yes">✓</td><td class="part">instalador oficial</td></tr>
+  </table></div>
+</div></section>
+
+<section class="section" style="padding-top:20px"><div class="wrap">
+  <div class="kicker rv">Productividad</div>
+  <h2 class="rv">Hecho para las manos en el teclado</h2>
+  <p class="sub rv">Atajos reales que funcionan dentro de la app.</p>
+  <div class="keys rv">
+    <span class="key"><kbd>Ctrl K</kbd> paleta de comandos</span>
+    <span class="key"><kbd>Ctrl D</kbd> debate de agentes</span>
+    <span class="key"><kbd>Ctrl ,</kbd> ajustes</span>
+    <span class="key"><kbd>⇧ Ctrl N</kbd> nuevo proyecto</span>
+    <span class="key"><kbd>Ctrl L</kbd> limpiar terminal</span>
+    <span class="key"><kbd>Enter</kbd> enviar · <kbd>⇧ Enter</kbd> nueva línea</span>
+  </div>
+</div></section>
+
+<section class="section" id="faq" style="padding-top:20px"><div class="wrap">
+  <div class="kicker rv">FAQ</div>
+  <h2 class="rv">Preguntas frecuentes</h2>
+  <p class="sub rv">Respuestas directas, sin letra pequeña.</p>
+  <div class="faq">
+    <details class="rv"><summary>¿Necesito internet para usarlo? <span class="pm">+</span></summary><div class="a">No para programar. Solo necesitas conexión cuando tu compañero está fuera de tu red local — ahí se usa un túnel seguro punto a punto. En tu misma red, todo funciona sin internet.</div></details>
+    <details class="rv"><summary>¿Mis datos salen de mi máquina? <span class="pm">+</span></summary><div class="a">No. Tu código, tus chats y tus modelos viven en tu red. No hay nube de por medio, no se crean cuentas externas y no se necesita ninguna API key.</div></details>
+    <details class="rv"><summary>¿Qué asistentes de IA puedo conectar? <span class="pm">+</span></summary><div class="a">Hermes, Claude Code, Ollama o cualquier asistente con línea de comandos. Puedes tener varios conectados a la vez, cada uno con su identidad, y cambiar entre ellos con un clic.</div></details>
+    <details class="rv"><summary>¿Cuánto cuesta? <span class="pm">+</span></summary><div class="a">Nada. No hay planes, suscripciones ni funciones bloqueadas por pago.</div></details>
+    <details class="rv"><summary>¿En qué sistemas funciona? <span class="pm">+</span></summary><div class="a">Windows, macOS y Linux. El paquete es portable: lo llevas a otra computadora y sigue funcionando.</div></details>
+    <details class="rv"><summary>¿Qué es un servidor MCP y para qué sirve el MCP Builder? <span class="pm">+</span></summary><div class="a">MCP (Model Context Protocol) es la forma estándar de darle herramientas a un asistente de IA. El MCP Builder te guía paso a paso para crear tu propio servidor con tus herramientas, probarlo en vivo y usarlo desde tus agentes.</div></details>
+  </div>
+</div></section>
+
+<section class="section" id="enlazarte" style="padding-top:20px"><div class="wrap">
+  <div class="kicker rv">Enlázate</div>
+  <h2 class="rv">Cómo enlazarte con tu compañero</h2>
+  <p class="sub rv">En menos de cinco minutos están programando juntos.</p>
+  <div class="steps">
+    <div class="step rv"><div class="n">1</div><h3>Descarga la app</h3><p>Pulsa el botón de descarga aquí abajo. Es el paquete completo de Atlantis Studio, listo para instalar.</p></div>
+    <div class="step rv"><div class="n">2</div><h3>Ejecútala y crea tu cuenta</h3><p>Abre Atlantis Studio y crea tu cuenta local. No necesitas correo de confirmación ni nada externo.</p></div>
+    <div class="step rv"><div class="n">3</div><h3>Pega el código de enlace</h3><p>Ve a <code>Hermes IA → Conectar y Vincular</code> y pega el código que te compartió tu compañero. Listo: ya comparten sesión.</p></div>
+  </div>
+</div></section>
+
+<section class="section" id="descargar" style="padding-top:20px"><div class="wrap">
+  <div class="dl-box rv">
+    <h2>Descarga Atlantis Studio</h2>
+    <p>El paquete completo, generado por tu compañero desde su propia app.</p>
+    <button class="btn" id="dlBtn">Descargar Atlantis Studio</button>
+    <div id="dlInfo">Comprobando disponibilidad…</div>
+    <div id="dlError"></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true"><defs><linearGradient id="lg3" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><defs><mask id="lm3"><rect width="64" height="64" fill="#fff"/><path d="M13 38 q6.0 -7 12.0 0 t12.0 0 t12.0 0" stroke="#000" stroke-width="6" fill="none" stroke-linecap="round"/></mask></defs><path d="M32 7 L56 57 H44.5 L32 25 L19.5 57 H8 Z" fill="url(#lg3)" mask="url(#lm3)"/></svg>
+    Atlantis Studio
+  </div>
+  <div>Hecho para programar juntos · 100% local</div>
+</div></footer>
+
+<script>
+(function(){
+  // Banner con el código de enlace (?code=XXXX)
+  try{
+    var code = new URLSearchParams(location.search).get("code");
+    if(code){
+      document.getElementById("codeValue").textContent = code;
+      document.getElementById("codeBanner").style.display = "block";
+    }
+  }catch(e){}
+
+  // Menú móvil
+  var burger = document.getElementById("burger"), navLinks = document.getElementById("navLinks");
+  if(burger && navLinks){
+    burger.addEventListener("click", function(){ navLinks.classList.toggle("open"); });
+    navLinks.addEventListener("click", function(e){ if(e.target.closest("a")) navLinks.classList.remove("open"); });
+  }
+
+  // Reveal on scroll
+  try{
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+    }, {threshold: 0.12});
+    document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+  }catch(e){
+    document.querySelectorAll(".rv").forEach(function(el){ el.classList.add("in"); });
+  }
+
+  // Info de descarga + botón
+  var info = document.getElementById("dlInfo"),
+      err  = document.getElementById("dlError"),
+      btn  = document.getElementById("dlBtn");
+  function fmtMB(b){ return (b/1024/1024).toFixed(1) + " MB"; }
+  function noDl(){
+    info.textContent = "";
+    err.style.display = "block";
+    err.textContent = "El anfitrión aún no generó la descarga. Pídele que la genere desde su app e intenta de nuevo.";
+    btn.disabled = true;
+  }
+  fetch("/api/download/info").then(function(r){ return r.json(); }).then(function(d){
+    if(d && d.ready){
+      info.textContent = "Versión " + d.version + " · " + fmtMB(d.size) + " · Windows, macOS y Linux";
+    }else{ noDl(); }
+  }).catch(function(){ info.textContent = "No se pudo comprobar la descarga."; });
+
+  btn.addEventListener("click", function(){
+    btn.disabled = true; var old = btn.textContent; btn.textContent = "Descargando…";
+    fetch("/download").then(function(r){
+      if(r.status === 409){ noDl(); btn.disabled = false; btn.textContent = old; return null; }
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return r.blob();
+    }).then(function(blob){
+      if(!blob) return;
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "atlantis-studio.zip";
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      btn.disabled = false; btn.textContent = old;
+    }).catch(function(){
+      err.style.display = "block";
+      err.textContent = "No se pudo descargar. Revisa tu conexión e intenta de nuevo.";
+      btn.disabled = false; btn.textContent = old;
+    });
+  });
+})();
+</script>
+</body>
+</html>

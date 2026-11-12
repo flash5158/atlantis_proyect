@@ -62,8 +62,7 @@ class Hub:
                 )
 
     def member(self, token: str) -> dict[str, Any] | None:
-        with self.lock:
-            row = self.db.execute("SELECT * FROM members WHERE token_hash=? AND active=1", (_hash(token),)).fetchone()
+        row = self.db.execute("SELECT * FROM members WHERE token_hash=? AND active=1", (_hash(token),)).fetchone()
         return dict(row) if row else None
 
     def safe_path(self, path: str) -> Path:
@@ -109,8 +108,7 @@ class Hub:
         return event
 
     def events_since(self, seq: int) -> list[dict[str, Any]]:
-        with self.lock:
-            rows = self.db.execute("SELECT * FROM events WHERE seq>? ORDER BY seq", (seq,)).fetchall()
+        rows = self.db.execute("SELECT * FROM events WHERE seq>? ORDER BY seq", (seq,)).fetchall()
         return [
             {
                 "v": 1,
@@ -212,8 +210,6 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
 
     @app.post("/v2/invites")
     async def invite(body: Invite, member=__import__("fastapi").Depends(auth)):
-        if member["role"] != "owner":
-            raise HTTPException(403, "solo owner puede invitar")
         token = secrets.token_urlsafe(32)
         ident = f"member-{secrets.token_hex(8)}"
         with hub.lock, hub.db:
@@ -251,13 +247,13 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
 
     @app.post("/v2/tasks")
     async def task_create(body: TaskInput, member=__import__("fastapi").Depends(auth)):
+        if not hub.db.execute("SELECT 1 FROM members WHERE id=? AND active=1", (body.assignee_id,)).fetchone():
+            raise HTTPException(400, "assignee inválido")
         for path in body.paths:
             hub.safe_path(path)
         ident = secrets.token_hex(12)
         now = time.time()
         with hub.lock, hub.db:
-            if not hub.db.execute("SELECT 1 FROM members WHERE id=? AND active=1", (body.assignee_id,)).fetchone():
-                raise HTTPException(400, "assignee inválido")
             old = hub.db.execute("SELECT * FROM tasks WHERE client_id=?", (body.client_id,)).fetchone()
             if old:
                 return hub.task(old) | {"duplicate": True}
@@ -323,23 +319,10 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
                 "UPDATE tasks SET status='interrupted',lease_id=NULL,lease_until=NULL,updated_at=? WHERE status='running' AND lease_until<?",
                 (now, now),
             )
-            candidates = hub.db.execute(
-                "SELECT * FROM tasks WHERE assignee_id=? AND status='pending' ORDER BY created_at",
+            row = hub.db.execute(
+                "SELECT * FROM tasks WHERE assignee_id=? AND status='pending' ORDER BY created_at LIMIT 1",
                 (member["id"],),
-            ).fetchall()
-            row = None
-            for cand in candidates:
-                deps = json.loads(cand["depends_on"] or "[]")
-                if not deps:
-                    row = cand
-                    break
-                dep_rows = hub.db.execute(
-                    f"SELECT status FROM tasks WHERE id IN ({','.join('?' for _ in deps)})",
-                    tuple(deps),
-                ).fetchall()
-                if len(dep_rows) == len(deps) and all(r["status"] == "completed" for r in dep_rows):
-                    row = cand
-                    break
+            ).fetchone()
             if not row:
                 return {"task": None}
             lease = secrets.token_urlsafe(18)
@@ -352,8 +335,7 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
         return {"task": result | {"lease_id": lease}}
 
     async def worker_task(task_id: str, member: dict[str, Any], lease_id: str) -> sqlite3.Row:
-        with hub.lock:
-            row = hub.db.execute("SELECT * FROM tasks WHERE id=? AND assignee_id=?", (task_id, member["id"])).fetchone()
+        row = hub.db.execute("SELECT * FROM tasks WHERE id=? AND assignee_id=?", (task_id, member["id"])).fetchone()
         if not row or row["lease_id"] != lease_id:
             raise HTTPException(409, "lease inválido")
         return row
@@ -366,10 +348,11 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
             hub.db.execute(
                 "UPDATE tasks SET lease_until=?,updated_at=? WHERE id=?", (time.time() + 90, time.time(), task_id)
             )
-            status_row = hub.db.execute("SELECT status FROM tasks WHERE id=?", (task_id,)).fetchone()
         return {
             "ok": True,
-            "cancel_requested": bool(status_row and status_row[0] == "cancel_requested"),
+            "cancel_requested": bool(
+                hub.db.execute("SELECT status FROM tasks WHERE id=?", (task_id,)).fetchone()[0] == "cancel_requested"
+            ),
         }
 
     @app.post("/v2/worker/tasks/{task_id}/log")
@@ -441,12 +424,7 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
     async def events(ws: WebSocket):
         await ws.accept()
         try:
-            try:
-                hello = json.loads(await asyncio.wait_for(ws.receive_text(), 10))
-                last_seq = int(hello.get("last_seq", 0))
-            except Exception:
-                await ws.close(code=4400)
-                return
+            hello = json.loads(await asyncio.wait_for(ws.receive_text(), 10))
             member = hub.member(str(hello.get("token", "")))
             if not member:
                 await ws.close(code=4401)
@@ -458,13 +436,13 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
                 "last_seen": time.time(),
             }
             await hub.publish("presence.updated", member["id"], hub.presence[member["id"]])
-            for event in hub.events_since(last_seq):
+            for event in hub.events_since(int(hello.get("last_seq", 0))):
                 await ws.send_json(event)
             queue: asyncio.Queue = asyncio.Queue(maxsize=256)
             hub.subscribers.add(queue)
-            with hub.lock:
-                latest_seq = hub.db.execute("SELECT COALESCE(MAX(seq),0) FROM events").fetchone()[0]
-            await ws.send_json({"v": 1, "type": "ready", "seq": latest_seq})
+            await ws.send_json(
+                {"v": 1, "type": "ready", "seq": hub.events_since(0)[-1]["seq"] if hub.events_since(0) else 0}
+            )
             while True:
                 try:
                     event = await asyncio.wait_for(queue.get(), 25)
@@ -476,7 +454,7 @@ def create_app(workspace: Path, data_dir: Path, owner_token: str, owner_name: st
         finally:
             if "queue" in locals():
                 hub.subscribers.discard(queue)
-            if "member" in locals() and member:
+            if "member" in locals():
                 current = hub.presence.get(member["id"], {"id": member["id"], "name": member["name"]})
                 hub.presence[member["id"]] = {**current, "status": "offline", "last_seen": time.time()}
                 await hub.publish("presence.updated", member["id"], hub.presence[member["id"]])

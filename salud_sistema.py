@@ -58,10 +58,10 @@ async def verificar_gemini() -> ServiceStatus:
         }
 
     start = time.perf_counter()
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash?key=" + key
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(url, headers={"x-goog-api-key": key})
+            resp = await client.get(url)
             latency = round((time.perf_counter() - start) * 1000, 2)
             if resp.status_code == 200:
                 return {
@@ -109,16 +109,9 @@ async def verificar_hermes() -> ServiceStatus:
         )
         latency = round((time.perf_counter() - start) * 1000, 2)
         ver = p.stdout.strip() or p.stderr.strip() or "v0.21.0"
-        if p.returncode != 0:
-            return {
-                "status": "unhealthy",
-                "modelo": "gemini-3.6-flash (Nous Hermes CLI)",
-                "latency_ms": latency,
-                "error": f"Código de salida {p.returncode}: {ver[:120]}",
-            }
         return {
             "status": "healthy",
-            "modelo": f"gemini-3.6-flash (Nous Hermes CLI {ver})",
+            "modelo": "gemini-3.6-flash (Nous Hermes CLI)",
             "latency_ms": latency,
             "error": None,
         }

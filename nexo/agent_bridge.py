@@ -22,7 +22,7 @@ BASE = Path(__file__).resolve().parent
 
 
 def cargar_config() -> dict:
-    for ruta in [Path.home() / ".atlantis" / "config.json", BASE / "config.json", Path.home() / "nexo" / "config.json"]:
+    for ruta in [BASE / "config.json", Path.home() / "nexo" / "config.json"]:
         if ruta.exists():
             try:
                 return json.loads(ruta.read_text(encoding="utf-8"))
@@ -89,7 +89,7 @@ async def loop_monitoreo(server: str, token: str, agente: str, proyecto: str, in
                     print("!" * 60 + "\n")
 
                     if hook_cmd:
-                        cmd = hook_cmd.replace("{id}", shlex_quote(str(mid))).replace("{titulo}", shlex_quote(m.get("titulo", "")))
+                        cmd = hook_cmd.replace("{id}", mid).replace("{titulo}", shlex_quote(m.get("titulo", "")))
                         print(f"⚙️ Ejecutando hook: {cmd}")
                         os.system(cmd)
 

@@ -4,7 +4,11 @@ __pycache__/
 *.pyc
 nexo/.venv/
 nexo/config.json
+# Local chat and workspace artifacts
+*.nexo-chat.md
+.nexo-chat.md
 proyectos/*/.nexo-chat.md
+proyectos/general/seguridad_ok.txt
 .nexo/
 .atlantis/
 

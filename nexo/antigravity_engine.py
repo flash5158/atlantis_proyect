@@ -6,7 +6,6 @@ Compatible with all Google Antigravity (AGY) sources, plugins, skills, rules, an
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 from typing import Any
@@ -63,15 +62,8 @@ class AntigravityEngine:
         return disabled
 
     def _save_disabled_map(self, disabled: dict[str, bool]) -> None:
-        state_data: dict[str, Any] = {}
-        if self.state_file.is_file():
-            try:
-                state_data = json.loads(self.state_file.read_text(encoding="utf-8"))
-            except Exception:
-                state_data = {}
-        state_data["disabled"] = disabled
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
-        self.state_file.write_text(json.dumps(state_data, indent=2), encoding="utf-8")
+        self.state_file.write_text(json.dumps({"disabled": disabled}, indent=2), encoding="utf-8")
 
     def toggle_item(self, item_id: str, enabled: bool) -> bool:
         disabled = self._get_disabled_map()
@@ -450,7 +442,8 @@ _engine_instance: AntigravityEngine | None = None
 
 def get_antigravity_engine(workspace: Path | None = None) -> AntigravityEngine:
     global _engine_instance
-    if _engine_instance is None or (workspace and _engine_instance.workspace_root != workspace.resolve()):
-        ws = workspace or Path(__file__).resolve().parent.parent
+    if _engine_instance is None or (workspace and _engine_instance.workspace_root != workspace):
+        from pathlib import Path
+        ws = workspace or Path.cwd()
         _engine_instance = AntigravityEngine(ws)
     return _engine_instance

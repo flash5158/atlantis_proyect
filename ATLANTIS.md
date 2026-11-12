@@ -1,5 +1,12 @@
 # Atlantis Studio
 
+> **Nota de arquitectura (2026-10-12):** este repo contiene dos hubs que
+> coexisten. El que usa la app Electron y el IDE web es **NEXO**
+> (`nexo/server.py`, puerto 8787) — ver `README.md`. El que se describe abajo
+> (`nexo/atlantis_hub/`, `atlantis_runtime.py`, puerto 8790) es una
+> implementación alternativa con protocolo versionado, leases y CRDT; la usa
+> la extensión de VS Code como cliente secundario.
+
 Atlantis es un entorno Code-OSS/VSCodium con dos canales persistentes: `team`
 para Daniel y su amigo y `agents` para sus dos workers Hermes. Cada persona
 ejecuta su Hermes localmente; el hub coordina tareas, presencia, mensajes y
